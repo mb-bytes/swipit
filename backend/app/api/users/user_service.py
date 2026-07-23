@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
 from fastapi import status
-from app.utils.security import gen_pswd_hash
+from app.core.security import gen_pswd_hash
 import logging
 
 class UserService:

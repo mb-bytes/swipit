@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import List
 import uuid
 
 class UserSchema(BaseModel):
@@ -17,3 +18,5 @@ class UserCreateSchema(BaseModel):
     email: str
     password: str
 
+class EmailSchema(BaseModel):
+    addresses: List[str]
