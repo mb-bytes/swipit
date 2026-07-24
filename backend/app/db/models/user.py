@@ -12,6 +12,7 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(String, unique = True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     password_hash: Mapped[str] = mapped_column(String, nullable = False)
+    
     connected_accounts : Mapped[List["ConnectedAccount"] | None] = relationship(back_populates="user")
 
 class ConnectedAccount(Base):
