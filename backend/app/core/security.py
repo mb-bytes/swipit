@@ -18,7 +18,7 @@ def generate_jwt_token(user_data: dict, expiry: timedelta = None, refresh: bool 
     payload = {
         "user": user_data,
         "exp": datetime.now() + (expiry if expiry is not None else timedelta(seconds=settings.ACCESS_TOKEN_EXPIRY)),
-        "jti":str(uuid.uuid4),
+        "jti":str(uuid.uuid4()),
         "refresh":refresh
     }
     token = jwt.encode(payload=payload, key= settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
