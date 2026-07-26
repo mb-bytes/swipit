@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     MAIL_SERVER: str
     MAIL_STARTTLS: bool
     MAIL_SSL_TLS: bool
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRY: int
+    REFRESH_TOKEN_EXPIRY: int
     model_config = SettingsConfigDict(
         env_file = env_path, extra = "ignore"
     )

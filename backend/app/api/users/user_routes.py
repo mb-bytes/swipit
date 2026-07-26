@@ -5,8 +5,11 @@ from .user_service import UserService
 from app.db.models.user import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from app.core.config import settings
 from app.core.mail import mail, create_message
+from app.core.security import verify_pswd, generate_jwt_token
 import uuid
+from datetime import datetime, timedelta
 
 user_router = APIRouter(tags=["user_routes"])
 user_service = UserService()
@@ -30,6 +33,28 @@ async def new_user(user_details: UserCreateSchema, db: AsyncSession = Depends(ge
 
     return JSONResponse(content={"message": "Error occured while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+@user_router.post("/login")
+async def login(user_data: UserModel, db: session = Depends(get_db)):
+    username = user_data.username
+    password = user_data.password_hash
+
+    user = user_service.get_user_by_username(username, db)
+
+    if user is not None:
+        password_valid = verify_pswd(password, user.password_hash)
+
+        if password_valid:
+            access_token = generate_jwt_token(user_data={"username":user.username, "user_uid":str(user.user_id)})
+            refresh_token = generate_jwt_token(user_data={"username":user.username, "user_uid":str(user.user_id)}, expiry=timedelta(days=settings.REFRESH_TOKEN_EXPIRY), refresh= True)
+
+            return JSONResponse(content=
+                {"message": "Welcome!", 
+                "access_token": access_token, 
+                "refresh_token": refresh_token, 
+                "user": {"username": user.username, "user_uid":user.user_id}
+                })
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
 
 @user_router.post("/mail")
 async def send_mail(emails: EmailSchema):
