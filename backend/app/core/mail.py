@@ -14,7 +14,7 @@ mail_config = ConnectionConfig(
     MAIL_SSL_TLS = settings.MAIL_SSL_TLS,
     USE_CREDENTIALS = True,
     VALIDATE_CERTS = True,
-    TEMPLATE_FOLDER = BASE_DIR.parent / "templates"
+    # TEMPLATE_FOLDER = BASE_DIR.parent / "templates"
 )
 
 mail = FastMail(config=mail_config)

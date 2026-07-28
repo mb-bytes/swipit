@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from .user_schemas import UserCreateSchema, UserSchema, EmailSchema
+from .user_schemas import UserCreateSchema, UserSchema, UserLoginSchema, EmailSchema
 from .user_service import UserService
 from app.db.models.user import UserModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,11 +34,11 @@ async def new_user(user_details: UserCreateSchema, db: AsyncSession = Depends(ge
     return JSONResponse(content={"message": "Error occured while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @user_router.post("/login")
-async def login(user_data: UserModel, db: session = Depends(get_db)):
+async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
     username = user_data.username
-    password = user_data.password_hash
+    password = user_data.password
 
-    user = user_service.get_user_by_username(username, db)
+    user = await user_service.get_user_by_username(db, username)
 
     if user is not None:
         password_valid = verify_pswd(password, user.password_hash)
@@ -51,7 +51,7 @@ async def login(user_data: UserModel, db: session = Depends(get_db)):
                 {"message": "Welcome!", 
                 "access_token": access_token, 
                 "refresh_token": refresh_token, 
-                "user": {"username": user.username, "user_uid":user.user_id}
+                "user": {"username": user.username, "user_uid": str(user.user_id)}
                 })
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
