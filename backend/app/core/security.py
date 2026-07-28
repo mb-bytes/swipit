@@ -1,11 +1,13 @@
 from passlib.context import CryptContext
 from .config import settings
 from datetime import datetime, timedelta
+from cryptography.fernet import Fernet
 import jwt
 import uuid
 import logging
 
 password_context = CryptContext(schemes=['bcrypt'])
+_fernet = Fernet(settings.FERNET_KEY.encode())
 
 def gen_pswd_hash(password: str) -> str:
     hash = password_context.hash(password)
@@ -32,6 +34,11 @@ def decode_jwt_token(token: str):
         logging.exception(e)
         return None
 
+def encrypt_token(raw_token: str) -> str:
+    return _fernet.encrypt(raw_token.encode()).decode()
+
+def decrypt_token(encrypted_token: str) -> str:
+    return _fernet.decrypt(encrypted_token.encode()).decode()
 
 def create_url_safe_token(data: dict):
     pass

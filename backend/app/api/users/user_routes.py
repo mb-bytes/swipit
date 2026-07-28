@@ -8,11 +8,14 @@ from app.db.session import get_db
 from app.core.config import settings
 from app.core.mail import mail, create_message
 from app.core.security import verify_pswd, generate_jwt_token
+from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer
 import uuid
 from datetime import datetime, timedelta
 
 user_router = APIRouter(tags=["user_routes"])
 user_service = UserService()
+access_token = AccessTokenBearer()
+refresh_token = RefreshTokenBearer()
 
 @user_router.post("/signup")
 async def new_user(user_details: UserCreateSchema, db: AsyncSession = Depends(get_db)):
@@ -56,16 +59,15 @@ async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
 
-@user_router.post("/mail")
-async def send_mail(emails: EmailSchema):
-    email = emails.addresses
-    html = "<h1>Hey! Welcome to SwipIt"
+@user_router.get("/refresh-token")
+def get_new_access_token(token_data: dict = Depends(refresh_token)):
+    expiry_timestamp = token_data['exp']
 
-    message = create_message(recipients= email, subject="Welcome to SwipIt", body=html)
+    if datetime.fromtimestamp(expiry_timestamp) > datetime.now():
+        new_access_token = generate_jwt_token(user_data=token_data['user'], refresh=False)
+        return JSONResponse(content={"access_token": new_access_token}, status_code=status.HTTP_200_OK)
 
-    await mail.send_message(message)
-
-    return {"message": "Mail sent successfully"}
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
 
 
 

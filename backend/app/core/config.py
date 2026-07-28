@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool
     JWT_SECRET: str
     JWT_ALGORITHM: str
+    FERNET_KEY: str
+    GOOGLE_CLIENT_SECRETS_FILE: str = "client_secret.json"
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
     ACCESS_TOKEN_EXPIRY: int
     REFRESH_TOKEN_EXPIRY: int
     model_config = SettingsConfigDict(
