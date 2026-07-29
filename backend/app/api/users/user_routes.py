@@ -12,7 +12,7 @@ from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer
 import uuid
 from datetime import datetime, timedelta
 
-user_router = APIRouter(tags=["user_routes"])
+user_router = APIRouter(tags=["user-routes"])
 user_service = UserService()
 access_token = AccessTokenBearer()
 refresh_token = RefreshTokenBearer()

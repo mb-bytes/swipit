@@ -1,37 +1,58 @@
-from fastapi import status
+from fastapi import status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.exceptions import HTTPException
 from fastapi.requests import Request
 from app.core.security import decode_jwt_token
+from app.api.users.user_service import user_service
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.session import get_db
+
 
 class TokenBearer(HTTPBearer):
     def __init__(self, auto_error=True):
         super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
-        creds = await super().__call__(request)
-        token = creds.credentials
+        token = None
+        # 1. Try extracting from Authorization header
+        auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
+        if auth_header:
+            auth_header = auth_header.strip()
+            if auth_header.lower().startswith("bearer "):
+                token = auth_header.split(" ", 1)[1].strip()
+            else:
+                token = auth_header
+
+        # 2. Try extracting from cookies
+        if not token:
+            token = request.cookies.get("access_token") or request.cookies.get("token")
+
+        # 3. Try extracting from query params
+        if not token:
+            token = request.query_params.get("token")
+
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+        token = token.strip()
+        if token.lower().startswith("bearer "):
+            token = token.split(" ", 1)[1].strip()
+
         token_data = decode_jwt_token(token)
 
         if not token_data:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inalid or expired token")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid or expired token")
 
-        def verify_token_data(self, token_data):
-            raise NotImplementedError("Please override this method in child classes")
+        return token_data
 
 class AccessTokenBearer(TokenBearer):
     def __init__(self, auto_error = True):
         super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
-        creds = await super().__call__(request)
-        token = creds.credentials
-        token_data = decode_jwt_token(token)
-
-        if not token_data:
-            raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Invalid or expired token")
+        token_data = await super().__call__(request)
         
-        if token_data['refresh']:
+        if token_data.get('refresh'):
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Please provide an access token")
         
         return token_data
@@ -41,15 +62,18 @@ class RefreshTokenBearer(TokenBearer):
         super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
-        creds = await super().__call__(request)
-        token = creds.credentials
-        token_data = decode_jwt_token(token)
-
-        if not token_data:
-            raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Invalid or expired token")
+        token_data = await super().__call__(request)
         
-        if not token_data['refresh']:
+        if not token_data.get('refresh'):
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Please provide a refresh token")
 
         return token_data
+
+async def get_curr_user(db: AsyncSession = Depends(get_db), token_data: dict = Depends(AccessTokenBearer())):
+    username = token_data['user']['username']
+    current_user = await user_service.get_user_by_username(db, username)
+
+    return current_user
+
+
         

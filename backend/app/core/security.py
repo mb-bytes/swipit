@@ -2,6 +2,7 @@ from passlib.context import CryptContext
 from .config import settings
 from datetime import datetime, timedelta
 from cryptography.fernet import Fernet
+from itsdangerous import URLSafeTimedSerializer
 import jwt
 import uuid
 import logging
@@ -41,7 +42,16 @@ def decrypt_token(encrypted_token: str) -> str:
     return _fernet.decrypt(encrypted_token.encode()).decode()
 
 def create_url_safe_token(data: dict):
-    pass
+    serializer = URLSafeTimedSerializer(secret_key=settings.JWT_SECRET, salt=settings.SALT)
+    token = serializer.dumps(data)
+
+    return token
 
 def decode_url_safe_token(token: str):
-    pass
+    try:
+        serializer = URLSafeTimedSerializer(secret_key=settings.JWT_SECRET, salt=settings.SALT)
+        token_data = serializer.loads(token)
+        return token_data
+    except Exception as e:
+        logging.exception(str(e))
+        
