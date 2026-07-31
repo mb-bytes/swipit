@@ -1,5 +1,6 @@
 from app.db.base import Base
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Time, Date, Numeric
+from datetime import date, time
 from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 
@@ -18,7 +19,8 @@ class Transaction(Base):
     merchant: Mapped[str]
     amount: Mapped[float] = mapped_column(Numeric(10, 2))
     category: Mapped[str | None]
-    transaction_date: Mapped[date]
+    transaction_date: Mapped[date] = mapped_column(Date)
+    transaction_time: Mapped[time | None] = mapped_column(Time, nullable=True)
     raw_email_id: Mapped[str] = mapped_column(String, unique=True)
 
 

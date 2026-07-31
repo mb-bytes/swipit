@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.credentials import Credentials
 from sqlalchemy import select
+import asyncio
 import os
 import uuid
 
@@ -85,7 +86,11 @@ class GoogleService:
     
         now = datetime.now(timezone.utc)
         if account.token_expiry <= now or creds.expired:
-            creds.refresh(GoogleRequest())
+            # creds.refresh() is a synchronous blocking HTTP call (google-auth uses
+            # the `requests` library). Calling it directly inside an async function
+            # blocks the event loop and causes asyncpg's greenlet driver to crash
+            # with "greenlet_spawn has not been called". Run it in a thread instead.
+            await asyncio.to_thread(creds.refresh, GoogleRequest())
     
             # Persist the newly refreshed access token back to Postgres, encrypted
             account.encrypted_access_token = encrypt_token(creds.token)

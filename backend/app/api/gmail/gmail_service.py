@@ -1,12 +1,15 @@
 import base64
 import email
+import logging
 from email import policy
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from googleapiclient.discovery import build
-
 from app.api.users.google_service import GoogleService
 
+logger = logging.getLogger("ingestion")
+
+def ingestion_failure(message_id: str, sender: str, error: str):
+    logger.warning(f"Failed to parse message {message_id} from {sender}: {error}")
 
 class GmailService:
     async def get_gmail_client(self, db: AsyncSession, user_id):
@@ -80,3 +83,5 @@ class GmailService:
             return plain, "plain"
         html = self.extract_html_body(raw_bytes)
         return html, "html"
+
+gmail_service = GmailService()
