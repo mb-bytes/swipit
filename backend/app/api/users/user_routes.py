@@ -1,19 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from .user_schemas import UserCreateSchema, UserSchema, UserLoginSchema, EmailSchema
-from .user_service import UserService
-from app.db.models.user import UserModel
+from .user_schemas import UserCreateSchema, UserLoginSchema, PasswordResetEmailSchema, PasswordResetSchema
+from .user_service import user_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.core.config import settings
 from app.core.mail import mail, create_message
-from app.core.security import verify_pswd, generate_jwt_token
+from app.core.security import verify_pswd, generate_jwt_token, decode_url_safe_token
 from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer
-import uuid
 from datetime import datetime, timedelta
 
 user_router = APIRouter(tags=["user-routes"])
-user_service = UserService()
 access_token = AccessTokenBearer()
 refresh_token = RefreshTokenBearer()
 
@@ -69,5 +66,22 @@ def get_new_access_token(token_data: dict = Depends(refresh_token)):
 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
 
+@user_router.post("/password-reset-request")
+async def send_reset_email(reset_email: PasswordResetEmailSchema, db: AsyncSession = Depends(get_db)):
+    user_email = reset_email.email
+    request_reset = await user_service.reset_password_request(db, user_email)
+    
+    return request_reset
 
+@user_router.post("/password-reset-confirm/{token}")
+async def reset_password(token: str, password_fiels: PasswordResetSchema, db: AsyncSession = Depends(get_db)):
+    new_pswd, confirm_new_pswd = password_fiels.new_password, password_fiels.confirm_new_password
+    if new_pswd!=confirm_new_pswd:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
+    token_data = decode_url_safe_token(token)
+    user_email = token_data.get("email")
+    
+    reset_pswd = await user_service.reset_password(db, user_email, new_pswd)
+
+    return reset_pswd
 

@@ -12,7 +12,6 @@ class UserSchema(BaseModel):
     class Config:
         from_attributes = True
 
-
 class UserCreateSchema(BaseModel):
     username: str = Field(min_length=8, max_length=20)
     email: str
@@ -24,3 +23,10 @@ class UserLoginSchema(BaseModel):
     
 class EmailSchema(BaseModel):
     addresses: List[str]
+
+class PasswordResetEmailSchema(BaseModel):
+    email: str
+
+class PasswordResetSchema(BaseModel):
+    new_password: str
+    confirm_new_password: str

@@ -1,11 +1,12 @@
-from .user_schemas import UserCreateSchema, UserSchema
+from .user_schemas import UserCreateSchema, PasswordResetEmailSchema
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy.future import select
 from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 from fastapi import status
-from app.core.security import gen_pswd_hash
-from app.core.config import settings
+from app.core.security import gen_pswd_hash, create_url_safe_token
+from app.core.mail import mail, create_message
 import logging
 
 class UserService:
@@ -29,6 +30,40 @@ class UserService:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "User not found"})
             return user
 
+    async def get_user_by_email(self, db: AsyncSession, email: str):
+            user = await db.scalar(select(UserModel).where(UserModel.email == email))
+            if not user:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "User not found"})
+            return user
+
+    async def reset_password_request(self, db: AsyncSession, user_email: PasswordResetEmailSchema):
+        user = await self.get_user_by_email(db, user_email)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        token = create_url_safe_token({"email": user_email})
+        link = f"http://localhost:8000/api/user/password-reset-confirm/{token}"
+        html_msg = f""" 
+        <h2> Request for password reset </h2>
+        <p> To reset your password <a href={link}>click here </a> 
+        """
+        message = create_message(recipients=[user_email], subject="SwipIt Password Reset", body=html_msg)
+        await mail.send_message(message)
+        return JSONResponse(content={"message": "Please check your email for password reset instructions"})
+
+    async def reset_password(self, db:AsyncSession, email: str, new_pswd: str):
+        user = await self.get_user_by_email(db, email)
+        new_pswd_hash = gen_pswd_hash(new_pswd)
+        reset_password = await self.update_user(db, {"password_hash": new_pswd_hash}, user.username)
+        if reset_password:
+            return JSONResponse(content={"message": "Password has been reset successfully"}, status_code=status.HTTP_200_OK)
+        return JSONResponse(content={"message": "Error while trying to reset the password!. Please try again"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    async def update_user(self, db: AsyncSession,new_detail:dict, username: str):
+        user = await self.get_user_by_username(db, username)
+        for key, value in new_detail.items():
+            setattr(user, key, value)
+        await db.commit()
+        return user
 
 user_service = UserService()
 
