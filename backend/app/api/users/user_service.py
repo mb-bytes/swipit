@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from fastapi import status
 from app.core.config import settings
 from app.core.security import gen_pswd_hash, generate_jwt_token, verify_pswd, create_url_safe_token
-from app.core.mail import mail, create_message
+from app.celery_task import send_mail
 from datetime import timedelta
 import logging
 
@@ -16,9 +16,16 @@ class UserService:
         try:
             user_data = user_details.model_dump()
             user_email = user_data.get("email")
+            user_username = user_data.get("username")
+
             existing_user = await self.get_user_by_email(db, user_email)
             if existing_user:
                 return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"message": "User with this email already exists, please try logging in."})
+
+            existing_username = await self.get_user_by_username(db, user_username)
+            if existing_username:
+                return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"message": "Username already taken, please choose a different one."})
+
 
             password = user_data.pop("password")
             hashed_password = gen_pswd_hash(password)
@@ -36,15 +43,14 @@ class UserService:
                 <p> You have successfully created an account on SwipIt </p>
                 """
 
-                message = create_message(recipients=[user_email], subject="Welcome to SwipIt", body=html_msg)
-                await mail.send_message(message)
+                send_mail.delay(user_email, "Welcome to SwipIt", html_msg)
 
                 return JSONResponse(content={"message": "New Account created successfully"}, status_code= status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)
             return JSONResponse(content={"message": "Error occured while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    async def login_user(self, db: AsyncSession, username: str):
+    async def login_user(self, db: AsyncSession, username: str, password: str):
         user = await self.get_user_by_username(db, username)
 
         if user is not None:
@@ -76,28 +82,25 @@ class UserService:
 
     async def get_user_by_username(self, db: AsyncSession, username: str):
             user = await db.scalar(select(UserModel).where(UserModel.username == username))
-            if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "User not found"})
-            return user
+            return user  
 
     async def get_user_by_email(self, db: AsyncSession, email: str):
             user = await db.scalar(select(UserModel).where(UserModel.email == email))
-            if not user:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "User not found"})
-            return user
+            return user  
 
     async def reset_password_request(self, db: AsyncSession, user_email: PasswordResetEmailSchema):
-        user = await self.get_user_by_email(db, user_email)
+        email = user_email.email
+        user = await self.get_user_by_email(db, email)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        token = create_url_safe_token({"email": user_email})
+        token = create_url_safe_token({"email": email})
         link = f"http://localhost:8000/api/user/password-reset-confirm/{token}"
         html_msg = f""" 
         <h2> Request for password reset </h2>
         <p> To reset your password <a href={link}>click here </a> 
         """
-        message = create_message(recipients=[user_email], subject="SwipIt Password Reset", body=html_msg)
-        await mail.send_message(message)
+        send_mail.delay(email, "SwipIt Password Reset", html_msg)
+        
         return JSONResponse(content={"message": "Please check your email for password reset instructions"})
 
     async def reset_password(self, db:AsyncSession, email: str, new_pswd: str):

@@ -32,7 +32,7 @@ async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
     username = user_data.username
     password = user_data.password
 
-    login_user = await user_service.login_user(db, username)
+    login_user = await user_service.login_user(db, username, password)
 
     return login_user
 

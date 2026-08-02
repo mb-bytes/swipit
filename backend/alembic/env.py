@@ -12,7 +12,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from app.db.base import Base
 from app.db.models.user import UserModel
-from app.db.models.cards import CardModel, Transaction  # must be imported for autogenerate to detect them
+from app.db.models.cards import CardModel, Transaction
+from app.db.models.merchants import MerchantCategoryModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

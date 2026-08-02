@@ -8,6 +8,7 @@ env_path = os.path.join(os.path.dirname(current_dir), ".env")
 
 class Settings(BaseSettings):
     DB_URL: str
+    REDIS_URL: str
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: str
@@ -41,3 +42,7 @@ class Settings(BaseSettings):
         return v
     
 settings = Settings()
+
+broker_url = settings.REDIS_URL
+result_backend = settings.REDIS_URL
+broker_connection_retry_on_startup = True
