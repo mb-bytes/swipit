@@ -5,24 +5,74 @@ from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
-from app.core.security import gen_pswd_hash, create_url_safe_token
+from app.core.config import settings
+from app.core.security import gen_pswd_hash, generate_jwt_token, verify_pswd, create_url_safe_token
 from app.core.mail import mail, create_message
+from datetime import timedelta
 import logging
 
 class UserService:
     async def create_user(self, db: AsyncSession, user_details: UserCreateSchema) -> UserModel:
         try:
             user_data = user_details.model_dump()
+            user_email = user_data.get("email")
+            existing_user = await self.get_user_by_email(db, user_email)
+            if existing_user:
+                return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={"message": "User with this email already exists, please try logging in."})
+
             password = user_data.pop("password")
             hashed_password = gen_pswd_hash(password)
+
             new_user = UserModel(**user_data, password_hash=hashed_password)
             db.add(new_user)
             await db.commit()
             await db.refresh(new_user)
-            return new_user
+
+            if new_user:
+                user_email = new_user.email
+
+                html_msg = """ 
+                <h2> Hey! Welcome to SwipIt </h2>
+                <p> You have successfully created an account on SwipIt </p>
+                """
+
+                message = create_message(recipients=[user_email], subject="Welcome to SwipIt", body=html_msg)
+                await mail.send_message(message)
+
+                return JSONResponse(content={"message": "New Account created successfully"}, status_code= status.HTTP_200_OK)
         except Exception as e:
             logging.exception(e)
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Oops! Something went wrong..")
+            return JSONResponse(content={"message": "Error occured while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    async def login_user(self, db: AsyncSession, username: str):
+        user = await self.get_user_by_username(db, username)
+
+        if user is not None:
+            password_valid = verify_pswd(password, user.password_hash)
+
+            if password_valid:
+                access_token = generate_jwt_token(
+                    user_data={"username": user.username, "user_uid": str(user.user_id)}
+                )
+                refresh_token = generate_jwt_token(
+                    user_data={"username": user.username, "user_uid": str(user.user_id)},
+                    expiry=timedelta(days=settings.REFRESH_TOKEN_EXPIRY),
+                    refresh=True,
+                )
+
+                return JSONResponse(
+                    content={
+                        "message": "Welcome!",
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {"username": user.username, "user_uid": str(user.user_id)},
+                    }
+                )
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid username or password",
+            ) 
 
     async def get_user_by_username(self, db: AsyncSession, username: str):
             user = await db.scalar(select(UserModel).where(UserModel.username == username))
