@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.cards import CardModel, Transaction
+from app.api.merchants.categorize_service import categorize_service
 import uuid
 
 class CardService:
@@ -20,11 +21,14 @@ class CardService:
         existing = await db.execute(select(Transaction).where(Transaction.raw_email_id==raw_email_id))
         if existing.scalars().first():
             return None
+
+        category = await categorize_service.categorize_transaction(db, parsed['merchant'])
+
         txn = Transaction(
             card_id=card_id,
             merchant=parsed['merchant'],
             amount=parsed['amount'],
-            category=None,
+            category=category,
             transaction_date=parsed['transaction_date'],
             transaction_time=parsed.get("transaction_time"),
             raw_email_id=raw_email_id,

@@ -32,7 +32,7 @@ class MerchantService:
     async def upsert_category(
         self, db: AsyncSession, merchant_key: str, category: str, source: str = "ai"
     ) -> MerchantCategoryModel:
-        existing = await get_category(db, merchant_key)
+        existing = await self.get_category(db, merchant_key)
         if existing:
             existing.category = category
             existing.source = source
@@ -52,4 +52,4 @@ class MerchantService:
         return {row.merchant_key: row.category for row in rows}
 
 merchant_service = MerchantService()
-merchant_cache = MerchantCache()
+merchant_cache_service = MerchantCache()

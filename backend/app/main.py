@@ -2,15 +2,15 @@ from fastapi import FastAPI
 from .api.users.user_routes import user_router
 from .api.users.google_auth_routes import google_router
 from .api.gmail.gmail_routes import gmail_router
-from app.api.cards.merchants.merchant_service import merchant_service, merchant_cache
-from app.db.session import AsyncSessionLocal
+from .api.merchants.merchant_service import merchant_service, merchant_cache_service
+from .db.session import AsyncSessionLocal
 from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
-        await merchant_cache.hydrate_cache(db)
+        await merchant_cache_service.hydrate_cache(db)
     yield
 
 

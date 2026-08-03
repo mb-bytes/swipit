@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
     ACCESS_TOKEN_EXPIRY: int
     REFRESH_TOKEN_EXPIRY: int
+    OPENAI_API_KEY: str
     model_config = SettingsConfigDict(
         env_file = env_path, extra = "ignore"
     )

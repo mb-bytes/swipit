@@ -1,0 +1,38 @@
+import re
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.categories import TransactionCategory
+from .merchant_service import merchant_service, merchant_cache_service
+from app.core.ai_client import classify_merchant_with_ai
+
+class CategorizeService:
+    def normalize_merchant(self, raw_name: str) -> str:
+        name = raw_name.lower().strip()
+        name = re.sub(r"[^a-z0-9\s]", " ", name)   
+        name = re.sub(r"\s+", " ", name).strip()
+        return name.split(" ")[0] if name else name
+
+    async def categorize_transaction(self, db: AsyncSession, merchant_raw: str) -> str:
+        merchant_key = self.normalize_merchant(merchant_raw)
+    
+        # in-memory cache
+        cached = merchant_cache_service.get_cached(merchant_key)
+        if cached:
+            return cached
+    
+        # DB 
+        db_row = await merchant_service.get_category(db, merchant_key)
+        if db_row:
+            await merchant_cache_service.set_cached(merchant_key, db_row.category)
+            return db_row.category
+    
+        # fall back to AI
+        category = await classify_merchant_with_ai(merchant_key)
+    
+        await merchant_service.upsert_category(db, merchant_key, category, source="ai")
+        await merchant_cache_service.set_cached(merchant_key, category)
+    
+        return category
+
+categorize_service = CategorizeService()
+
+

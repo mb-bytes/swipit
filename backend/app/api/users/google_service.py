@@ -86,13 +86,8 @@ class GoogleService:
     
         now = datetime.now(timezone.utc)
         if account.token_expiry <= now or creds.expired:
-            # creds.refresh() is a synchronous blocking HTTP call (google-auth uses
-            # the `requests` library). Calling it directly inside an async function
-            # blocks the event loop and causes asyncpg's greenlet driver to crash
-            # with "greenlet_spawn has not been called". Run it in a thread instead.
             await asyncio.to_thread(creds.refresh, GoogleRequest())
-    
-            # Persist the newly refreshed access token back to Postgres, encrypted
+
             account.encrypted_access_token = encrypt_token(creds.token)
             if creds.expiry:
                 account.token_expiry = creds.expiry.replace(tzinfo=timezone.utc)
