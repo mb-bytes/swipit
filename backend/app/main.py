@@ -6,6 +6,7 @@ from .api.cards.card_routes import card_router
 from .api.merchants.merchant_service import merchant_service, merchant_cache_service
 from .db.session import AsyncSessionLocal
 from .db.seeders.seed_card_products import seed_card_products
+from .db.models import card_rewards 
 from contextlib import asynccontextmanager
 
 

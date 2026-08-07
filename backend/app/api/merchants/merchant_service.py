@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.merchants import MerchantCategoryModel
 import asyncio
  
+from app.db.seeders.seed_merchant import SEED_MERCHANT_MAP
+
 _cache: dict[str, str] = {}
 _lock = asyncio.Lock()
 
@@ -17,9 +19,12 @@ class MerchantCache:
  
  
     async def hydrate_cache(self, db) -> None:
-        """Call once at app startup to warm the cache from the DB."""
+        """Call once at app startup to warm the cache from SEED_MERCHANT_MAP and DB."""
         global _cache
-        _cache = await merchant_service.get_all_categories(db)
+        initial_cache = {k: v.value if hasattr(v, 'value') else str(v) for k, v in SEED_MERCHANT_MAP.items()}
+        db_categories = await merchant_service.get_all_categories(db)
+        initial_cache.update(db_categories)
+        _cache = initial_cache
 
 
 class MerchantService:
