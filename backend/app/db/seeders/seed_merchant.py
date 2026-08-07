@@ -2,6 +2,8 @@ from app.core.categories import TransactionCategory as C
  
 SEED_MERCHANT_MAP: dict[str, str] = {
     "swiggy": C.FOOD,
+    "instamart": C.GROCERIES,
+    "instama":C.GROCERIES,
     "zomato": C.FOOD,
     "amazon": C.SHOPPING,
     "flipkart": C.SHOPPING,
@@ -28,6 +30,8 @@ SEED_MERCHANT_MAP: dict[str, str] = {
     "pvr": C.ENTERTAINMENT,
     "inox": C.ENTERTAINMENT,
     "bookmyshow": C.ENTERTAINMENT,
+    "district": C.ENTERTAINMENT,
+    "distric": C.ENTERTAINMENT,
     "zerodha": C.INVESTMENT,
     "groww": C.INVESTMENT,
     "upstox": C.INVESTMENT,

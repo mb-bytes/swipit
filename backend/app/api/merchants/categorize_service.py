@@ -7,9 +7,16 @@ from app.core.ai_client import classify_merchant_with_ai
 class CategorizeService:
     def normalize_merchant(self, raw_name: str) -> str:
         name = raw_name.lower().strip()
-        name = re.sub(r"[^a-z0-9\s]", " ", name)   
+
+        if "*" in name:
+            name = name.split("*", 1)[1]
+
+        name = re.sub(r"[^a-z0-9\s]", " ", name)
         name = re.sub(r"\s+", " ", name).strip()
-        return name.split(" ")[0] if name else name
+
+        name = name.split(" ")[0] if name else name
+
+        return name if name else raw_name.lower().strip()
 
     async def categorize_transaction(self, db: AsyncSession, merchant_raw: str) -> str:
         merchant_key = self.normalize_merchant(merchant_raw)

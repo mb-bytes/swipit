@@ -53,8 +53,24 @@ class GmailService:
         html = self.extract_html_body(raw_bytes)
         return html, "html"
 
-    async def parse_and_save(self, db: AsyncSession, user_id: str, gmail_client, parsers: dict, after_date: str):
-        ingested, skipped, failed = 0, 0, 0
+    async def discover_cards(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        gmail_client,
+        parsers: dict,
+        after_date: str,
+    ) -> list[dict]:
+        from sqlalchemy.future import select
+        from app.db.models.cards import CardModel
+
+        # Load already-known last4s
+        existing_result = await db.execute(
+            select(CardModel.card_last4).where(CardModel.user_id == user_id)
+        )
+        known_last4s: set[str | None] = set(existing_result.scalars().all())
+
+        seen: dict[tuple, dict] = {}  # (bank_name, card_last4) → entry
 
         for sender, parser in parsers.items():
             messages = await asyncio.to_thread(
@@ -65,29 +81,88 @@ class GmailService:
                     raw_bytes = await asyncio.to_thread(
                         self.fetch_raw_message, gmail_client, msg["id"]
                     )
-                    body, body_type = self.extract_best_body(raw_bytes)
+                    body, _ = self.extract_best_body(raw_bytes)
+                    parsed = parser(body)
+                    if parsed is None:
+                        continue
+
+                    bank_name = parsed.get("bank_name")
+                    card_last4 = parsed.get("card_last4")
+                    key = (bank_name, card_last4)
+
+                    if key not in seen and card_last4 not in known_last4s:
+                        seen[key] = {
+                            "bank_name": bank_name,
+                            "card_last4": card_last4,
+                        }
+
+                except Exception:
+                    logger.warning(
+                        f"discover_cards: failed on message {msg['id']} from {sender}:\n"
+                        f"{traceback.format_exc()}"
+                    )
+
+        return list(seen.values())
+
+    async def parse_and_save(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        gmail_client,
+        parsers: dict,
+        after_date: str,
+    ) -> dict:
+        ingested, skipped, failed, unmatched = 0, 0, 0, 0
+
+        for sender, parser in parsers.items():
+            messages = await asyncio.to_thread(
+                self.search_bank_emails, gmail_client, sender, after_date
+            )
+            for msg in messages:
+                try:
+                    raw_bytes = await asyncio.to_thread(
+                        self.fetch_raw_message, gmail_client, msg["id"]
+                    )
+                    body, _ = self.extract_best_body(raw_bytes)
                     parsed = parser(body)
                     if parsed is None:
                         skipped += 1
                         continue
-                    card = await card_service.get_or_create_card(
-                        db, user_id, parsed["card_name"], parsed.get("card_last4")
-                    )
+
+                    card_last4 = parsed.get("card_last4")
+                    card = await card_service.get_card_by_last4(db, user_id, card_last4)
+
+                    if card is None:
+                        logger.warning(
+                            f"No card found for last4={card_last4} (user={user_id}). "
+                            f"Skipping message {msg['id']}. Add the card first via /api/cards/create."
+                        )
+                        unmatched += 1
+                        continue
+
                     result = await card_service.save_transaction(
                         db, card.card_id, msg["id"], parsed
                     )
                     if result is None:
-                        skipped += 1
+                        skipped += 1  # already saved (dedup)
                     else:
                         ingested += 1
-                except Exception as e:
+
+                except Exception:
                     await db.rollback()
                     logger.warning(
-                        f"Failed to parse message {msg['id']} from {sender}:\n"
+                        f"Failed to process message {msg['id']} from {sender}:\n"
                         f"{traceback.format_exc()}"
                     )
                     failed += 1
 
-        return {"status": "done", "ingested": ingested, "skipped": skipped, "failed": failed}
+        return {
+            "status": "done",
+            "ingested": ingested,
+            "skipped": skipped,
+            "unmatched": unmatched,
+            "failed": failed,
+        }
+
 
 gmail_service = GmailService()

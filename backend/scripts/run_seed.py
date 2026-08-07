@@ -1,7 +1,7 @@
 import asyncio
 from app.db.session import AsyncSessionLocal
 from app.db.models.merchants import MerchantCategoryModel
-from app.db.seed_merchant import SEED_MERCHANT_MAP
+from app.db.seeders.seed_merchant import SEED_MERCHANT_MAP
 from sqlalchemy import select
  
  
@@ -13,7 +13,7 @@ async def seed():
             )
             if existing:
                 continue
-            session.add(MerchantCategoryModel(merchant_key=merchant_key, category=category, source="seed"))
+            db.add(MerchantCategoryModel(merchant_key=merchant_key, category=category, source="seed"))
         await db.commit()
     print(f"Seeded {len(SEED_MERCHANT_MAP)} merchants")
  
