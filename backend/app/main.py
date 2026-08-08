@@ -5,7 +5,6 @@ from .api.gmail.gmail_routes import gmail_router
 from .api.cards.card_routes import card_router
 from .api.merchants.merchant_service import merchant_service, merchant_cache_service
 from .db.session import AsyncSessionLocal
-from .db.seeders.seed_card_products import seed_card_products
 from .db.models import card_rewards 
 from contextlib import asynccontextmanager
 
@@ -14,7 +13,6 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
         await merchant_cache_service.hydrate_cache(db)
-        await seed_card_products(db)
     yield
 
 

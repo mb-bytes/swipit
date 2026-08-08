@@ -19,12 +19,11 @@ class MerchantCache:
  
  
     async def hydrate_cache(self, db) -> None:
-        """Call once at app startup to warm the cache from SEED_MERCHANT_MAP and DB."""
         global _cache
-        initial_cache = {k: v.value if hasattr(v, 'value') else str(v) for k, v in SEED_MERCHANT_MAP.items()}
         db_categories = await merchant_service.get_all_categories(db)
-        initial_cache.update(db_categories)
-        _cache = initial_cache
+        _cache = db_categories
+        for k, v in SEED_MERCHANT_MAP.items():
+            _cache[k] = v.value if hasattr(v, 'value') else str(v)
 
 
 class MerchantService:

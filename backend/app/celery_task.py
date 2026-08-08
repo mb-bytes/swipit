@@ -43,3 +43,22 @@ def ingest_gmail_for_user(self, user_id: str, after_date: str = "2026/07/25"):
         return asyncio.run(_run())
     except Exception as exc:
         raise self.retry(exc=exc)
+
+@c_app.task(bind=True, max_retries=3, default_retry_delay=60)
+def call_manage_transaction(self, transaction_id: str):
+    import uuid
+    import asyncio
+    from app.api.rewards.reward_service import reward_service
+    from app.db.session import AsyncSessionLocal, engine
+
+    async def _run():
+        try:
+            async with AsyncSessionLocal() as db:
+                await reward_service.manage_transaction(db, uuid.UUID(transaction_id))
+        finally:
+            await engine.dispose()
+
+    try:
+        return asyncio.run(_run())
+    except Exception as exc:
+        raise self.retry(exc=exc)

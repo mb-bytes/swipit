@@ -147,6 +147,8 @@ class GmailService:
                         skipped += 1  # already saved (dedup)
                     else:
                         ingested += 1
+                        from app.celery_task import call_manage_transaction
+                        call_manage_transaction.delay(str(result.transaction_id))
 
                 except Exception:
                     await db.rollback()
