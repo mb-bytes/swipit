@@ -3,6 +3,7 @@ from .api.users.user_routes import user_router
 from .api.users.google_auth_routes import google_router
 from .api.gmail.gmail_routes import gmail_router
 from .api.cards.card_routes import card_router
+from .api.recommendations.recommendation_routes import recommendations_router
 from .api.merchants.merchant_service import merchant_service, merchant_cache_service
 from .db.session import AsyncSessionLocal
 from .db.models import card_rewards 
@@ -22,8 +23,9 @@ app.include_router(user_router, prefix="/api/user")
 app.include_router(google_router, prefix="/auth/google")
 app.include_router(gmail_router, prefix="/api/gmail")
 app.include_router(card_router, prefix="/api/cards")
+app.include_router(recommendations_router, prefix="/api/recommendations")
 
 
-@app.get("/health")
+@app.get("/")
 def get_health():
     return {"message": "App Running"}

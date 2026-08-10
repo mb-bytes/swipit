@@ -1,0 +1,318 @@
+[
+  {
+    "card_name": "HDFC Regalia Credit Card",
+    "bank": "HDFC Bank",
+    "annual_fee": 2500,
+    "joining_fee": 2500,
+    "reward_type": "points",
+    "point_value_inr": 0.5,
+    "best_for": ["travel", "dining", "international_spends"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "dining", "rate_pct": 5.0, "note": "5x points on dining" },
+      { "category": "travel", "rate_pct": 5.0, "note": "5x points on travel" },
+      { "category": "international", "rate_pct": 2.5, "note": "2.5% reward rate on forex" },
+      { "category": "others", "rate_pct": 1.67, "note": "4 points per ₹150 on all spends" }
+    ],
+    "highlights": "Priority Pass lounge access, milestone benefits, comprehensive travel insurance"
+  },
+  {
+    "card_name": "HDFC Millennia Credit Card",
+    "bank": "HDFC Bank",
+    "annual_fee": 1000,
+    "joining_fee": 1000,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "dining", "entertainment"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 5.0, "note": "5% cashback on Amazon, Flipkart, Myntra, Swiggy, Zomato" },
+      { "category": "dining", "rate_pct": 5.0, "note": "5% cashback on dining" },
+      { "category": "others", "rate_pct": 1.0, "note": "1% cashback on all other spends" }
+    ],
+    "highlights": "Best for digital-first spenders; waiver on ₹1L annual spend"
+  },
+  {
+    "card_name": "Axis ACE Credit Card",
+    "bank": "Axis Bank",
+    "annual_fee": 499,
+    "joining_fee": 499,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["bills", "utility", "dining", "online_shopping"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "bills", "rate_pct": 5.0, "note": "5% cashback on bill payments via Google Pay" },
+      { "category": "utility", "rate_pct": 5.0, "note": "5% cashback on utility payments via Google Pay" },
+      { "category": "dining", "rate_pct": 4.0, "note": "4% cashback on Swiggy, Zomato, Ola" },
+      { "category": "others", "rate_pct": 2.0, "note": "2% cashback on all other spends" }
+    ],
+    "highlights": "Highest flat cashback rate; ideal for utility bill payments"
+  },
+  {
+    "card_name": "Axis Magnus Credit Card",
+    "bank": "Axis Bank",
+    "annual_fee": 12500,
+    "joining_fee": 12500,
+    "reward_type": "points",
+    "point_value_inr": 1.0,
+    "best_for": ["travel", "hotels", "dining", "luxury"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "travel", "rate_pct": 12.0, "note": "12 Edge points per ₹200 via travel partner portals" },
+      { "category": "dining", "rate_pct": 6.0, "note": "6 Edge points per ₹200 on dining" },
+      { "category": "others", "rate_pct": 3.0, "note": "6 Edge Reward points per ₹200 on all spends" }
+    ],
+    "highlights": "Premium card for high-spenders; unlimited lounge access, golf privileges"
+  },
+  {
+    "card_name": "ICICI Amazon Pay Credit Card",
+    "bank": "ICICI Bank",
+    "annual_fee": 0,
+    "joining_fee": 0,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "amazon", "fuel"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": true,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 5.0, "note": "5% back on Amazon (Prime members)" },
+      { "category": "online_shopping", "rate_pct": 3.0, "note": "3% back on Amazon (non-Prime)" },
+      { "category": "fuel", "rate_pct": 2.0, "note": "2% cashback on fuel at partner pumps" },
+      { "category": "others", "rate_pct": 1.0, "note": "1% cashback on all other payments" }
+    ],
+    "highlights": "No annual fee; ideal for frequent Amazon shoppers"
+  },
+  {
+    "card_name": "SBI SimplyCLICK Credit Card",
+    "bank": "State Bank of India",
+    "annual_fee": 499,
+    "joining_fee": 499,
+    "reward_type": "points",
+    "point_value_inr": 0.25,
+    "best_for": ["online_shopping", "food", "entertainment"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 2.5, "note": "10x points on Amazon, BookMyShow, Cleartrip, Swiggy" },
+      { "category": "online_shopping", "rate_pct": 1.25, "note": "5x points on all online spends" },
+      { "category": "others", "rate_pct": 0.25, "note": "1 point per ₹100 on all other spends" }
+    ],
+    "highlights": "Entry-level online spending card; annual fee reversible on ₹1L spend"
+  },
+  {
+    "card_name": "SBI BPCL Octane Credit Card",
+    "bank": "State Bank of India",
+    "annual_fee": 1499,
+    "joining_fee": 1499,
+    "reward_type": "points",
+    "point_value_inr": 0.25,
+    "best_for": ["fuel", "grocery", "dining"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": true,
+    "top_rewards": [
+      { "category": "fuel", "rate_pct": 7.25, "note": "25x reward points on BPCL fuel (6.25% value + 1% surcharge waiver)" },
+      { "category": "groceries", "rate_pct": 1.25, "note": "5x points at grocery & dining" },
+      { "category": "others", "rate_pct": 0.25, "note": "1 point per ₹100 on all others" }
+    ],
+    "highlights": "Best fuel card in India; ideal if you spend ₹5k+ on fuel monthly"
+  },
+  {
+    "card_name": "Amex Gold Charge Card",
+    "bank": "American Express",
+    "annual_fee": 4500,
+    "joining_fee": 1000,
+    "reward_type": "points",
+    "point_value_inr": 0.5,
+    "best_for": ["dining", "travel", "groceries"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "dining", "rate_pct": 5.0, "note": "5x Membership Reward points on dining" },
+      { "category": "groceries", "rate_pct": 5.0, "note": "5x MR points at supermarkets" },
+      { "category": "others", "rate_pct": 1.0, "note": "1 MR point per ₹50 on all spends" }
+    ],
+    "highlights": "Premium dining & grocery card; transfer points to 20+ airlines"
+  },
+  {
+    "card_name": "Tata Neu HDFC Credit Card",
+    "bank": "HDFC Bank",
+    "annual_fee": 1499,
+    "joining_fee": 1499,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "groceries", "bills", "fuel"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 5.0, "note": "5% NeuCoins on Tata ecosystem (BigBasket, Croma, Air Asia via Tata Neu)" },
+      { "category": "groceries", "rate_pct": 5.0, "note": "5% on BigBasket" },
+      { "category": "fuel", "rate_pct": 1.5, "note": "1.5% NeuCoins on fuel" },
+      { "category": "others", "rate_pct": 1.5, "note": "1.5% NeuCoins on all other spends" }
+    ],
+    "highlights": "Best for Tata brand loyalists; NeuCoins redeemable across 15+ Tata brands"
+  },
+  {
+    "card_name": "IDFC FIRST Select Credit Card",
+    "bank": "IDFC FIRST Bank",
+    "annual_fee": 0,
+    "joining_fee": 0,
+    "reward_type": "points",
+    "point_value_inr": 0.25,
+    "best_for": ["dining", "entertainment", "online_shopping"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": true,
+    "top_rewards": [
+      { "category": "dining", "rate_pct": 2.5, "note": "10x points on dining on weekends" },
+      { "category": "entertainment", "rate_pct": 2.5, "note": "10x points on movies & entertainment on weekends" },
+      { "category": "online_shopping", "rate_pct": 1.5, "note": "6x points on online shopping" },
+      { "category": "others", "rate_pct": 0.75, "note": "3x points on all other transactions" }
+    ],
+    "highlights": "Lifetime-free premium card; excellent weekend dining and entertainment rewards"
+  },
+  {
+    "card_name": "AU Bank Zenith Credit Card",
+    "bank": "AU Small Finance Bank",
+    "annual_fee": 7999,
+    "joining_fee": 7999,
+    "reward_type": "points",
+    "point_value_inr": 0.25,
+    "best_for": ["dining", "travel", "international_spends"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "dining", "rate_pct": 5.0, "note": "20 reward points per ₹100 on dining" },
+      { "category": "international", "rate_pct": 5.0, "note": "20 points per ₹100 on international spends" },
+      { "category": "others", "rate_pct": 1.25, "note": "5 points per ₹100 on all other spends" }
+    ],
+    "highlights": "Premium card with golf, travel concierge, and high dining rewards"
+  },
+  {
+    "card_name": "Axis Flipkart Credit Card",
+    "bank": "Axis Bank",
+    "annual_fee": 500,
+    "joining_fee": 500,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "groceries", "entertainment"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 7.5, "note": "7.5% cashback on Myntra" },
+      { "category": "online_shopping", "rate_pct": 5.0, "note": "5% cashback on Flipkart, Cleartrip" },
+      { "category": "dining", "rate_pct": 4.0, "note": "4% on Swiggy, Uber, PVR, Cult.fit" },
+      { "category": "others", "rate_pct": 1.0, "note": "1.5% cashback on all other spends" }
+    ],
+    "highlights": "Best for Flipkart and Myntra shoppers; strong dining and OTT rewards"
+  },
+  {
+    "card_name": "Yes Bank Marquee Credit Card",
+    "bank": "Yes Bank",
+    "annual_fee": 9999,
+    "joining_fee": 9999,
+    "reward_type": "points",
+    "point_value_inr": 0.5,
+    "best_for": ["travel", "dining", "luxury"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "travel", "rate_pct": 6.0, "note": "12 Yes points per ₹100 on travel" },
+      { "category": "dining", "rate_pct": 6.0, "note": "12 Yes points per ₹100 on dining" },
+      { "category": "others", "rate_pct": 3.0, "note": "6 Yes points per ₹100 on all else" }
+    ],
+    "highlights": "Super-premium card; unlimited domestic & international lounge access"
+  },
+  {
+    "card_name": "HSBC Live+ Credit Card",
+    "bank": "HSBC",
+    "annual_fee": 999,
+    "joining_fee": 999,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["dining", "groceries", "online_shopping"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "dining", "rate_pct": 10.0, "note": "10% cashback on dining (capped at ₹1000/quarter)" },
+      { "category": "groceries", "rate_pct": 10.0, "note": "10% cashback on groceries (capped at ₹1000/quarter)" },
+      { "category": "online_shopping", "rate_pct": 10.0, "note": "10% cashback on online shopping (capped)" },
+      { "category": "others", "rate_pct": 1.5, "note": "1.5% cashback on all other spends" }
+    ],
+    "highlights": "Highest dining and grocery cashback rate in India; great for urban spenders"
+  },
+  {
+    "card_name": "Standard Chartered Smart Credit Card",
+    "bank": "Standard Chartered",
+    "annual_fee": 499,
+    "joining_fee": 499,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "subscription", "entertainment"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 5.0, "note": "5% cashback on online spends (capped at ₹1000/month)" },
+      { "category": "subscription", "rate_pct": 5.0, "note": "5% on OTT and subscription platforms" },
+      { "category": "others", "rate_pct": 1.0, "note": "1% cashback on all offline spends" }
+    ],
+    "highlights": "Excellent entry-level online cashback card; fee waived on ₹1.2L annual spend"
+  },
+  {
+    "card_name": "Kotak 811 #DreamDifferent Credit Card",
+    "bank": "Kotak Mahindra Bank",
+    "annual_fee": 0,
+    "joining_fee": 0,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "groceries", "utility"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": false,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 2.0, "note": "2% cashback on online transactions" },
+      { "category": "groceries", "rate_pct": 2.0, "note": "2% cashback on grocery spends" },
+      { "category": "utility", "rate_pct": 1.0, "note": "1% cashback on utility bills" },
+      { "category": "others", "rate_pct": 0.5, "note": "0.5% on all other spends" }
+    ],
+    "highlights": "Lifetime-free card; great starter card with decent online cashback"
+  },
+  {
+    "card_name": "IndusInd Tiger Credit Card",
+    "bank": "IndusInd Bank",
+    "annual_fee": 2999,
+    "joining_fee": 2999,
+    "reward_type": "points",
+    "point_value_inr": 0.4,
+    "best_for": ["travel", "fuel", "dining"],
+    "lounge_access": true,
+    "fuel_surcharge_waiver": true,
+    "top_rewards": [
+      { "category": "travel", "rate_pct": 4.0, "note": "10 IndusCash points per ₹100 on travel" },
+      { "category": "fuel", "rate_pct": 2.0, "note": "5 IndusCash points + 1% surcharge waiver on fuel" },
+      { "category": "dining", "rate_pct": 2.0, "note": "5 IndusCash points per ₹100 on dining" },
+      { "category": "others", "rate_pct": 0.8, "note": "2 IndusCash points per ₹100 on all else" }
+    ],
+    "highlights": "Strong travel and fuel combo card; complimentary lounge visits"
+  },
+  {
+    "card_name": "HDFC MoneyBack+ Credit Card",
+    "bank": "HDFC Bank",
+    "annual_fee": 500,
+    "joining_fee": 500,
+    "reward_type": "cashback",
+    "point_value_inr": null,
+    "best_for": ["online_shopping", "groceries", "fuel"],
+    "lounge_access": false,
+    "fuel_surcharge_waiver": true,
+    "top_rewards": [
+      { "category": "online_shopping", "rate_pct": 2.0, "note": "10x CashPoints on Amazon, Flipkart, Reliance Smart" },
+      { "category": "groceries", "rate_pct": 2.0, "note": "10x CashPoints on Swiggy, BigBasket" },
+      { "category": "fuel", "rate_pct": 1.0, "note": "1% fuel surcharge waiver" },
+      { "category": "others", "rate_pct": 0.5, "note": "2 CashPoints per ₹150 on all other spends" }
+    ],
+    "highlights": "Good entry-level cashback card with broad category coverage"
+  }
+]
