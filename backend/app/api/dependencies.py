@@ -14,8 +14,8 @@ class TokenBearer(HTTPBearer):
 
     async def __call__(self, request: Request):
         token = None
-        # 1. Try extracting from Authorization header
         auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
+
         if auth_header:
             auth_header = auth_header.strip()
             if auth_header.lower().startswith("bearer "):
@@ -23,11 +23,9 @@ class TokenBearer(HTTPBearer):
             else:
                 token = auth_header
 
-        # 2. Try extracting from cookies
         if not token:
             token = request.cookies.get("access_token") or request.cookies.get("token")
 
-        # 3. Try extracting from query params
         if not token:
             token = request.query_params.get("token")
 
@@ -43,6 +41,11 @@ class TokenBearer(HTTPBearer):
         if not token_data:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid or expired token")
 
+        check_in_blocklist = await user_service.token_in_blocklist(token_data['jti'])
+
+        if check_in_blocklist:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked, please login again!")
+
         return token_data
 
 class AccessTokenBearer(TokenBearer):
@@ -54,7 +57,7 @@ class AccessTokenBearer(TokenBearer):
         
         if token_data.get('refresh'):
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Please provide an access token")
-        
+
         return token_data
 
 class RefreshTokenBearer(TokenBearer):

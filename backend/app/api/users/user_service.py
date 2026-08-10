@@ -1,6 +1,7 @@
 from .user_schemas import UserCreateSchema, PasswordResetEmailSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from app.redis.redis import redis
 from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -117,6 +118,15 @@ class UserService:
             setattr(user, key, value)
         await db.commit()
         return user
+
+    async def add_jti_to_blocklist(self, jti: str):
+        await redis.set(name=jti, value="", ex=settings.JTI_EXPIRY)
+
+    async def token_in_blocklist(self, jti: str) -> bool:
+        jti_val = await redis.get(jti)
+        return jti_val is not None
+
+    
 
 user_service = UserService()
 

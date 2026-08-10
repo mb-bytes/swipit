@@ -36,6 +36,13 @@ async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
 
     return login_user
 
+@user_router.get("/logout")
+async def logout(token_data = Depends(access_token)):
+    token = token_data['jti']
+    await user_service.add_jti_to_blocklist(token)
+
+    return JSONResponse(content={"message": "Logged out successfully"})
+    
 @user_router.get("/refresh-token")
 def get_new_access_token(token_data: dict = Depends(refresh_token)):
     expiry_timestamp = token_data["exp"]

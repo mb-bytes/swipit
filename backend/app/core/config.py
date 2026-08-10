@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRETS_FILE: str = os.path.join(current_dir, "client_secret.json")
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/google/callback"
     ACCESS_TOKEN_EXPIRY: int
+    JTI_EXPIRY:int
     REFRESH_TOKEN_EXPIRY: int
     OPENAI_API_KEY: str
     model_config = SettingsConfigDict(
