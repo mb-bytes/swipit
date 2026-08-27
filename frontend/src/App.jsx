@@ -1,11 +1,8 @@
-import LandingContainer from "@/components/Landing/LandingContainer";
+import React from "react";
+import AppRoutes from "./Routes";
 
 export function App() {
-  return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#f2eee5]">
-      <LandingContainer />
-    </div>
-  );
+  return <AppRoutes />;
 }
 
 export default App;

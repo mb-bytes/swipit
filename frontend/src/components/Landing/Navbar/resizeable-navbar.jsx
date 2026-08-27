@@ -62,11 +62,10 @@ export const NavBody = ({ children, className }) => {
 };
 
 export const NavItems = ({ items, className, onItemClick }) => {
-  const { scrollTo } = useSmoothScroll();
+  const { scrollTo, lenis } = useSmoothScroll();
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const [activeIdx, setActiveIdx] = useState(0);
-  const isClickScrollingRef = useRef(false);
-  const clickTimeoutRef = useRef(null);
+  const clickUntilRef = useRef(0);
   const tabRefs = useRef([]);
   const [activePill, setActivePill] = useState({ left: 0, width: 0, opacity: 0 });
   const [hoverPill, setHoverPill] = useState({ left: 0, width: 0, opacity: 0 });
@@ -99,54 +98,79 @@ export const NavItems = ({ items, className, onItemClick }) => {
 
   useEffect(() => {
     let rafId;
+
     const checkActiveSection = () => {
-      if (isClickScrollingRef.current) return;
-      const midPoint = window.innerHeight * 0.35;
+      // If user recently clicked a tab, let the smooth animation land on target first
+      if (Date.now() < clickUntilRef.current) return;
+
+      const currentScrollY = window.scrollY || window.pageYOffset || 0;
+
+      // When near the top of the page, force first section (Platform) active
+      if (currentScrollY < 120) {
+        setActiveIdx(0);
+        return;
+      }
+
+      // When near the bottom of the page, activate last section (Contact)
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      if (currentScrollY + windowHeight >= documentHeight - 100) {
+        setActiveIdx(items.length - 1);
+        return;
+      }
+
+      const offsetThreshold = windowHeight * 0.35;
       const sectionElements = items.map((item) => {
         const id = item.link.replace("#", "");
         return document.getElementById(id);
       });
 
+      let matchedIdx = 0;
       for (let i = sectionElements.length - 1; i >= 0; i--) {
         const el = sectionElements[i];
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= midPoint) {
-            setActiveIdx(i);
+          if (rect.top <= offsetThreshold) {
+            matchedIdx = i;
             break;
           }
         }
       }
+      setActiveIdx(matchedIdx);
     };
 
-    const onScroll = () => {
-      if (isClickScrollingRef.current) return;
+    const updateActive = () => {
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(checkActiveSection);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("resize", updateActive, { passive: true });
+
+    if (lenis) {
+      lenis.on("scroll", updateActive);
+    }
+
     checkActiveSection();
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", updateActive);
+      window.removeEventListener("resize", updateActive);
+      if (lenis) {
+        lenis.off("scroll", updateActive);
+      }
       cancelAnimationFrame(rafId);
-      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
     };
-  }, [items]);
+  }, [items, lenis]);
 
   const handleNavClick = (e, link, idx) => {
     e.preventDefault();
     setActiveIdx(idx);
-    isClickScrollingRef.current = true;
-    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-    clickTimeoutRef.current = setTimeout(() => {
-      isClickScrollingRef.current = false;
-    }, 600);
+    clickUntilRef.current = Date.now() + 650;
 
     if (onItemClick) onItemClick(e);
     if (scrollTo) {
-      scrollTo(link, { offset: -70, duration: 0.5 });
+      scrollTo(link, { offset: -70, duration: 0.6 });
     } else {
       const el = document.querySelector(link);
       if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -261,7 +285,7 @@ export const NavbarLogo = () => {
   const handleLogoClick = (e) => {
     e.preventDefault();
     if (scrollTo) {
-      scrollTo(0, { duration: 1.2 });
+      scrollTo(0, { duration: 0.8 });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }

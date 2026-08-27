@@ -14,27 +14,27 @@ import {
 import { MetalButton } from "./MetalButton.jsx";
 import { useSmoothScroll } from "@/components/motion/smooth-scroll-context";
 
+const NAV_ITEMS = [
+  {
+    name: "Platform",
+    link: "#home",
+  },
+  {
+    name: "Who It's For",
+    link: "#persona",
+  },
+  {
+    name: "Features",
+    link: "#features",
+  },
+  {
+    name: "Contact",
+    link: "#contact",
+  },
+];
+
 export function NavbarDemo() {
   const { scrollTo } = useSmoothScroll();
-  const navItems = [
-    {
-      name: "Platform",
-      link: "#home",
-    },
-    {
-      name: "Who It's For",
-      link: "#persona",
-    },
-    {
-      name: "Features",
-      link: "#features",
-    },
-    {
-      name: "Contact",
-      link: "#contact",
-    },
-  ];
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleMobileLink = (e, link) => {
@@ -52,7 +52,7 @@ export function NavbarDemo() {
     <Navbar>
       <NavBody>
         <NavbarLogo />
-        <NavItems items={navItems} />
+        <NavItems items={NAV_ITEMS} />
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center">
             <MetalButton
@@ -79,7 +79,7 @@ export function NavbarDemo() {
           onClose={() => setIsMobileMenuOpen(false)}
         >
           <div className="flex flex-col space-y-2">
-            {navItems.map((item, idx) => (
+            {NAV_ITEMS.map((item, idx) => (
               <a
                 key={`mobile-link-${idx}`}
                 href={item.link}

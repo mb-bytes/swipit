@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const VERT = `#version 300 es
@@ -278,10 +279,19 @@ export function LiquidMetalButton({
   showIcon = true,
   ...props
 }) {
+  const navigate = useNavigate();
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
   const btnRef = useRef(null);
   const plateRef = useRef(null);
+
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(e);
+    } else {
+      navigate("/signup");
+    }
+  };
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -925,7 +935,7 @@ export function LiquidMetalButton({
         <button
           ref={btnRef}
           type="button"
-          onClick={onClick}
+          onClick={handleClick}
           style={{
             position: "relative",
             width: "var(--bw)",
