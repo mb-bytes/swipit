@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'Geist Mono', 'Space Grotesk', monospace;
+    --paper-bg: #f2eee5;
+    --paper-card: #f8f6f0;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: var(--font-sans);
+    background-color: var(--paper-bg);
+    color: #111215;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.035em;
+    font-family: var(--font-sans);
+  }
+}
+
+.paper-grain {
+  position: relative;
+  background-color: #f2eee5;
+}
+
+.paper-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.paper-card {
+  background-color: #faf8f3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.stipple-blue-orb {
+  background: radial-gradient(
+    circle at center,
+    rgba(59, 130, 246, 0.75) 0%,
+    rgba(99, 102, 241, 0.45) 30%,
+    rgba(147, 197, 253, 0.15) 55%,
+    transparent 70%
+  );
+  filter: blur(2px) contrast(150%);
+  mask-image: radial-gradient(circle at center, black 40%, transparent 70%);
+}
+
+.stipple-green-lens {
+  background: radial-gradient(
+    circle at center,
+    rgba(16, 120, 70, 0.85) 0%,
+    rgba(5, 100, 50, 0.5) 45%,
+    transparent 72%
+  );
+  filter: blur(2px) contrast(140%);
+}
+
+.stipple-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
