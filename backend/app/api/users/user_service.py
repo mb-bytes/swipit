@@ -5,7 +5,7 @@ from app.redis.redis import redis
 from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from fastapi import status
+from fastapi import status, Response
 from app.core.config import settings
 from app.core.security import gen_pswd_hash, generate_jwt_token, verify_pswd, create_url_safe_token
 from app.celery_task import send_mail
@@ -46,10 +46,16 @@ class UserService:
 
                 send_mail.delay(user_email, "Welcome to SwipIt", html_msg)
 
-                return JSONResponse(content={"message": "New Account created successfully"}, status_code= status.HTTP_200_OK)
+                return JSONResponse(
+                    content={
+                        "message": "New Account created successfully",
+                        "user": {"username": new_user.username, "email": new_user.email, "user_id": str(new_user.user_id)}
+                    },
+                    status_code=status.HTTP_201_CREATED
+                )
         except Exception as e:
             logging.exception(e)
-            return JSONResponse(content={"message": "Error occured while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JSONResponse(content={"message": "Error occurred while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     async def login_user(self, db: AsyncSession, username: str, password: str):
         user = await self.get_user_by_username(db, username)
@@ -67,7 +73,7 @@ class UserService:
                     refresh=True,
                 )
 
-                return JSONResponse(
+                response = JSONResponse(
                     content={
                         "message": "Welcome!",
                         "access_token": access_token,
@@ -75,6 +81,17 @@ class UserService:
                         "user": {"username": user.username, "user_uid": str(user.user_id)},
                     }
                 )
+                response.set_cookie(
+                    key=settings.JWT_SECRET,
+                    value=refresh_token,
+                    httponly=True,
+                    secure=False,        
+                    samesite="lax",     
+                    max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
+                    path="/api/user",   
+                )
+
+                return response
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

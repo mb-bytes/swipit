@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .api.users.user_routes import user_router
 from .api.users.google_auth_routes import google_router
 from .api.gmail.gmail_routes import gmail_router
@@ -24,6 +25,13 @@ app.include_router(google_router, prefix="/auth/google")
 app.include_router(gmail_router, prefix="/api/gmail")
 app.include_router(card_router, prefix="/api/cards")
 app.include_router(recommendations_router, prefix="/api/recommendations")
+
+app.add_middleware(CORSMiddleware, 
+    allow_origins=["http://localhost:5173"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

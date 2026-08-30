@@ -1,129 +1,205 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { CreditCard } from "./credit-card";
+import { Loader } from "../motion/loader";
+import { InlineValidation } from "./inline-validation";
+import { useAuth } from "../../contexts/AuthContext";
 
 export function Signup() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const { signup } = useAuth();
+
+  const validateName = (val) => {
+    if (!val || !val.trim()) return "Full name is required";
+    if (val.trim().length < 2) return "Must be at least 2 characters";
+    return null;
+  };
+
+  const validateUsername = (val) => {
+    if (!val || !val.trim()) return "Username is required";
+    if (val.trim().length < 3) return "Must be at least 3 characters";
+    if (!/^[a-zA-Z0-9_]+$/.test(val.trim())) return "Letters, numbers & underscores only";
+    return null;
+  };
+
+  const validateEmail = (val) => {
+    if (!val || !val.trim()) return "Email is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) return "Enter a valid email address";
+    return null;
+  };
+
+  const validatePassword = (val) => {
+    if (!val) return "Password is required";
+    if (val.length < 8) return "Must be at least 8 characters";
+    if (!/[A-Za-z]/.test(val) || !/\d/.test(val)) return "Must include at least 1 letter and 1 number";
+    return null;
+  };
+
+  const isFormValid =
+    !validateName(name) &&
+    !validateUsername(username) &&
+    !validateEmail(email) &&
+    !validatePassword(password);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup submitted:", { name, email, password, agreeTerms });
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    const nameErr = validateName(name);
+    const usernameErr = validateUsername(username);
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
+
+    if (nameErr || usernameErr || emailErr || passwordErr) {
+      setErrorMsg(nameErr || usernameErr || emailErr || passwordErr);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await signup(name, username, email, password);
+      console.log("Signup response:", res);
+      if (res.success) {
+        setSuccessMsg(res.message || "Account created successfully! Redirecting to sign in...");
+        setTimeout(() => {
+          navigate("/signin");
+        }, 1500);
+      } else {
+        setErrorMsg(res.error || "Failed to create account.");
+      }
+    } catch (err) {
+      setErrorMsg("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-[#faf8f5] text-[#111215] selection:bg-[#111215] selection:text-white">
-      {/* Left Form Column */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
-        <div className="w-full max-w-[360px]">
-          {/* Header */}
-          <div className="mb-8">
+    <div className="flex h-screen max-h-screen w-full bg-[#faf8f5] text-[#111215] selection:bg-[#111215] selection:text-white overflow-hidden">
+      <div className="flex h-full w-full items-center justify-center px-6 py-4 lg:w-1/2 overflow-y-auto lg:overflow-hidden">
+        <div className="w-full max-w-90 my-auto">
+          <div className="mb-4">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
               Create your account
             </h1>
-            <p className="mt-1.5 text-sm text-neutral-500">
+            <p className="mt-1 text-xs text-neutral-500">
               Start optimizing your card rewards in seconds.
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {errorMsg && (
+            <div className="mb-3 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
+              {errorMsg}
+            </div>
+          )}
+          {successMsg && (
+            <div className="mb-3 rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700 border border-emerald-200">
+              {successMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                Full Name
-              </label>
-              <input
+              <InlineValidation
+                label="Full Name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Alex Rivera"
-                className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition duration-150 ring-neutral-900/10 focus:border-neutral-900 focus:ring-4"
+                onChange={setName}
+                validate={validateName}
+                placeholder="Peter Parker"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                Email
-              </label>
-              <input
+              <InlineValidation
+                label="Username"
+                type="text"
+                value={username}
+                onChange={setUsername}
+                validate={validateUsername}
+                placeholder="peterparker"
+                required
+              />
+            </div>
+
+            <div>
+              <InlineValidation
+                label="Email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition duration-150 ring-neutral-900/10 focus:border-neutral-900 focus:ring-4"
+                onChange={setEmail}
+                validate={validateEmail}
+                placeholder="peter@example.com"
+                autoComplete="email"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition duration-150 ring-neutral-900/10 focus:border-neutral-900 focus:ring-4"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 focus:outline-none"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-neutral-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 accent-neutral-900"
-                />
-                <span>Remember me</span>
-              </label>
-              <Link
-                to="/forgot-password"
-                className="font-medium text-neutral-900 hover:underline underline-offset-2"
-              >
-                Forgot password?
-              </Link>
+              <InlineValidation
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={setPassword}
+                validate={validatePassword}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                required
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-neutral-400 hover:text-neutral-700 focus:outline-none cursor-pointer p-0.5"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                }
+              />
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-neutral-900 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Create account
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <span>Creating account</span>
+                  <Loader variant="dots" size={16} speed={1} className="text-white" />
+                </span>
+              ) : (
+                "Create account"
+              )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center gap-3 text-xs font-medium text-neutral-400">
+          <div className="my-3.5 flex items-center gap-3 text-[11px] font-medium text-neutral-400">
             <span className="h-px flex-1 bg-neutral-200"></span>
             OR
             <span className="h-px flex-1 bg-neutral-200"></span>
           </div>
 
-          {/* Google Sign In */}
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 bg-white py-2.5 text-sm font-medium text-neutral-700 shadow-xs transition hover:bg-neutral-50 hover:border-neutral-300 active:scale-[0.99] cursor-pointer"
+            className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-neutral-200 bg-white py-2 text-sm font-medium text-neutral-700 shadow-xs transition hover:bg-neutral-50 hover:border-neutral-300 active:scale-[0.99] cursor-pointer"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -146,8 +222,7 @@ export function Signup() {
             Continue with Google
           </button>
 
-          {/* Link to Sign In */}
-          <div className="mt-8 text-center text-sm text-neutral-500">
+          <div className="mt-4 text-center text-xs text-neutral-500">
             Already have an account?{" "}
             <Link
               to="/signin"
@@ -159,37 +234,12 @@ export function Signup() {
         </div>
       </div>
 
-      {/* Right Brand Panel */}
-      <div className="relative hidden bg-neutral-900 lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-14 overflow-hidden">
-        {/* Subtle decorative background gradient */}
+      <div className="relative hidden bg-neutral-900 lg:flex lg:h-full lg:w-1/2 lg:items-center lg:justify-center lg:p-10 overflow-hidden">
         <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
 
-        {/* Top header on brand panel */}
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-xs uppercase tracking-wider text-neutral-400">
-              Live Edge Optimization
-            </span>
-          </div>
-          <span className="font-mono text-xs text-neutral-400">v1.0</span>
-        </div>
-
-        {/* Bottom Testimonial & Quote */}
-        <div className="relative z-10">
-          <blockquote className="max-w-lg text-2xl font-medium leading-snug text-white md:text-3xl">
-            "SwipIt automatically routes every swipe to maximize our cashback and perks. It just works."
-          </blockquote>
-          <div className="mt-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 font-bold text-white text-sm">
-              AR
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">Alex Rivera</p>
-              <p className="text-xs text-neutral-400">CTO, Northwind & SwipIt Power User</p>
-            </div>
-          </div>
+        <div className="relative z-10 flex items-center justify-center">
+          <CreditCard cardHolder={name} type="gray-light" width={380} />
         </div>
       </div>
     </div>

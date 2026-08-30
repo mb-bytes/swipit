@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer
+from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer, get_curr_user
 from app.core.config import settings
 from app.core.security import decode_url_safe_token, generate_jwt_token, verify_pswd
 from app.db.session import get_db
@@ -35,6 +35,10 @@ async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
     login_user = await user_service.login_user(db, username, password)
 
     return login_user
+
+@user_router.get("/me")
+async def get_me(curr_user=Depends(get_curr_user)):
+    return curr_user
 
 @user_router.get("/logout")
 async def logout(token_data = Depends(access_token)):
