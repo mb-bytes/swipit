@@ -104,6 +104,8 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const isAuthenticated = Boolean(user && accessToken)
+
     const logout = async () => {
         await api.get("/api/user/logout");
         setAccessToken(null);
@@ -111,7 +113,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, accessToken, signup, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, accessToken, signup, login, isAuthenticated, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

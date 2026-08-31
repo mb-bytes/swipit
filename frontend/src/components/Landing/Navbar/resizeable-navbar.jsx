@@ -213,8 +213,8 @@ export const NavItems = ({ items, className, onItemClick }) => {
               isActive
                 ? "text-white font-semibold"
                 : isHovered
-                ? "text-neutral-950 font-medium"
-                : "text-neutral-700 hover:text-neutral-900"
+                  ? "text-neutral-950 font-medium"
+                  : "text-neutral-700 hover:text-neutral-900"
             )}
           >
             <span className="relative z-10">{item.name}</span>
