@@ -1,4 +1,6 @@
 import { useState } from "react";
+import api from "@/api/axios";
+import { sileo } from "sileo";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -10,33 +12,60 @@ import {
 export function BankRequestModal({ isOpen, onClose }) {
   const [bankName, setBankName] = useState("");
   const [email, setEmail] = useState("");
-  const [cardName, setCardName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const topRequested = [
-    { name: "HDFC Bank", cards: "Infinia / Regalia Gold" },
-    { name: "ICICI Bank", cards: "Emeralde / Sapphiro" },
-    { name: "SBI Card", cards: "Cashback / Aurum" },
-    { name: "American Express", cards: "Platinum Travel / MRCC" },
-    { name: "HSBC India", cards: "Premier / Live+" },
+    { name: "HDFC Bank" },
+    { name: "ICICI Bank" },
+    { name: "SBI Card" },
+    { name: "HSBC India" },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!bankName.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setBankName("");
-      setCardName("");
-      setEmail("");
-      onClose();
-    }, 2200);
+    if (!bankName.trim()) {
+      sileo.error({
+        title: "Bank name required",
+        description: "Please select or enter a bank name.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await api.post("/api/user/bank-request", {
+        bank_name: bankName.trim(),
+        email: email.trim() || undefined,
+      });
+
+      sileo.success({
+        title: "Request Submitted",
+        description: res.data?.message || "Your bank request has been queued.",
+      });
+      setSubmitted(true);
+
+      setTimeout(() => {
+        setSubmitted(false);
+        setBankName("");
+        setEmail("");
+        onClose();
+      }, 2200);
+    } catch (err) {
+      sileo.error({
+        title: "Submission failed",
+        description: err.response?.data?.detail || "Could not submit bank request. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleVote = (name) => {
     setBankName(name);
   };
+
 
   return (
     <AnimatePresence>
@@ -111,11 +140,10 @@ export function BankRequestModal({ isOpen, onClose }) {
                         key={b.name}
                         type="button"
                         onClick={() => handleVote(b.name)}
-                        className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all duration-150 cursor-pointer ${
-                          bankName === b.name
-                            ? "bg-neutral-900 text-white border-neutral-900"
-                            : "bg-white text-neutral-700 border-neutral-300 hover:bg-neutral-100"
-                        }`}
+                        className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all duration-150 cursor-pointer ${bankName === b.name
+                          ? "bg-neutral-900 text-white border-neutral-900"
+                          : "bg-white text-neutral-700 border-neutral-300 hover:bg-neutral-100"
+                          }`}
                       >
                         {b.name}
                       </button>
@@ -137,40 +165,32 @@ export function BankRequestModal({ isOpen, onClose }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono font-medium text-neutral-700">
-                      Card Variant (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      placeholder="e.g. Infinia Metal"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-mono font-medium text-neutral-700">
-                      Email for Notification (Optional)
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@gmail.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-mono font-medium text-neutral-700">
+                    Email for Notification (Optional)
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@gmail.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40"
+                  />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full mt-2 py-3 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  disabled={isSubmitting}
+                  className="w-full mt-2 py-3 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Sparkle weight="bold" className="w-4 h-4 text-amber-400" />
-                  <span>Submit Bank Request</span>
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkle weight="bold" className="w-4 h-4 text-amber-400" />
+                      <span>Submit Bank Request</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { sileo } from "sileo";
 import { CreditCard } from "./credit-card";
 import { Loader } from "../motion/loader";
 import { InlineValidation } from "./inline-validation";
+import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
 import { useAuth } from "../../contexts/AuthContext";
 
 export function Signup() {
@@ -13,8 +15,6 @@ export function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { signup } = useAuth();
@@ -53,8 +53,6 @@ export function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
 
     const nameErr = validateName(name);
     const usernameErr = validateUsername(username);
@@ -62,7 +60,10 @@ export function Signup() {
     const passwordErr = validatePassword(password);
 
     if (nameErr || usernameErr || emailErr || passwordErr) {
-      setErrorMsg(nameErr || usernameErr || emailErr || passwordErr);
+      sileo.error({
+        title: "Validation Error",
+        description: nameErr || usernameErr || emailErr || passwordErr,
+      });
       return;
     }
 
@@ -70,47 +71,53 @@ export function Signup() {
 
     try {
       const res = await signup(name, username, email, password);
-      console.log("Signup response:", res);
       if (res.success) {
-        setSuccessMsg(res.message || "Account created successfully! Redirecting to sign in...");
+        sileo.success({
+          title: "Account created!",
+          description: res.message || "Your account has been created successfully.",
+        });
         setTimeout(() => {
           navigate("/signin");
         }, 1500);
       } else {
-        setErrorMsg(res.error || "Failed to create account.");
+        sileo.error({
+          title: "Account creation failed",
+          description: res.error,
+        });
       }
     } catch (err) {
-      setErrorMsg("An unexpected error occurred. Please try again.");
+      sileo.error({
+        title: "Signup Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex h-screen max-h-screen w-full bg-[#faf8f5] text-[#111215] selection:bg-[#111215] selection:text-white overflow-hidden">
-      <div className="flex h-full w-full items-center justify-center px-6 py-4 lg:w-1/2 overflow-y-auto lg:overflow-hidden">
-        <div className="w-full max-w-90 my-auto">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+    <div className="flex h-screen max-h-screen w-full bg-[#f2eee5] text-[#111215] selection:bg-[#111215] selection:text-[#f2eee5] overflow-hidden paper-grain">
+      {/* Left Column: Paper Texture Form */}
+      <div className="relative flex h-full w-full flex-col justify-between px-6 py-8 sm:px-10 lg:w-1/2 overflow-y-auto z-10">
+        {/* Brand Header */}
+        <div className="w-full max-w-md mx-auto">
+          <Link to="/" className="inline-block transition-opacity hover:opacity-85">
+            <BrandLogo size="sm" />
+          </Link>
+        </div>
+
+        {/* Center Form */}
+        <div className="w-full max-w-md mx-auto my-auto py-6">
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111215]">
               Create your account
             </h1>
-            <p className="mt-1 text-xs text-neutral-500">
+            <p className="mt-1.5 text-xs sm:text-sm text-neutral-600">
               Start optimizing your card rewards in seconds.
             </p>
           </div>
 
-          {errorMsg && (
-            <div className="mb-3 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
-              {errorMsg}
-            </div>
-          )}
-          {successMsg && (
-            <div className="mb-3 rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700 border border-emerald-200">
-              {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
             <div>
               <InlineValidation
                 label="Full Name"
@@ -178,7 +185,7 @@ export function Signup() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-[#111215] py-2.5 text-sm font-medium text-[#f2eee5] shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (
                 <span className="inline-flex items-center gap-2">
@@ -191,15 +198,15 @@ export function Signup() {
             </button>
           </form>
 
-          <div className="my-3.5 flex items-center gap-3 text-[11px] font-medium text-neutral-400">
-            <span className="h-px flex-1 bg-neutral-200"></span>
+          <div className="my-4 flex items-center gap-3 text-[11px] font-medium text-neutral-400">
+            <span className="h-px flex-1 bg-neutral-300/80"></span>
             OR
-            <span className="h-px flex-1 bg-neutral-200"></span>
+            <span className="h-px flex-1 bg-neutral-300/80"></span>
           </div>
 
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-neutral-200 bg-white py-2 text-sm font-medium text-neutral-700 shadow-xs transition hover:bg-neutral-50 hover:border-neutral-300 active:scale-[0.99] cursor-pointer"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-300/80 bg-[#faf8f3]/90 hover:bg-white py-2 text-sm font-medium text-neutral-700 shadow-2xs transition hover:border-neutral-400 active:scale-[0.99] cursor-pointer"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -222,24 +229,68 @@ export function Signup() {
             Continue with Google
           </button>
 
-          <div className="mt-4 text-center text-xs text-neutral-500">
+          <div className="mt-5 text-center text-xs text-neutral-600">
             Already have an account?{" "}
             <Link
               to="/signin"
-              className="font-medium text-neutral-900 hover:underline underline-offset-2"
+              className="font-semibold text-[#111215] hover:underline underline-offset-2"
             >
               Sign in
             </Link>
           </div>
         </div>
+
+        {/* Mobile-only terms note */}
+        <div className="w-full max-w-md mx-auto text-center text-[11px] text-neutral-500 block lg:hidden pb-2">
+          By signing up, you agree to our{" "}
+          <span className="underline underline-offset-2">Terms of Service</span> and{" "}
+          <span className="underline underline-offset-2">Privacy Policy</span>.
+        </div>
       </div>
 
-      <div className="relative hidden bg-neutral-900 lg:flex lg:h-full lg:w-1/2 lg:items-center lg:justify-center lg:p-10 overflow-hidden">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
+      {/* Right Column: Dark Showcase with Seamless Blend */}
+      <div className="relative hidden bg-[#111215] lg:flex lg:h-full lg:w-1/2 lg:flex-col lg:justify-between lg:px-10 lg:py-8 overflow-hidden border-l border-neutral-800/80 shadow-[-20px_0_50px_rgba(0,0,0,0.15)]">
+        {/* Seamless Blending Gradient from left paper edge into dark */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-linear-to-r from-black/25 via-black/10 to-transparent z-10" />
 
-        <div className="relative z-10 flex items-center justify-center">
-          <CreditCard cardHolder={name} type="gray-light" width={380} />
+        {/* Ambient Radial Lighting Glows */}
+        <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_70%)]" />
+
+        {/* Top Spacer for perfect centering */}
+        <div className="w-full h-8" />
+
+        {/* Credit Card with interactive preview */}
+        <div className="relative z-10 flex flex-col items-center justify-center my-auto">
+          <div className="transition-transform duration-500 hover:scale-105">
+            <CreditCard
+              company="SwipIt"
+              cardHolder={name || "YOUR NAME"}
+              cardNumber="••••  ••••  ••••  2026"
+              cardExpiration="∞ / ∞"
+              cardTier="Member"
+              perk="10X REWARDS"
+              type="gray-light"
+              width={380}
+            />
+          </div>
+          <p className="mt-6 text-xs font-mono text-neutral-400/80 tracking-wide uppercase">
+            Welcome to the club.
+          </p>
+        </div>
+
+        {/* Terms of Service & Privacy Policy */}
+        <div className="relative z-10 w-full max-w-sm mx-auto text-center text-xs text-neutral-500">
+          By signing up, you agree to our{" "}
+          <span className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2 cursor-pointer transition-colors">
+            Terms of Service
+          </span>{" "}
+          and{" "}
+          <span className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2 cursor-pointer transition-colors">
+            Privacy Policy
+          </span>
+          .
         </div>
       </div>
     </div>

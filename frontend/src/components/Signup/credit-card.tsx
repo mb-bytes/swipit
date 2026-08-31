@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { cx, sortCx } from "@/lib/cx";
-import swipitLogo from "@/assets/swipit-logo.png"
 import { PaypassIcon } from "./icons";
 
 const styles = sortCx({
@@ -10,42 +9,36 @@ const styles = sortCx({
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "transparent-gradient": {
         root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "brand-dark": {
         root: "bg-linear-to-tr from-brand-900 to-brand-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "brand-light": {
         root: "bg-brand-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset",
         company: "text-neutral-700",
         footerText: "text-neutral-700",
-        paypassIcon: "text-white",
-        cardTypeRoot: "bg-white",
+        paypassIcon: "text-neutral-600",
     },
     "gray-dark": {
-        root: "bg-linear-to-tr from-neutral-900 to-neutral-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-tr from-neutral-900 via-neutral-800 to-neutral-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "gray-light": {
-        root: "bg-neutral-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset",
-        company: "text-neutral-700",
-        footerText: "text-neutral-700",
-        paypassIcon: "text-neutral-400",
-        cardTypeRoot: "bg-white",
+        root: "bg-linear-to-br from-white via-neutral-100 to-neutral-200 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset shadow-xl",
+        company: "text-neutral-900",
+        footerText: "text-neutral-800",
+        paypassIcon: "text-neutral-600",
     },
 
     // Strip
@@ -54,28 +47,24 @@ const styles = sortCx({
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "gray-strip": {
         root: "bg-neutral-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-neutral-700",
         footerText: "text-white",
         paypassIcon: "text-neutral-400",
-        cardTypeRoot: "bg-white/10",
     },
     "gradient-strip": {
         root: "bg-linear-to-b from-[#A5C0EE] to-[#FBC5EC] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "salmon-strip": {
         root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-neutral-700",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
 
     // Vertical strip
@@ -84,29 +73,24 @@ const styles = sortCx({
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-neutral-400",
-        cardTypeRoot: "bg-white/10",
     },
     "gradient-strip-vertical": {
         root: "bg-linear-to-b from-[#FBC2EB] to-[#A18CD1] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
     "salmon-strip-vertical": {
         root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
-        cardTypeRoot: "bg-white/10",
     },
 });
 
 const _NORMAL_TYPES = ["transparent", "transparent-gradient", "brand-dark", "brand-light", "gray-dark", "gray-light"] as const;
 const STRIP_TYPES = ["transparent-strip", "gray-strip", "gradient-strip", "salmon-strip"] as const;
 const VERTICAL_STRIP_TYPES = ["gray-strip-vertical", "gradient-strip-vertical", "salmon-strip-vertical"] as const;
-
-const CARD_WITH_COLOR_LOGO = ["brand-dark", "brand-light", "gray-dark", "gray-light"] as const;
 
 type CreditCardType = (typeof _NORMAL_TYPES)[number] | (typeof STRIP_TYPES)[number] | (typeof VERTICAL_STRIP_TYPES)[number];
 
@@ -115,35 +99,38 @@ interface CreditCardProps {
     cardNumber?: string;
     cardHolder?: string;
     cardExpiration?: string;
+    cardTier?: string;
+    perk?: string;
     type?: CreditCardType;
     className?: string;
     width?: number;
 }
 
 const calculateScale = (desiredWidth: number, originalWidth: number, originalHeight: number) => {
-    // Calculate the scale factor
     const scale = desiredWidth / originalWidth;
-
-    // Calculate the new dimensions
     const scaledWidth = originalWidth * scale;
     const scaledHeight = originalHeight * scale;
 
     return {
-        scale: scale.toFixed(4), // Scale rounded to 4 decimal places
-        scaledWidth: scaledWidth.toFixed(2), // Width rounded to 2 decimal places
-        scaledHeight: scaledHeight.toFixed(2), // Height rounded to 2 decimal places
+        scale: scale.toFixed(4),
+        scaledWidth: scaledWidth.toFixed(2),
+        scaledHeight: scaledHeight.toFixed(2),
     };
 };
 
 export const CreditCard = ({
     company = "SwipIt",
+    cardNumber = "8492  ••••  ••••  2026",
     cardHolder = "OLIVIA RHYE",
-    type = "brand-dark",
+    cardExpiration = "∞ / ∞",
+    cardTier = "VIP PASS",
+    perk = "10X REWARDS",
+    type = "gray-light",
     className,
     width,
 }: CreditCardProps) => {
-    const originalWidth = 316;
-    const originalHeight = 190;
+    const originalWidth = 320;
+    const originalHeight = 196;
 
     const { scale, scaledWidth, scaledHeight } = useMemo(() => {
         if (!width)
@@ -162,7 +149,7 @@ export const CreditCard = ({
                 width: `${scaledWidth}px`,
                 height: `${scaledHeight}px`,
             }}
-            className={cx("relative flex", className)}
+            className={cx("relative flex select-none", className)}
         >
             <div
                 style={{
@@ -170,7 +157,7 @@ export const CreditCard = ({
                     width: `${originalWidth}px`,
                     height: `${originalHeight}px`,
                 }}
-                className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4", styles[type].root)}
+                className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4.5 shadow-2xl transition-all duration-300", styles[type].root)}
             >
                 {/* Horizontal strip */}
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
@@ -190,32 +177,79 @@ export const CreditCard = ({
                     </div>
                 )}
 
-                <div className="relative flex items-start justify-between px-1 pt-1">
-                    <div className={cx("text-md leading-[normal] font-semibold", styles[type].company)}>{company}</div>
-
-                    <PaypassIcon className={styles[type].paypassIcon} />
-                </div>
-
-                <div className="relative flex items-end justify-between gap-3">
-                    <div className="flex min-w-0 flex-col gap-2">
-                        <div className="flex items-end gap-1">
-                            <p
-                                style={{
-                                    wordBreak: "break-word",
-                                }}
-                                className={cx("text-xs leading-snug font-semibold tracking-[0.6px] uppercase", styles[type].footerText)}
-                            >
-                                {cardHolder}
-                            </p>
-
-                        </div>
+                {/* Top Row: Company & Pass type + Paypass */}
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className={cx("text-sm font-black tracking-tight", styles[type].company)}>
+                            {company}
+                        </span>
+                        <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/10 font-bold opacity-75">
+                            {cardTier}
+                        </span>
                     </div>
 
-                    <div className={cx("flex h-8 w-11.5 shrink-0 items-center justify-center rounded overflow-hidden", styles[type].cardTypeRoot)}>
-                        <img src={swipitLogo} alt="SwipIt" className="h-8 w-auto object-contain" />
+                    <PaypassIcon className={cx("w-4 h-4", styles[type].paypassIcon)} />
+                </div>
+
+                {/* Middle Row: EMV Chip & Playful Perk */}
+                <div className="relative flex items-center justify-between my-1">
+                    {/* Metallic EMV Chip */}
+                    <div className="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-100 to-amber-400 border border-amber-500/50 shadow-inner relative overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div className="border-r border-b border-amber-600/40" />
+                            <div className="border-b border-amber-600/40" />
+                            <div className="border-r border-amber-600/40" />
+                            <div />
+                        </div>
+                        <div className="w-3.5 h-3.5 rounded-full border border-amber-600/50 relative z-10" />
+                    </div>
+
+                    <div className="text-[10px] font-mono tracking-widest font-semibold uppercase opacity-60">
+                        {perk}
+                    </div>
+                </div>
+
+                {/* Card Number */}
+                <div className={cx("relative font-mono text-[13px] tracking-[0.18em] font-semibold opacity-85", styles[type].footerText)}>
+                    {cardNumber}
+                </div>
+
+                {/* Bottom Row: Cardholder, Expiration & CVV */}
+                <div className="relative flex items-end justify-between pt-1 border-t border-black/5">
+                    <div className="flex min-w-0 flex-col">
+                        <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                            Cardholder
+                        </span>
+                        <p
+                            style={{ wordBreak: "break-word" }}
+                            className={cx("text-xs font-bold leading-tight tracking-[0.4px] uppercase truncate max-w-[160px] mt-0.5", styles[type].footerText)}
+                        >
+                            {cardHolder}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-right">
+                        <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                                Valid Thru
+                            </span>
+                            <span className={cx("text-[11px] font-mono font-bold leading-tight mt-0.5", styles[type].footerText)}>
+                                {cardExpiration}
+                            </span>
+                        </div>
+
+                        <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                                CVV
+                            </span>
+                            <span className="text-[11px] font-mono font-bold leading-tight text-amber-600 mt-0.5">
+                                777
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
 };
+

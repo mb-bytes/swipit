@@ -139,7 +139,12 @@ export type InlineValidationProps = {
   disabled?: boolean;
   required?: boolean;
   className?: string;
+  inputClassName?: string;
+  labelClassName?: string;
+  variant?: "light" | "dark";
   rightElement?: React.ReactNode;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export function InlineValidation({
@@ -159,7 +164,12 @@ export function InlineValidation({
   disabled = false,
   required = false,
   className = "",
+  inputClassName = "",
+  labelClassName = "",
+  variant = "light",
   rightElement,
+  onFocus,
+  onBlur,
 }: InlineValidationProps) {
   const reduced = useReducedMotion();
   const fade = reduced ? INSTANT : CROSSFADE;
@@ -175,6 +185,7 @@ export function InlineValidation({
     debounce,
   });
 
+  const isDark = variant === "dark";
   const invalid = status === "invalid";
   const valid = status === "valid";
 
@@ -189,12 +200,28 @@ export function InlineValidation({
     overflow: "hidden" as const,
   };
 
+  const defaultLabelClass = isDark
+    ? "mb-1 block text-[9px] font-mono uppercase tracking-widest text-neutral-400"
+    : "mb-1 block text-xs font-medium text-neutral-700";
+
+  const defaultInputBase = isDark
+    ? "w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-sm font-mono tracking-wide text-white placeholder:text-neutral-500 outline-none transition duration-150 shadow-inner"
+    : "w-full rounded-xl border bg-[#faf8f3]/80 px-3.5 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition duration-150 ring-neutral-900/10 focus:ring-3 focus:bg-white disabled:opacity-50";
+
+  const stateClass = isDark
+    ? invalid
+      ? "border-red-500 ring-2 ring-red-500/20 focus:border-red-400"
+      : "border-white/12 focus:border-amber-400/80 focus:ring-2 focus:ring-amber-400/20 focus:bg-black/60"
+    : invalid
+      ? "border-red-500 ring-red-500/10 focus:border-red-500 focus:ring-red-500/20"
+      : "border-neutral-300/80 focus:border-neutral-900";
+
   return (
     <div className={`w-full ${className}`}>
       {label && (
         <label
           htmlFor={fieldId}
-          className="mb-1 block text-xs font-medium text-neutral-700"
+          className={`${defaultLabelClass} ${labelClassName}`}
         >
           {label}
         </label>
@@ -213,19 +240,20 @@ export function InlineValidation({
           required={required}
           aria-required={required || undefined}
           aria-describedby={described || undefined}
+          onFocus={onFocus}
+          onBlur={(e) => {
+            fieldProps.onBlur();
+            onBlur?.();
+          }}
           onChange={(e) => {
             if (typeof onChange === "function") {
               onChange(e.target.value);
             }
           }}
-          {...fieldProps}
-          className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition duration-150 ring-neutral-900/10 focus:ring-3 disabled:opacity-50 ${
+          aria-invalid={fieldProps["aria-invalid"]}
+          className={`${defaultInputBase} ${
             rightElement ? "pr-16" : "pr-9"
-          } ${
-            invalid
-              ? "border-red-500 ring-red-500/10 focus:border-red-500 focus:ring-red-500/20"
-              : "border-neutral-200 focus:border-neutral-900"
-          }`}
+          } ${stateClass} ${inputClassName}`}
         />
 
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
@@ -239,7 +267,7 @@ export function InlineValidation({
               width="14"
               height="14"
               fill="none"
-              className="col-start-1 row-start-1 text-emerald-600"
+              className={`col-start-1 row-start-1 ${isDark ? "text-amber-400" : "text-emerald-600"}`}
               initial={false}
               animate={{ opacity: valid ? 1 : 0, scale: valid ? 1 : 0.7 }}
               transition={fade}
@@ -257,7 +285,7 @@ export function InlineValidation({
               width="14"
               height="14"
               fill="none"
-              className="col-start-1 row-start-1 text-red-500"
+              className={`col-start-1 row-start-1 ${isDark ? "text-red-400" : "text-red-500"}`}
               initial={false}
               animate={{ opacity: invalid ? 1 : 0, scale: invalid ? 1 : 0.7 }}
               transition={fade}
@@ -274,7 +302,7 @@ export function InlineValidation({
           <motion.p
             aria-hidden
             style={clamp}
-            className="col-start-1 row-start-1 text-xs text-neutral-500"
+            className={`col-start-1 row-start-1 text-xs ${isDark ? "text-neutral-400 font-mono" : "text-neutral-500"}`}
             initial={false}
             animate={{ opacity: invalid ? 0 : 1, y: invalid ? 3 : 0 }}
             transition={fade}
@@ -286,7 +314,7 @@ export function InlineValidation({
         <motion.p
           aria-hidden
           style={clamp}
-          className="col-start-1 row-start-1 text-xs text-red-600"
+          className={`col-start-1 row-start-1 text-xs ${isDark ? "text-red-400 font-mono text-[11px]" : "text-red-600"}`}
           initial={false}
           animate={{ opacity: invalid ? 1 : 0, y: invalid ? 0 : -3 }}
           transition={fade}

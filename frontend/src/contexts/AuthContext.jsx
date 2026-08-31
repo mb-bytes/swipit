@@ -87,9 +87,21 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (credentials) => {
-        const { data } = await api.post("/api/user/login", credentials);
-        setAccessToken(data.access_token);
-        setUser(data.user);
+        try {
+            const { data } = await api.post("/api/user/login", credentials);
+            setAccessToken(data.access_token);
+            setUser(data.user);
+            return { success: true, data };
+        } catch (error) {
+            const detail = error.response?.data?.detail;
+            const errorMsg = typeof detail === 'string'
+                ? detail
+                : (Array.isArray(detail) ? detail[0]?.msg : null)
+                || error.response?.data?.message
+                || error.response?.data?.error
+                || 'Invalid credentials. Please check your username and password.';
+            return { success: false, error: errorMsg };
+        }
     };
 
     const logout = async () => {

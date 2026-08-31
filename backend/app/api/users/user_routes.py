@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .user_schemas import (
+    BankRequestSchema,
     PasswordResetEmailSchema,
     PasswordResetSchema,
     UserCreateSchema,
@@ -90,3 +91,12 @@ async def reset_password(
     reset_pswd = await user_service.reset_password(db, user_email, new_pswd)
 
     return reset_pswd
+
+@user_router.post("/bank-request")
+async def new_bank_request(request_data: BankRequestSchema):
+    new_request = await user_service.new_bank_request(
+        bank_name=request_data.bank_name,
+        requestor=request_data.email or "Anonymous"
+    )
+    return new_request
+

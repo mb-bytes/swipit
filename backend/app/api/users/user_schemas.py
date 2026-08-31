@@ -46,3 +46,8 @@ class PasswordResetSchema(BaseModel):
             raise ValueError("Password must contain at least one letter and one number")
         return v
 
+class BankRequestSchema(BaseModel):
+    bank_name: str
+    email: str | None = None
+
+

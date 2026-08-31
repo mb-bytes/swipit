@@ -128,7 +128,20 @@ class UserService:
         if reset_password:
             return JSONResponse(content={"message": "Password has been reset successfully"}, status_code=status.HTTP_200_OK)
         return JSONResponse(content={"message": "Error while trying to reset the password!. Please try again"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+    async def new_bank_request(self, bank_name: str, requestor: str, email: str = "atique.sh2@gmail.com"):
+        html_msg = f""" 
+        <h2> Request for new bank parser </h2>
+        <p> New request for {bank_name} from {requestor} </p> 
+        """
+        try:
+            send_mail.delay(email, "New bank request from SwipIt", html_msg)
+            return JSONResponse(content={"message": "Request for new bank sent successfully"}, status_code=status.HTTP_200_OK)
+        except Exception as e:
+            logging.exception(e)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An error occurred while sending the request")
+
+     
     async def update_user(self, db: AsyncSession,new_detail:dict, username: str):
         user = await self.get_user_by_username(db, username)
         for key, value in new_detail.items():
