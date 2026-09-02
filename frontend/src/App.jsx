@@ -1,6 +1,5 @@
-import React from "react";
-import { sileo, Toaster } from "sileo";
-import AppRoutes from "./Routes";
+import { Toaster } from "sileo";
+import AppRoutes from "./routes/routes";
 
 export function App() {
   return (
@@ -8,9 +7,13 @@ export function App() {
       <Toaster
         position="top-center"
         options={{
-          fill: "#000000",
-          styles: { description: "text-white/75 text-center!" },
-        }} />
+          fill: "#111215",
+          styles: {
+            title: "font-medium text-zinc-100",
+            description: "text-zinc-400 text-sm text-center!",
+          },
+        }}
+      />
       <AppRoutes />
     </>
   );

@@ -82,13 +82,13 @@ class UserService:
                     }
                 )
                 response.set_cookie(
-                    key=settings.JWT_SECRET,
+                    key="refresh_token",
                     value=refresh_token,
                     httponly=True,
                     secure=False,        
                     samesite="lax",     
                     max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
-                    path="/api/user",   
+                    path="/",   
                 )
 
                 return response
@@ -150,11 +150,18 @@ class UserService:
         return user
 
     async def add_jti_to_blocklist(self, jti: str):
-        await redis.set(name=jti, value="", ex=settings.JTI_EXPIRY)
+        try:
+            await redis.set(name=jti, value="", ex=settings.JTI_EXPIRY)
+        except Exception as e:
+            logging.warning(f"Redis unavailable, could not blocklist JTI: {e}")
 
     async def token_in_blocklist(self, jti: str) -> bool:
-        jti_val = await redis.get(jti)
-        return jti_val is not None
+        try:
+            jti_val = await redis.get(jti)
+            return jti_val is not None
+        except Exception as e:
+            logging.warning(f"Redis unavailable, assuming token is not in blocklist: {e}")
+            return False
 
     
 

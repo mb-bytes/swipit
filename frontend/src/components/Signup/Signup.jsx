@@ -28,20 +28,23 @@ export function Signup() {
   const validateUsername = (val) => {
     if (!val || !val.trim()) return "Username is required";
     if (val.trim().length < 3) return "Must be at least 3 characters";
-    if (!/^[a-zA-Z0-9_]+$/.test(val.trim())) return "Letters, numbers & underscores only";
+    if (!/^[a-zA-Z0-9_]+$/.test(val.trim()))
+      return "Letters, numbers & underscores only";
     return null;
   };
 
   const validateEmail = (val) => {
     if (!val || !val.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())) return "Enter a valid email address";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()))
+      return "Enter a valid email address";
     return null;
   };
 
   const validatePassword = (val) => {
     if (!val) return "Password is required";
     if (val.length < 8) return "Must be at least 8 characters";
-    if (!/[A-Za-z]/.test(val) || !/\d/.test(val)) return "Must include at least 1 letter and 1 number";
+    if (!/[A-Za-z]/.test(val) || !/\d/.test(val))
+      return "Must include at least 1 letter and 1 number";
     return null;
   };
 
@@ -74,10 +77,11 @@ export function Signup() {
       if (res.success) {
         sileo.success({
           title: "Account created!",
-          description: res.message || "Your account has been created successfully.",
+          description:
+            res.message || "Your account has been created successfully.",
         });
         setTimeout(() => {
-          navigate("/signin");
+          navigate("/login");
         }, 1500);
       } else {
         sileo.error({
@@ -97,16 +101,16 @@ export function Signup() {
 
   return (
     <div className="flex h-screen max-h-screen w-full bg-[#f2eee5] text-[#111215] selection:bg-[#111215] selection:text-[#f2eee5] overflow-hidden paper-grain">
-      {/* Left Column: Paper Texture Form */}
       <div className="relative flex h-full w-full flex-col justify-between px-6 py-8 sm:px-10 lg:w-1/2 overflow-y-auto z-10">
-        {/* Brand Header */}
         <div className="w-full max-w-md mx-auto">
-          <Link to="/" className="inline-block transition-opacity hover:opacity-85">
+          <Link
+            to="/"
+            className="inline-block transition-opacity hover:opacity-85"
+          >
             <BrandLogo size="sm" />
           </Link>
         </div>
 
-        {/* Center Form */}
         <div className="w-full max-w-md mx-auto my-auto py-6">
           <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111215]">
@@ -170,7 +174,9 @@ export function Signup() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-neutral-400 hover:text-neutral-700 focus:outline-none cursor-pointer p-0.5"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -185,12 +191,17 @@ export function Signup() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-[#111215] py-2.5 text-sm font-medium text-[#f2eee5] shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full mt-2.5 flex items-center justify-center gap-2 rounded-xl bg-[#111215] py-2.5 text-sm font-medium text-[#f2eee5] shadow-sm transition hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <span className="inline-flex items-center gap-2">
                   <span>Creating account</span>
-                  <Loader variant="dots" size={16} speed={1} className="text-white" />
+                  <Loader
+                    variant="dots"
+                    size={16}
+                    speed={1}
+                    className="text-white"
+                  />
                 </span>
               ) : (
                 "Create account"
@@ -232,7 +243,7 @@ export function Signup() {
           <div className="mt-5 text-center text-xs text-neutral-600">
             Already have an account?{" "}
             <Link
-              to="/signin"
+              to="/login"
               className="font-semibold text-[#111215] hover:underline underline-offset-2"
             >
               Sign in
@@ -240,28 +251,23 @@ export function Signup() {
           </div>
         </div>
 
-        {/* Mobile-only terms note */}
         <div className="w-full max-w-md mx-auto text-center text-[11px] text-neutral-500 block lg:hidden pb-2">
           By signing up, you agree to our{" "}
-          <span className="underline underline-offset-2">Terms of Service</span> and{" "}
+          <span className="underline underline-offset-2">Terms of Service</span>{" "}
+          and{" "}
           <span className="underline underline-offset-2">Privacy Policy</span>.
         </div>
       </div>
 
-      {/* Right Column: Dark Showcase with Seamless Blend */}
       <div className="relative hidden bg-[#111215] lg:flex lg:h-full lg:w-1/2 lg:flex-col lg:justify-between lg:px-10 lg:py-8 overflow-hidden border-l border-neutral-800/80 shadow-[-20px_0_50px_rgba(0,0,0,0.15)]">
-        {/* Seamless Blending Gradient from left paper edge into dark */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-linear-to-r from-black/25 via-black/10 to-transparent z-10" />
 
-        {/* Ambient Radial Lighting Glows */}
         <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_70%)]" />
 
-        {/* Top Spacer for perfect centering */}
         <div className="w-full h-8" />
 
-        {/* Credit Card with interactive preview */}
         <div className="relative z-10 flex flex-col items-center justify-center my-auto">
           <div className="transition-transform duration-500 hover:scale-105">
             <CreditCard
@@ -280,7 +286,6 @@ export function Signup() {
           </p>
         </div>
 
-        {/* Terms of Service & Privacy Policy */}
         <div className="relative z-10 w-full max-w-sm mx-auto text-center text-xs text-neutral-500">
           By signing up, you agree to our{" "}
           <span className="text-neutral-400 hover:text-neutral-200 underline underline-offset-2 cursor-pointer transition-colors">

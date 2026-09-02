@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer, get_curr_user
+from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer, OptionalAccessTokenBearer, get_curr_user
 from app.core.config import settings
 from app.core.security import decode_url_safe_token, generate_jwt_token, verify_pswd
 from app.db.session import get_db
@@ -14,6 +14,7 @@ from .user_schemas import (
     PasswordResetSchema,
     UserCreateSchema,
     UserLoginSchema,
+    UserSchema,
 )
 from .user_service import user_service
 
@@ -37,16 +38,18 @@ async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
 
     return login_user
 
-@user_router.get("/me")
+@user_router.get("/me", response_model=UserSchema)
 async def get_me(curr_user=Depends(get_curr_user)):
     return curr_user
 
 @user_router.get("/logout")
-async def logout(token_data = Depends(access_token)):
-    token = token_data['jti']
-    await user_service.add_jti_to_blocklist(token)
+async def logout(token_data = Depends(OptionalAccessTokenBearer())):
+    if token_data and isinstance(token_data, dict) and "jti" in token_data:
+        await user_service.add_jti_to_blocklist(token_data['jti'])
 
-    return JSONResponse(content={"message": "Logged out successfully"})
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie(key="refresh_token", path="/")
+    return response
     
 @user_router.get("/refresh-token")
 def get_new_access_token(token_data: dict = Depends(refresh_token)):
@@ -57,7 +60,11 @@ def get_new_access_token(token_data: dict = Depends(refresh_token)):
             user_data=token_data["user"], refresh=False
         )
         return JSONResponse(
-            content={"access_token": new_access_token}, status_code=status.HTTP_200_OK
+            content={
+                "access_token": new_access_token,
+                "user": token_data.get("user")
+            },
+            status_code=status.HTTP_200_OK
         )
 
     raise HTTPException(

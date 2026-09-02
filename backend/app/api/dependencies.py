@@ -24,7 +24,11 @@ class TokenBearer(HTTPBearer):
                 token = auth_header
 
         if not token:
-            token = request.cookies.get("access_token") or request.cookies.get("token")
+            token = (
+                request.cookies.get("refresh_token")
+                or request.cookies.get("access_token")
+                or request.cookies.get("token")
+            )
 
         if not token:
             token = request.query_params.get("token")
@@ -59,6 +63,16 @@ class AccessTokenBearer(TokenBearer):
             raise HTTPException(status_code= status.HTTP_403_FORBIDDEN, detail="Please provide an access token")
 
         return token_data
+
+class OptionalAccessTokenBearer(AccessTokenBearer):
+    def __init__(self):
+        super().__init__(auto_error=False)
+
+    async def __call__(self, request: Request):
+        try:
+            return await super().__call__(request)
+        except Exception:
+            return None
 
 class RefreshTokenBearer(TokenBearer):
     def __init__(self, auto_error=True):
