@@ -6,6 +6,7 @@ import re
 
 class UserSchema(BaseModel):
     user_id: uuid.UUID
+    name: str | None = None
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr
     created_at: datetime = Field(default_factory=datetime.now)
@@ -14,6 +15,7 @@ class UserSchema(BaseModel):
         from_attributes = True
 
 class UserCreateSchema(BaseModel):
+    name: str
     username: str = Field(min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(min_length=8)

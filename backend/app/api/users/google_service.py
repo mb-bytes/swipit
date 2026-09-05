@@ -22,12 +22,12 @@ SCOPES = [
 ]
 
 class GoogleService:
-    def build_flow(self, state: str | None = None) -> Flow:
+    def build_flow(self, state: str | None = None, scopes: list[str] | None = None) -> Flow:
         flow = Flow.from_client_secrets_file(
             settings.GOOGLE_CLIENT_SECRETS_FILE,
-            scopes=SCOPES,
+            scopes=scopes or SCOPES,
             state=state,
-            )
+        )
         flow.redirect_uri = settings.GOOGLE_REDIRECT_URI
         return flow
 
@@ -60,6 +60,25 @@ class GoogleService:
         await db.commit()
         await db.refresh(account)
         return account
+
+    async def get_connected_account(self, db: AsyncSession, user_id: uuid.UUID | str) -> ConnectedAccount | None:
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
+        result = await db.execute(
+            select(ConnectedAccount).where(
+                ConnectedAccount.user_id == user_id,
+                ConnectedAccount.provider == "google",
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def delete_connected_account(self, db: AsyncSession, user_id: uuid.UUID | str) -> bool:
+        account = await self.get_connected_account(db, user_id)
+        if account:
+            await db.delete(account)
+            await db.commit()
+            return True
+        return False
 
     async def get_valid_credentials(self, db: AsyncSession, user_id: uuid.UUID | str) -> Credentials:
         if isinstance(user_id, str):

@@ -9,7 +9,7 @@ export function App() {
         options={{
           fill: "#111215",
           styles: {
-            title: "font-medium text-zinc-100",
+            title: "font-bold text-white-200",
             description: "text-zinc-400 text-sm text-center!",
           },
         }}

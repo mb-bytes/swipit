@@ -26,8 +26,8 @@ class SpendTracker(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"), nullable=False)
-    card_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("cards.card_id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    card_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("cards.card_id", ondelete="CASCADE"), nullable=False)
     reward_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reward_cards.id"), nullable=False)
     merchant: Mapped[str] = mapped_column(String)
     category: Mapped[str] = mapped_column(String, nullable=False)

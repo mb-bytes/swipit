@@ -13,7 +13,7 @@ export function LandingContainer() {
   return (
     <SmoothScroll root={true} lerp={0.12} duration={0.7}>
       <ScrollProgress height={3} position="top" />
-      <div className="min-h-screen w-full bg-[#f2eee5] text-[#111215] overflow-x-hidden flex flex-col paper-grain">
+      <div className="min-h-screen w-full bg-[#f8f9fb] text-[#0b0f19] overflow-x-hidden flex flex-col paper-grain">
         <NavbarDemo />
         <main className="flex-grow">
           <Hero />

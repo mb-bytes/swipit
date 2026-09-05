@@ -1,0 +1,41 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sphere1" cx="38%" cy="32%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="55%" stop-color="#d0d0d0" stop-opacity="0.85" />
+      <stop offset="85%" stop-color="#808080" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="sphere2" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#cccccc" stop-opacity="0.8" />
+      <stop offset="80%" stop-color="#777777" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="sphere3" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="60%" stop-color="#b8b8b8" stop-opacity="0.75" />
+      <stop offset="90%" stop-color="#666666" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="470" cy="260" r="115" fill="url(#sphere1)" />
+  <circle cx="360" cy="330" r="125" fill="url(#sphere2)" />
+  <circle cx="500" cy="380" r="110" fill="url(#sphere1)" />
+  <circle cx="340" cy="230" r="95" fill="url(#sphere3)" />
+  <circle cx="580" cy="310" r="90" fill="url(#sphere2)" />
+
+  <circle cx="660" cy="130" r="70" fill="url(#sphere1)" />
+  <circle cx="190" cy="240" r="55" fill="url(#sphere2)" />
+  <circle cx="680" cy="530" r="42" fill="url(#sphere3)" />
+
+  <circle cx="270" cy="160" r="4" fill="#ffffff" fill-opacity="0.9" />
+  <circle cx="285" cy="175" r="3" fill="#ffffff" fill-opacity="0.7" />
+  <circle cx="610" cy="210" r="3.5" fill="#ffffff" fill-opacity="0.8" />
+  <circle cx="635" cy="225" r="3" fill="#ffffff" fill-opacity="0.6" />
+  <circle cx="220" cy="310" r="3" fill="#ffffff" fill-opacity="0.6" />
+  <circle cx="240" cy="330" r="4" fill="#ffffff" fill-opacity="0.75" />
+  <circle cx="610" cy="450" r="3" fill="#ffffff" fill-opacity="0.6" />
+  <circle cx="630" cy="470" r="3.5" fill="#ffffff" fill-opacity="0.7" />
+</svg>

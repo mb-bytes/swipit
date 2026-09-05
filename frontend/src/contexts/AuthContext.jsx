@@ -98,6 +98,10 @@ export function AuthProvider({ children }) {
         email,
         password,
       });
+      if (data?.access_token) {
+        accessTokenRef.current = data.access_token;
+        setAccessToken(data.access_token);
+      }
       if (data?.user) {
         setUser(data.user);
       }
@@ -139,6 +143,23 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWithToken = async (token) => {
+    try {
+      accessTokenRef.current = token;
+      setAccessToken(token);
+      const me = await api.get("/api/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(me.data);
+      return { success: true, user: me.data };
+    } catch (error) {
+      accessTokenRef.current = null;
+      setAccessToken(null);
+      setUser(null);
+      return { success: false, error: "Failed to authenticate with token" };
+    }
+  };
+
   const isAuthenticated = Boolean(user && accessToken);
 
   const logout = async () => {
@@ -160,6 +181,7 @@ export function AuthProvider({ children }) {
         accessToken,
         signup,
         login,
+        loginWithToken,
         isAuthenticated,
         logout,
         loading,

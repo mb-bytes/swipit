@@ -32,7 +32,7 @@ export const Navbar = ({ children, className }) => {
       className={cn(
         "fixed inset-x-0 top-0 z-50 w-full transition-all duration-200",
         scrolled
-          ? "py-3 bg-[#f2eee5]/92 backdrop-blur-md border-b border-neutral-300/60 shadow-xs"
+          ? "py-3 bg-[#f8f9fb]/90 backdrop-blur-md border-b border-neutral-200/80 shadow-xs"
           : "py-5 bg-transparent",
         className
       )}

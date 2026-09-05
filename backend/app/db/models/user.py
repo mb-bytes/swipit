@@ -8,6 +8,7 @@ from typing import List
 class UserModel(Base):
     __tablename__ = "users"
     user_id: Mapped[uuid.UUID] = mapped_column(primary_key= True, default=uuid.uuid4)
+    name: Mapped[str | None] = mapped_column(String, nullable=True)
     username: Mapped[str] = mapped_column(String(20), nullable= False, unique=True)
     email: Mapped[str] = mapped_column(String, unique = True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

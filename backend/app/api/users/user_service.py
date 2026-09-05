@@ -11,6 +11,8 @@ from app.core.security import gen_pswd_hash, generate_jwt_token, verify_pswd, cr
 from app.celery_task import send_mail
 from datetime import timedelta
 import logging
+import secrets
+import re
 
 class UserService:
     async def create_user(self, db: AsyncSession, user_details: UserCreateSchema) -> UserModel:
@@ -46,16 +48,79 @@ class UserService:
 
                 send_mail.delay(user_email, "Welcome to SwipIt", html_msg)
 
-                return JSONResponse(
+                access_token, refresh_token = self.create_session_tokens(new_user)
+
+                response = JSONResponse(
                     content={
                         "message": "New Account created successfully",
-                        "user": {"username": new_user.username, "email": new_user.email, "user_id": str(new_user.user_id)}
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {"username": new_user.username, "email": new_user.email, "user_id": str(new_user.user_id), "name": new_user.name}
                     },
                     status_code=status.HTTP_201_CREATED
                 )
+                response.set_cookie(
+                    key="refresh_token",
+                    value=refresh_token,
+                    httponly=True,
+                    secure=False,
+                    samesite="lax",
+                    max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
+                    path="/",
+                )
+                return response
         except Exception as e:
             logging.exception(e)
             return JSONResponse(content={"message": "Error occurred while creating an account!"}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def create_session_tokens(self, user: UserModel) -> tuple[str, str]:
+        access_token = generate_jwt_token(
+            user_data={"username": user.username, "user_uid": str(user.user_id), "name": user.name}
+        )
+        refresh_token = generate_jwt_token(
+            user_data={"username": user.username, "user_uid": str(user.user_id), "name": user.name},
+            expiry=timedelta(days=settings.REFRESH_TOKEN_EXPIRY),
+            refresh=True,
+        )
+        return access_token, refresh_token
+
+    async def get_or_create_google_user(self, db: AsyncSession, email: str, name: str | None = None) -> UserModel:
+        existing_user = await self.get_user_by_email(db, email)
+        if existing_user:
+            return existing_user
+
+        base_username = email.split("@")[0].lower()
+        base_username = re.sub(r"[^a-zA-Z0-9_]", "", base_username)[:14]
+        if not base_username or len(base_username) < 3:
+            base_username = f"user_{secrets.token_hex(3)}"
+
+        unique_username = base_username
+        counter = 1
+        while await self.get_user_by_username(db, unique_username):
+            suffix = f"_{counter}"
+            unique_username = f"{base_username[:20 - len(suffix)]}{suffix}"
+            counter += 1
+
+        random_password = secrets.token_urlsafe(32)
+        hashed_password = gen_pswd_hash(random_password)
+
+        new_user = UserModel(
+            name=name,
+            username=unique_username,
+            email=email,
+            password_hash=hashed_password,
+        )
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+
+        html_msg = """ 
+        <h2> Hey! Welcome to SwipIt </h2>
+        <p> You have successfully signed in with Google to SwipIt </p>
+        """
+        send_mail.delay(email, "Welcome to SwipIt", html_msg)
+
+        return new_user
 
     async def login_user(self, db: AsyncSession, username: str, password: str):
         user = await self.get_user_by_username(db, username)
@@ -65,10 +130,10 @@ class UserService:
 
             if password_valid:
                 access_token = generate_jwt_token(
-                    user_data={"username": user.username, "user_uid": str(user.user_id)}
+                    user_data={"username": user.username, "user_uid": str(user.user_id), "name": user.name}
                 )
                 refresh_token = generate_jwt_token(
-                    user_data={"username": user.username, "user_uid": str(user.user_id)},
+                    user_data={"username": user.username, "user_uid": str(user.user_id), "name": user.name},
                     expiry=timedelta(days=settings.REFRESH_TOKEN_EXPIRY),
                     refresh=True,
                 )
@@ -78,7 +143,7 @@ class UserService:
                         "message": "Welcome!",
                         "access_token": access_token,
                         "refresh_token": refresh_token,
-                        "user": {"username": user.username, "user_uid": str(user.user_id)},
+                        "user": {"username": user.username, "user_uid": str(user.user_id), "name": user.name},
                     }
                 )
                 response.set_cookie(

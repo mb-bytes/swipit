@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     JTI_EXPIRY: int = 3600
     REFRESH_TOKEN_EXPIRY: int
     OPENAI_API_KEY: str
+    FRONTEND_URL: str = "http://localhost:5173"
     model_config = SettingsConfigDict(
         env_file = env_path, extra = "ignore"
     )

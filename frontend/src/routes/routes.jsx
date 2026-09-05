@@ -4,6 +4,7 @@ import { ProtectedRoute, PublicRoute } from "./ProtectedRoutes";
 import LandingContainer from "@/components/Landing/LandingContainer";
 import SignupContainer from "@/components/Signup/Signup.jsx";
 import LoginContainer from "@/components/Login/Login.jsx";
+import AuthCallback from "@/components/Auth/AuthCallback.jsx";
 import DashboardContainer from "@/components/Dashboard/DashboardContainer.jsx";
 import Home from "@/components/Dashboard/Home/Home.jsx";
 import NotFoundPage from "@/components/NotFound/NotFoundPage.jsx";
@@ -28,6 +29,7 @@ export function AppRoutes() {
           </PublicRoute>
         }
       />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route
         path="/dashboard"
         element={

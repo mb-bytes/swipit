@@ -3,85 +3,80 @@ import { cx, sortCx } from "@/lib/cx";
 import { PaypassIcon } from "./icons";
 
 const styles = sortCx({
-    // Normal
     transparent: {
-        root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "transparent-gradient": {
-        root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "brand-dark": {
-        root: "bg-linear-to-tr from-brand-900 to-brand-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-tr from-brand-900 to-brand-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "brand-light": {
-        root: "bg-brand-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset",
+        root: "bg-brand-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset text-neutral-800",
         company: "text-neutral-700",
         footerText: "text-neutral-700",
         paypassIcon: "text-neutral-600",
     },
     "gray-dark": {
-        root: "bg-linear-to-tr from-neutral-900 via-neutral-800 to-neutral-700 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-tr from-neutral-950 via-neutral-900 to-neutral-800 text-white before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/20 before:ring-inset shadow-2xl",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "gray-light": {
-        root: "bg-linear-to-br from-white via-neutral-100 to-neutral-200 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset shadow-xl",
+        root: "bg-linear-to-br from-white via-neutral-100 to-neutral-200 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-black/10 before:ring-inset shadow-xl text-neutral-900",
         company: "text-neutral-900",
         footerText: "text-neutral-800",
         paypassIcon: "text-neutral-600",
     },
-
-    // Strip
     "transparent-strip": {
-        root: "bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "gray-strip": {
-        root: "bg-neutral-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-neutral-100 before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-neutral-800",
         company: "text-neutral-700",
         footerText: "text-white",
         paypassIcon: "text-neutral-400",
     },
     "gradient-strip": {
-        root: "bg-linear-to-b from-[#A5C0EE] to-[#FBC5EC] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-b from-[#A5C0EE] to-[#FBC5EC] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "salmon-strip": {
-        root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-neutral-800",
         company: "text-neutral-700",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
-
-    // Vertical strip
     "gray-strip-vertical": {
-        root: "bg-linear-to-br from-white/30 to-transparent before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-br from-white/30 to-transparent before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-neutral-400",
     },
     "gradient-strip-vertical": {
-        root: "bg-linear-to-b from-[#FBC2EB] to-[#A18CD1] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-linear-to-b from-[#FBC2EB] to-[#A18CD1] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
     },
     "salmon-strip-vertical": {
-        root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
+        root: "bg-[#F4D9D0] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset text-white",
         company: "text-white",
         footerText: "text-white",
         paypassIcon: "text-white",
@@ -102,35 +97,35 @@ interface CreditCardProps {
     cardTier?: string;
     perk?: string;
     type?: CreditCardType;
-    className?: string;
     width?: number;
+    className?: string;
 }
 
-const calculateScale = (desiredWidth: number, originalWidth: number, originalHeight: number) => {
-    const scale = desiredWidth / originalWidth;
-    const scaledWidth = originalWidth * scale;
-    const scaledHeight = originalHeight * scale;
+const ORIGINAL_WIDTH = 300;
+const ORIGINAL_HEIGHT = 190;
 
+function calculateScale(width: number, originalWidth: number, originalHeight: number) {
+    const scale = width / originalWidth;
     return {
-        scale: scale.toFixed(4),
-        scaledWidth: scaledWidth.toFixed(2),
-        scaledHeight: scaledHeight.toFixed(2),
+        scale,
+        scaledWidth: width,
+        scaledHeight: originalHeight * scale,
     };
-};
+}
 
 export const CreditCard = ({
-    company = "SwipIt",
-    cardNumber = "8492  ••••  ••••  2026",
-    cardHolder = "OLIVIA RHYE",
-    cardExpiration = "∞ / ∞",
-    cardTier = "VIP PASS",
-    perk = "10X REWARDS",
-    type = "gray-light",
-    className,
+    company = "Company",
+    cardNumber = "•••• •••• •••• 1234",
+    cardHolder = "Cardholder",
+    cardExpiration = "••/••",
+    cardTier = "Tier",
+    perk = "Perk",
+    type = "gray-dark",
     width,
+    className,
 }: CreditCardProps) => {
-    const originalWidth = 320;
-    const originalHeight = 196;
+    const originalWidth = ORIGINAL_WIDTH;
+    const originalHeight = ORIGINAL_HEIGHT;
 
     const { scale, scaledWidth, scaledHeight } = useMemo(() => {
         if (!width)
@@ -142,6 +137,8 @@ export const CreditCard = ({
 
         return calculateScale(width, originalWidth, originalHeight);
     }, [width]);
+
+    const isDarkType = type === "gray-dark" || type === "brand-dark" || type === "transparent" || type === "transparent-gradient";
 
     return (
         <div
@@ -159,15 +156,12 @@ export const CreditCard = ({
                 }}
                 className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4.5 shadow-2xl transition-all duration-300", styles[type].root)}
             >
-                {/* Horizontal strip */}
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2 bg-neutral-800"></div>
                 )}
-                {/* Vertical stripe */}
                 {VERTICAL_STRIP_TYPES.includes(type as (typeof VERTICAL_STRIP_TYPES)[number]) && (
                     <div className="pointer-events-none absolute inset-y-0 right-22 left-0 z-0 bg-neutral-800"></div>
                 )}
-                {/* Gradient diffusor */}
                 {type === "transparent-gradient" && (
                     <div className="absolute -top-4 -left-4 grid grid-cols-2 blur-3xl">
                         <div className="size-20 rounded-tl-full bg-pink-500 opacity-30 mix-blend-normal" />
@@ -177,13 +171,12 @@ export const CreditCard = ({
                     </div>
                 )}
 
-                {/* Top Row: Company & Pass type + Paypass */}
                 <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className={cx("text-sm font-black tracking-tight", styles[type].company)}>
                             {company}
                         </span>
-                        <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/10 font-bold opacity-75">
+                        <span className={cx("text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded font-bold", isDarkType ? "bg-white/15 text-white/90" : "bg-black/10 text-neutral-800")}>
                             {cardTier}
                         </span>
                     </div>
@@ -191,9 +184,7 @@ export const CreditCard = ({
                     <PaypassIcon className={cx("w-4 h-4", styles[type].paypassIcon)} />
                 </div>
 
-                {/* Middle Row: EMV Chip & Playful Perk */}
                 <div className="relative flex items-center justify-between my-1">
-                    {/* Metallic EMV Chip */}
                     <div className="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-100 to-amber-400 border border-amber-500/50 shadow-inner relative overflow-hidden flex items-center justify-center">
                         <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
                             <div className="border-r border-b border-amber-600/40" />
@@ -204,20 +195,18 @@ export const CreditCard = ({
                         <div className="w-3.5 h-3.5 rounded-full border border-amber-600/50 relative z-10" />
                     </div>
 
-                    <div className="text-[10px] font-mono tracking-widest font-semibold uppercase opacity-60">
+                    <div className={cx("text-[10px] font-mono tracking-widest font-semibold uppercase", isDarkType ? "text-neutral-300" : "text-neutral-700")}>
                         {perk}
                     </div>
                 </div>
 
-                {/* Card Number */}
-                <div className={cx("relative font-mono text-[13px] tracking-[0.18em] font-semibold opacity-85", styles[type].footerText)}>
+                <div className={cx("relative font-mono text-[13px] tracking-[0.18em] font-semibold", styles[type].footerText)}>
                     {cardNumber}
                 </div>
 
-                {/* Bottom Row: Cardholder, Expiration & CVV */}
-                <div className="relative flex items-end justify-between pt-1 border-t border-black/5">
+                <div className={cx("relative flex items-end justify-between pt-1 border-t", isDarkType ? "border-white/10" : "border-black/5")}>
                     <div className="flex min-w-0 flex-col">
-                        <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                        <span className={cx("text-[8px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
                             Cardholder
                         </span>
                         <p
@@ -230,7 +219,7 @@ export const CreditCard = ({
 
                     <div className="flex items-center gap-3 text-right">
                         <div className="flex flex-col items-end">
-                            <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                            <span className={cx("text-[8px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
                                 Valid Thru
                             </span>
                             <span className={cx("text-[11px] font-mono font-bold leading-tight mt-0.5", styles[type].footerText)}>
@@ -239,10 +228,10 @@ export const CreditCard = ({
                         </div>
 
                         <div className="flex flex-col items-end">
-                            <span className="text-[8px] font-mono tracking-wider uppercase opacity-55 leading-none">
+                            <span className={cx("text-[8px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
                                 CVV
                             </span>
-                            <span className="text-[11px] font-mono font-bold leading-tight text-amber-600 mt-0.5">
+                            <span className="text-[11px] font-mono font-bold leading-tight text-amber-400 mt-0.5">
                                 777
                             </span>
                         </div>
@@ -252,4 +241,3 @@ export const CreditCard = ({
         </div>
     );
 };
-
