@@ -9,6 +9,7 @@ import {
   EnvelopeSimple,
 } from "@phosphor-icons/react";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import { Dropdown } from "@/components/ui/dropdown";
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -188,19 +189,22 @@ export function Contact() {
                       <label className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-700">
                         Topic
                       </label>
-                      <select
+                      <Dropdown
+                        className="w-full"
+                        triggerClassName="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:ring-2 focus:ring-[#d9480f]/40 transition-all"
+                        menuClassName="bg-white border border-neutral-200 text-neutral-800 shadow-xl"
                         value={formData.topic}
-                        onChange={(e) =>
-                          setFormData({ ...formData, topic: e.target.value })
+                        onChange={(val) =>
+                          setFormData({ ...formData, topic: val })
                         }
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40 transition-all"
-                      >
-                        <option value="bank_request">Request Bank Alert Parser</option>
-                        <option value="feature">Suggest an AI Feature</option>
-                        <option value="bug">Report Parsing Issue</option>
-                        <option value="collab">Partnership Inquiry</option>
-                        <option value="other">General Feedback</option>
-                      </select>
+                        items={[
+                          { value: "bank_request", label: "Request Bank Alert Parser" },
+                          { value: "feature", label: "Suggest an AI Feature" },
+                          { value: "bug", label: "Report Parsing Issue" },
+                          { value: "collab", label: "Partnership Inquiry" },
+                          { value: "other", label: "General Feedback" },
+                        ]}
+                      />
                     </div>
 
                     <div className="space-y-1">

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { cx, sortCx } from "@/lib/cx";
 import { PaypassIcon } from "./icons";
+import { getBankLogo } from "@/lib/bank-logos.js";
 
 const styles = sortCx({
     transparent: {
@@ -91,6 +92,7 @@ type CreditCardType = (typeof _NORMAL_TYPES)[number] | (typeof STRIP_TYPES)[numb
 
 interface CreditCardProps {
     company?: string;
+    logo?: string;
     cardNumber?: string;
     cardHolder?: string;
     cardExpiration?: string;
@@ -99,6 +101,7 @@ interface CreditCardProps {
     type?: CreditCardType;
     width?: number;
     className?: string;
+    showIcons?: boolean;
 }
 
 const ORIGINAL_WIDTH = 300;
@@ -115,14 +118,16 @@ function calculateScale(width: number, originalWidth: number, originalHeight: nu
 
 export const CreditCard = ({
     company = "Company",
+    logo,
     cardNumber = "•••• •••• •••• 1234",
     cardHolder = "Cardholder",
     cardExpiration = "••/••",
-    cardTier = "Tier",
-    perk = "Perk",
+    cardTier,
+    perk,
     type = "gray-dark",
     width,
     className,
+    showIcons = false,
 }: CreditCardProps) => {
     const originalWidth = ORIGINAL_WIDTH;
     const originalHeight = ORIGINAL_HEIGHT;
@@ -139,6 +144,7 @@ export const CreditCard = ({
     }, [width]);
 
     const isDarkType = type === "gray-dark" || type === "brand-dark" || type === "transparent" || type === "transparent-gradient";
+    const resolvedLogo = logo || getBankLogo(company);
 
     return (
         <div
@@ -172,16 +178,25 @@ export const CreditCard = ({
                 )}
 
                 <div className="relative flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className={cx("text-sm font-black tracking-tight", styles[type].company)}>
+                    <div className="flex items-center gap-2 min-w-0 pr-7">
+                        {resolvedLogo && (
+                            <img
+                                src={resolvedLogo}
+                                alt={company ? `${company} logo` : "Bank logo"}
+                                className="w-5 h-5 object-contain shrink-0 rounded-xs"
+                            />
+                        )}
+                        <span className={cx("text-sm font-black tracking-tight truncate", styles[type].company)} title={company}>
                             {company}
                         </span>
-                        <span className={cx("text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded font-bold", isDarkType ? "bg-white/15 text-white/90" : "bg-black/10 text-neutral-800")}>
-                            {cardTier}
-                        </span>
+                        {cardTier && (
+                            <span className={cx("text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded font-bold shrink-0", isDarkType ? "bg-white/15 text-white/90" : "bg-black/10 text-neutral-800")}>
+                                {cardTier}
+                            </span>
+                        )}
                     </div>
 
-                    <PaypassIcon className={cx("w-4 h-4", styles[type].paypassIcon)} />
+                    {showIcons && <PaypassIcon className={cx("w-4 h-4 shrink-0", styles[type].paypassIcon)} />}
                 </div>
 
                 <div className="relative flex items-center justify-between my-1">
@@ -195,9 +210,11 @@ export const CreditCard = ({
                         <div className="w-3.5 h-3.5 rounded-full border border-amber-600/50 relative z-10" />
                     </div>
 
-                    <div className={cx("text-[10px] font-mono tracking-widest font-semibold uppercase", isDarkType ? "text-neutral-300" : "text-neutral-700")}>
-                        {perk}
-                    </div>
+                    {perk && (
+                        <div className={cx("text-[10px] font-mono tracking-widest font-semibold uppercase", isDarkType ? "text-neutral-300" : "text-neutral-700")}>
+                            {perk}
+                        </div>
+                    )}
                 </div>
 
                 <div className={cx("relative font-mono text-[13px] tracking-[0.18em] font-semibold", styles[type].footerText)}>

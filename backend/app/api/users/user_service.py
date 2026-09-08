@@ -207,12 +207,21 @@ class UserService:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An error occurred while sending the request")
 
      
-    async def update_user(self, db: AsyncSession,new_detail:dict, username: str):
+    async def update_user(self, db: AsyncSession, new_detail: dict, username: str):
         user = await self.get_user_by_username(db, username)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="User not found"
+            )
+        protected_fields = {"user_id", "created_at"}
         for key, value in new_detail.items():
-            setattr(user, key, value)
+            if key not in protected_fields and hasattr(user, key):
+                setattr(user, key, value)
         await db.commit()
+        await db.refresh(user)
         return user
+
 
     async def add_jti_to_blocklist(self, jti: str):
         try:

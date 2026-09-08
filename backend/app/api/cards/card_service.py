@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.cards import CardModel, Transaction, CardProduct
 from app.api.merchants.categorize_service import categorize_service
+from fastapi import HTTPException, status
 import uuid
 
 
@@ -9,7 +10,6 @@ class CardService:
     async def get_card_by_last4(
         self, db: AsyncSession, user_id: uuid.UUID, card_last4: str
     ) -> CardModel | None:
-        """Find an existing card for this user by last4 digits."""
         result = await db.execute(
             select(CardModel).where(
                 CardModel.user_id == user_id,
@@ -51,6 +51,45 @@ class CardService:
             await db.flush()
         return card
 
+    async def remove_card(self, db: AsyncSession, card_id: uuid.UUID, user_id: uuid.UUID):
+        card_result = await db.execute(
+            select(CardModel).where(
+                CardModel.card_id == card_id,
+                CardModel.user_id == user_id,
+            )
+        )
+        card = card_result.scalars().first()
+        if card is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Card not found or does not belong to this user"
+            )
+        
+        await db.delete(card)
+        await db.commit()
+        return True
+
+    async def update_card(self, db: AsyncSession, card_id, user_id: uuid.UUID, new_detail: dict):
+        card_result = await db.execute(
+            select(CardModel).where(
+                CardModel.card_id == card_id, 
+                CardModel.user_id == user_id
+            )
+        )
+        card = card_result.scalars().first()
+        if card is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Card not found or does not belong to this user"
+            )
+        protected_fields = {"card_id", "user_id"}
+        for key, value in new_detail.items():
+            if key not in protected_fields and hasattr(card, key):
+                setattr(card, key, value)
+        await db.commit()
+        await db.refresh(card)
+        return card
+
     async def create_card_from_product(
         self,
         db: AsyncSession,
@@ -77,7 +116,6 @@ class CardService:
     async def save_transaction(
         self, db: AsyncSession, card_id: uuid.UUID, raw_email_id: str, parsed: dict
     ) -> Transaction | None:
-        """Save a transaction; returns None if raw_email_id already exists (dedup)."""
         existing = await db.execute(
             select(Transaction).where(Transaction.raw_email_id == raw_email_id)
         )

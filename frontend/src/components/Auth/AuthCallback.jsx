@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { sileo } from "sileo";
@@ -9,12 +9,16 @@ export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { loginWithToken } = useAuth();
+  const processedRef = useRef(false);
 
   useEffect(() => {
+    if (processedRef.current) return;
+
     const error = searchParams.get("error");
     const token = searchParams.get("token");
 
     if (error) {
+      processedRef.current = true;
       sileo.error({
         title: "Authentication Failed",
         description: error,
@@ -24,6 +28,7 @@ export default function AuthCallback() {
     }
 
     if (token) {
+      processedRef.current = true;
       loginWithToken(token).then((res) => {
         if (res && res.success) {
           sileo.success({
@@ -42,8 +47,10 @@ export default function AuthCallback() {
       return;
     }
 
+    processedRef.current = true;
     navigate("/login", { replace: true });
   }, [searchParams, loginWithToken, navigate]);
+
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-[#f2eee5] text-[#111215] paper-grain selection:bg-[#111215] selection:text-[#f2eee5]">

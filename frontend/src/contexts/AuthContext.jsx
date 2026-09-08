@@ -5,6 +5,22 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
   const [user, setUser] = useState(null);
@@ -48,9 +64,11 @@ export function AuthProvider({ children }) {
             originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
             return api(originalRequest);
           } catch (refreshError) {
-            accessTokenRef.current = null;
-            setAccessToken(null);
-            setUser(null);
+            if (!window.location.pathname.includes("/auth/callback")) {
+              accessTokenRef.current = null;
+              setAccessToken(null);
+              setUser(null);
+            }
             return Promise.reject(refreshError);
           }
         }
@@ -61,6 +79,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (window.location.pathname.includes("/auth/callback")) {
+      setLoading(false);
+      return;
+    }
+
     const bootstrap = async () => {
       try {
         const { data } = await api.get("/api/user/refresh-token");
@@ -144,19 +167,43 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithToken = async (token) => {
+    if (!token) {
+      return { success: false, error: "No token provided" };
+    }
     try {
       accessTokenRef.current = token;
       setAccessToken(token);
-      const me = await api.get("/api/user/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(me.data);
-      return { success: true, user: me.data };
+
+      // Extract user info from decoded JWT payload
+      const payload = decodeJwt(token);
+      let userData = payload?.user || null;
+
+      try {
+        const me = await api.get("/api/user/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (me.data) {
+          userData = me.data;
+        }
+      } catch (meError) {
+        console.warn("Direct /api/user/me call note:", meError?.message);
+      }
+
+      if (userData) {
+        setUser(userData);
+        return { success: true, user: userData };
+      }
+
+      throw new Error("Unable to extract user profile from token");
     } catch (error) {
+      console.error("loginWithToken error:", error);
       accessTokenRef.current = null;
       setAccessToken(null);
       setUser(null);
-      return { success: false, error: "Failed to authenticate with token" };
+      return {
+        success: false,
+        error: error.message || "Failed to authenticate with token",
+      };
     }
   };
 

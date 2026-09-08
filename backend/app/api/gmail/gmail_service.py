@@ -5,6 +5,7 @@ import traceback
 from email import policy
 from sqlalchemy.ext.asyncio import AsyncSession
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from app.api.users.google_service import GoogleService
 from app.api.cards.card_service import card_service
 import asyncio
@@ -29,6 +30,19 @@ class GmailService:
             userId="me", id=message_id, format="raw"
         ).execute()
         return base64.urlsafe_b64decode(full_msg["raw"])
+
+    async def fetch_raw_message_with_retry(self, gmail_client, message_id: str, max_retries: int = 4) -> bytes:
+        for attempt in range(max_retries):
+            try:
+                data = await asyncio.to_thread(self.fetch_raw_message, gmail_client, message_id)
+                await asyncio.sleep(0.3)
+                return data
+            except HttpError as e:
+                if e.resp.status in (403, 429) and "rateLimitExceeded" in str(e):
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(4 * (attempt + 1))
+                        continue
+                raise
 
     def extract_plain_text_body(self, raw_bytes: bytes) -> str | None:
         msg = email.message_from_bytes(raw_bytes, policy=policy.default)
@@ -78,8 +92,8 @@ class GmailService:
             )
             for msg in messages:
                 try:
-                    raw_bytes = await asyncio.to_thread(
-                        self.fetch_raw_message, gmail_client, msg["id"]
+                    raw_bytes = await self.fetch_raw_message_with_retry(
+                        gmail_client, msg["id"]
                     )
                     body, _ = self.extract_best_body(raw_bytes)
                     parsed = parser(body)
@@ -120,8 +134,8 @@ class GmailService:
             )
             for msg in messages:
                 try:
-                    raw_bytes = await asyncio.to_thread(
-                        self.fetch_raw_message, gmail_client, msg["id"]
+                    raw_bytes = await self.fetch_raw_message_with_retry(
+                        gmail_client, msg["id"]
                     )
                     body, _ = self.extract_best_body(raw_bytes)
                     parsed = parser(body)

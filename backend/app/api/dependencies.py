@@ -52,6 +52,16 @@ class TokenBearer(HTTPBearer):
 
         return token_data
 
+class OptionalTokenBearer(TokenBearer):
+    def __init__(self, auto_error=False):
+        super().__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request):
+        try:
+            return await super().__call__(request)
+        except Exception:
+            return None
+
 class AccessTokenBearer(TokenBearer):
     def __init__(self, auto_error = True):
         super().__init__(auto_error=auto_error)
