@@ -2,6 +2,7 @@ import base64
 import email
 import logging
 import traceback
+import uuid
 from email import policy
 from sqlalchemy.ext.asyncio import AsyncSession
 from googleapiclient.discovery import build
@@ -20,10 +21,18 @@ class GmailService:
 
     def search_bank_emails(self, gmail_client, sender: str, after_date: str):
         query = f"from:{sender} after:{after_date}"
-        results = gmail_client.users().messages().list(
-            userId="me", q=query, maxResults=50
-        ).execute()
-        return results.get("messages", [])
+        messages = []
+        page_token = None
+        while True:
+            kwargs = {"userId": "me", "q": query, "maxResults": 500}
+            if page_token:
+                kwargs["pageToken"] = page_token
+            results = gmail_client.users().messages().list(**kwargs).execute()
+            messages.extend(results.get("messages", []))
+            page_token = results.get("nextPageToken")
+            if not page_token:
+                break
+        return messages
 
     def fetch_raw_message(self, gmail_client, message_id: str) -> bytes:
         full_msg = gmail_client.users().messages().get(
@@ -60,12 +69,16 @@ class GmailService:
                 return part.get_payload(decode=True).decode(charset, errors="replace")
         return None
 
-    def extract_best_body(self, raw_bytes: bytes) -> tuple[str, str]:
+    def extract_best_body(self, raw_bytes: bytes) -> tuple[str | None, str]:
         plain = self.extract_plain_text_body(raw_bytes)
         if plain and len(plain) > 100 and "html format" not in plain.lower():
             return plain, "plain"
         html = self.extract_html_body(raw_bytes)
-        return html, "html"
+        if html:
+            return html, "html"
+        if plain:
+            return plain, "plain"
+        return None, "none"
 
     async def discover_cards(
         self,
@@ -80,9 +93,9 @@ class GmailService:
 
         # Load already-known last4s
         existing_result = await db.execute(
-            select(CardModel.card_last4).where(CardModel.user_id == user_id)
+            select(CardModel.card_last4).where(CardModel.user_id == uuid.UUID(user_id))
         )
-        known_last4s: set[str | None] = set(existing_result.scalars().all())
+        known_last4s: set[str] = {v for v in existing_result.scalars().all() if v is not None}
 
         seen: dict[tuple, dict] = {}  # (bank_name, card_last4) → entry
 
@@ -104,10 +117,11 @@ class GmailService:
                     card_last4 = parsed.get("card_last4")
                     key = (bank_name, card_last4)
 
-                    if key not in seen and card_last4 not in known_last4s:
+                    if key not in seen and (card_last4 is None or card_last4 not in known_last4s):
                         seen[key] = {
                             "bank_name": bank_name,
                             "card_last4": card_last4,
+                            "card_name": parsed.get("card_name"),
                         }
 
                 except Exception:
@@ -126,7 +140,10 @@ class GmailService:
         parsers: dict,
         after_date: str,
     ) -> dict:
-        ingested, skipped, failed, unmatched = 0, 0, 0, 0
+        from app.db.models.unmatched import UnmatchedTransaction
+        from sqlalchemy.future import select as sa_select
+
+        ingested, skipped, failed, queued = 0, 0, 0, 0
 
         for sender, parser in parsers.items():
             messages = await asyncio.to_thread(
@@ -137,9 +154,17 @@ class GmailService:
                     raw_bytes = await self.fetch_raw_message_with_retry(
                         gmail_client, msg["id"]
                     )
-                    body, _ = self.extract_best_body(raw_bytes)
+                    body, body_type = self.extract_best_body(raw_bytes)
+                    if body is None:
+                        logger.warning(f"No body extracted from message {msg['id']} ({sender})")
+                        skipped += 1
+                        continue
                     parsed = parser(body)
                     if parsed is None:
+                        skipped += 1
+                        continue
+
+                    if parsed.get("txn_type") == "credit":
                         skipped += 1
                         continue
 
@@ -147,18 +172,34 @@ class GmailService:
                     card = await card_service.get_card_by_last4(db, user_id, card_last4)
 
                     if card is None:
-                        logger.warning(
-                            f"No card found for last4={card_last4} (user={user_id}). "
-                            f"Skipping message {msg['id']}. Add the card first via /api/cards/create."
+                        existing = await db.execute(
+                            sa_select(UnmatchedTransaction).where(
+                                UnmatchedTransaction.raw_email_id == msg["id"]
+                            )
                         )
-                        unmatched += 1
+                        if existing.scalars().first() is None:
+                            unmatched = UnmatchedTransaction(
+                                user_id=uuid.UUID(user_id),
+                                raw_email_id=msg["id"],
+                                bank_name=parsed.get("bank_name", "Unknown"),
+                                merchant=parsed.get("merchant", "Unknown"),
+                                amount=parsed.get("amount", 0),
+                                currency=parsed.get("currency", "INR"),
+                                transaction_date=parsed.get("transaction_date"),
+                                transaction_time=parsed.get("transaction_time"),
+                            )
+                            db.add(unmatched)
+                            await db.commit()
+                            queued += 1
+                        else:
+                            skipped += 1
                         continue
 
                     result = await card_service.save_transaction(
                         db, card.card_id, msg["id"], parsed
                     )
                     if result is None:
-                        skipped += 1  # already saved (dedup)
+                        skipped += 1
                     else:
                         ingested += 1
                         from app.celery_task import call_manage_transaction
@@ -176,9 +217,10 @@ class GmailService:
             "status": "done",
             "ingested": ingested,
             "skipped": skipped,
-            "unmatched": unmatched,
+            "queued": queued,
             "failed": failed,
         }
+
 
 
 gmail_service = GmailService()

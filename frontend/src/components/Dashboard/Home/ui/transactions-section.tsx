@@ -2,15 +2,17 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { RefreshCw, Plus, Inbox, Loader2 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
+import DeleteButton from "@/components/ui/delete-button";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 
 interface TransactionsSectionProps {
   transactions: TransactionItem[];
   onAddTransaction: (txn: TransactionItem) => void;
+  onDeleteTransaction?: (transactionId: string) => void | Promise<void>;
   onRefreshTransactions?: () => void | Promise<void>;
   cards: CardItem[];
   googleConnected: boolean;
@@ -19,6 +21,7 @@ interface TransactionsSectionProps {
 export function TransactionsSection({
   transactions,
   onAddTransaction,
+  onDeleteTransaction,
   onRefreshTransactions,
   cards,
   googleConnected,
@@ -79,6 +82,14 @@ export function TransactionsSection({
   };
 
   const handleSyncGmail = async () => {
+    if (cards.length === 0) {
+      sileo.info({
+        title: "No Cards Found",
+        description: "Add at least one card before syncing transactions.",
+      });
+      return;
+    }
+
     if (!googleConnected) {
       sileo.info({
         title: "Gmail Not Connected",
@@ -100,12 +111,41 @@ export function TransactionsSection({
       } else {
         setTimeout(() => setIsSyncing(false), 2000);
       }
-    } catch {
+    } catch (err: any) {
       setIsSyncing(false);
+      const detail = err?.response?.data?.detail;
       sileo.error({
         title: "Sync Error",
-        description: "Could not initiate Gmail sync. Please try again.",
+        description: detail || "Could not initiate Gmail sync. Please try again.",
       });
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    if (cards.length === 0) {
+      sileo.info({
+        title: "No Cards Found",
+        description: "Add at least one card before adding transactions.",
+      });
+      return;
+    }
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (txId: string) => {
+    if (onDeleteTransaction) {
+      await onDeleteTransaction(txId);
+    } else {
+      try {
+        await api.delete(`/api/cards/transactions/${txId}`);
+        await onRefreshTransactions?.();
+        sileo.success({ title: "Transaction deleted" });
+      } catch {
+        sileo.error({
+          title: "Couldn't delete transaction",
+          description: "A server error has occurred",
+        });
+      }
     }
   };
 
@@ -143,7 +183,7 @@ export function TransactionsSection({
 
           <button
             type="button"
-            onClick={() => setModalOpen(true)}
+            onClick={() => handleOpenAddModal()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-all shadow-2xs font-semibold cursor-pointer active:scale-98"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -162,45 +202,61 @@ export function TransactionsSection({
               No Transactions Yet
             </p>
             <p className="text-xs text-neutral-500 mt-1 max-w-sm">
-              Connect your Gmail to parse bank statements or click "Add Manually" above.
+              Add a card first, then sync from Gmail or add transactions manually.
             </p>
           </div>
         ) : (
-          transactions.map((tx) => (
-            <motion.div
-              key={tx.id}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-neutral-300/80 bg-white/80 hover:bg-white hover:border-neutral-400/80 transition-all duration-150 p-4 md:px-6 md:py-4 shadow-2xs flex items-center justify-between gap-4 select-none"
-            >
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm md:text-base font-bold text-[#111215] truncate">
-                  {tx.merchant}
-                </span>
-                <span className="text-xs text-neutral-500 mt-0.5">
-                  {tx.date}
-                </span>
-              </div>
+          <AnimatePresence initial={false}>
+            {transactions.map((tx) => (
+              <motion.div
+                key={tx.id}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.2 } }}
+                layout
+                className="rounded-2xl border border-neutral-300/80 bg-white/80 hover:bg-white hover:border-neutral-400/80 transition-colors duration-150 p-4 md:px-6 md:py-4 shadow-2xs grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4 select-none"
+              >
+                {/* Left: Merchant & Date */}
+                <div className="flex flex-col min-w-0 justify-center">
+                  <span className="text-sm md:text-base font-bold text-[#111215] truncate">
+                    {tx.merchant}
+                  </span>
+                  <span className="text-xs text-neutral-500 mt-0.5">
+                    {tx.date}
+                  </span>
+                </div>
 
-              <div className="flex flex-col items-center justify-center text-center px-2">
-                <span className="text-sm md:text-base font-mono font-bold text-neutral-900 tracking-tight">
-                  - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
-                </span>
-                <span className="text-xs text-neutral-600 font-medium mt-0.5">
-                  {tx.cardName}
-                </span>
-              </div>
+                {/* Middle: Amount Details */}
+                <div className="flex flex-col items-center justify-center text-center px-2 min-w-0">
+                  <span className="text-sm md:text-base font-mono font-bold text-neutral-900 tracking-tight whitespace-nowrap">
+                    - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-xs text-neutral-600 font-medium mt-0.5 truncate max-w-[140px] sm:max-w-[220px]">
+                    {tx.cardName}
+                  </span>
+                </div>
 
-              <div className="flex flex-col items-end justify-center text-right min-w-[90px]">
-                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
-                  Reward Earned
-                </span>
-                <span className="inline-flex items-center gap-1 text-sm md:text-base font-mono font-bold text-emerald-700 mt-0.5">
-                  + Rs {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
-                </span>
-              </div>
-            </motion.div>
-          ))
+                {/* Right: Reward Earned & Delete Button */}
+                <div className="flex items-center justify-end gap-3 sm:gap-4 min-w-0">
+                  <div className="flex flex-col items-end justify-center text-right shrink-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                      Reward Earned
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-sm md:text-base font-mono font-bold text-emerald-700 mt-0.5 whitespace-nowrap">
+                      + Rs {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+
+                  <div className="shrink-0 flex items-center justify-end">
+                    <DeleteButton
+                      className="scale-75 origin-right shadow-xs"
+                      onConfirm={() => handleDelete(tx.id)}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 

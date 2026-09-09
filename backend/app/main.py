@@ -5,6 +5,7 @@ from .api.users.google_auth_routes import google_router
 from .api.gmail.gmail_routes import gmail_router
 from .api.cards.card_routes import card_router
 from .api.recommendations.recommendation_routes import recommendations_router
+from .api.unmatched.unmatched_routes import unmatched_router
 from .api.merchants.merchant_service import merchant_service, merchant_cache_service
 from .db.session import AsyncSessionLocal
 from .db.models import card_rewards 
@@ -25,6 +26,7 @@ app.include_router(google_router, prefix="/auth/google")
 app.include_router(gmail_router, prefix="/api/gmail")
 app.include_router(card_router, prefix="/api/cards")
 app.include_router(recommendations_router, prefix="/api/recommendations")
+app.include_router(unmatched_router, prefix="/api/unmatched")
 
 app.add_middleware(CORSMiddleware, 
     allow_origins=["http://localhost:5173"],  

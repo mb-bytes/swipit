@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { AddCardSquare } from "./add-card-square";
 import { CreditCard } from "@/components/Signup/credit-card";
 import { AddCardModal } from "./add-card-modal";
-import { SyncCardsModal } from "./sync-cards-modal";
 import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
 
@@ -23,8 +22,6 @@ interface CardsSectionProps {
   cards: CardItem[];
   onAddCard: (card: CardItem) => void;
   onDeleteCard?: (cardId: string) => void;
-  googleConnected: boolean;
-  googleEmail: string | null;
   userName?: string;
 }
 
@@ -32,21 +29,9 @@ export function CardsSection({
   cards = [],
   onAddCard,
   onDeleteCard,
-  googleConnected,
-  googleEmail,
   userName = "Card Holder",
 }: CardsSectionProps) {
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [syncModalOpen, setSyncModalOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSyncClick = () => {
-    setSyncModalOpen(true);
-  };
-
-  const handleManualClick = () => {
-    setAddModalOpen(true);
-  };
 
   return (
     <section className="flex flex-col gap-4 w-full">
@@ -62,11 +47,7 @@ export function CardsSection({
       </div>
 
       <div className="flex items-center gap-5 overflow-x-auto pb-4 pt-1 px-1 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-transparent">
-        <AddCardSquare
-          onSyncCards={handleSyncClick}
-          onAddManual={handleManualClick}
-          isSyncing={isSyncing}
-        />
+        <AddCardSquare onAddManual={() => setAddModalOpen(true)} />
 
         {(!cards || cards.length === 0) ? (
           <div className="shrink-0 flex flex-col justify-center items-center px-6 py-6 rounded-2xl border border-dashed border-neutral-300/80 bg-white/50 backdrop-blur-xs text-center min-w-[300px] h-[190px]">
@@ -74,7 +55,7 @@ export function CardsSection({
               No cards found
             </p>
             <p className="text-xs text-neutral-500 mt-1.5 max-w-[220px] leading-relaxed">
-              Please add a card manually or sync from Gmail to start tracking rewards.
+              Add a card to start tracking your rewards and transactions.
             </p>
           </div>
         ) : (
@@ -114,14 +95,6 @@ export function CardsSection({
         onClose={() => setAddModalOpen(false)}
         onCardAdded={onAddCard}
         defaultCardHolder={userName}
-      />
-
-      <SyncCardsModal
-        isOpen={syncModalOpen}
-        onClose={() => setSyncModalOpen(false)}
-        googleConnected={googleConnected}
-        googleEmail={googleEmail}
-        onCardDiscovered={onAddCard}
       />
     </section>
   );

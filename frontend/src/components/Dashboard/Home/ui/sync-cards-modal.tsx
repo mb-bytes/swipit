@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Mail, CheckCircle2, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { X, Mail, CheckCircle2, ArrowRight, Loader2, Sparkles, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import api from "@/api/axios";
 import { sileo } from "sileo";
@@ -24,6 +24,8 @@ export function SyncCardsModal({
   const [scanning, setScanning] = useState(false);
   const [discoveredCards, setDiscoveredCards] = useState<any[]>([]);
   const [scanned, setScanned] = useState(false);
+  const [userLast4, setUserLast4] = useState<Record<number, string>>({});
+  const [importing, setImporting] = useState(false);
 
   const handleConnectGoogle = () => {
     window.location.href = "http://localhost:8000/auth/google/login?action=connect";
@@ -32,6 +34,8 @@ export function SyncCardsModal({
   const handleScanCards = async () => {
     setScanning(true);
     setScanned(false);
+    setDiscoveredCards([]);
+    setUserLast4({});
     try {
       const afterDate = `${new Date().getFullYear()}/01/01`;
       const res = await api.post("/api/gmail/discover-cards", null, {
@@ -40,23 +44,7 @@ export function SyncCardsModal({
       const cards = res.data.cards || [];
       setDiscoveredCards(cards);
       setScanned(true);
-
-      if (cards.length > 0) {
-        sileo.success({
-          title: "Cards Discovered!",
-          description: `Found ${cards.length} card(s) from your Gmail bank alerts.`,
-        });
-        cards.forEach((c: any) => {
-          onCardDiscovered({
-            id: `card-${c.card_last4 || Date.now()}`,
-            cardName: `${c.bank_name || "Bank"} Credit Card`,
-            cardLast4: c.card_last4 || "1234",
-            bankName: c.bank_name || "Bank",
-            cardHolder: "Primary User",
-            theme: "brand-dark",
-          });
-        });
-      } else {
+      if (cards.length === 0) {
         sileo.info({
           title: "Scan Completed",
           description: "No new cards detected in recent bank alert emails.",
@@ -68,9 +56,51 @@ export function SyncCardsModal({
         description: "Could not scan emails. Ensure Gmail permissions are granted.",
       });
       setScanned(true);
-      setDiscoveredCards([]);
     } finally {
       setScanning(false);
+    }
+  };
+
+  const allLast4Filled = discoveredCards.every((card, i) => {
+    if (card.card_last4) return true;
+    return (userLast4[i] || "").replace(/\D/g, "").length === 4;
+  });
+
+  const handleImport = async () => {
+    setImporting(true);
+    let importedCount = 0;
+    for (let i = 0; i < discoveredCards.length; i++) {
+      const card = discoveredCards[i];
+      const last4 = card.card_last4 || (userLast4[i] || "").replace(/\D/g, "").slice(-4);
+      try {
+        const res = await api.post("/api/cards/create-discovered", {
+          bank_name: card.bank_name,
+          card_name: card.card_name || `${card.bank_name} Credit Card`,
+          card_last4: last4,
+        });
+        onCardDiscovered({
+          id: res.data.card_id,
+          cardName: res.data.card_name,
+          cardLast4: res.data.card_last4,
+          bankName: card.bank_name,
+          cardHolder: "Primary User",
+          theme: "brand-dark",
+        });
+        importedCount++;
+      } catch {
+        sileo.error({
+          title: "Failed to save card",
+          description: `Could not save ${card.bank_name} card.`,
+        });
+      }
+    }
+    setImporting(false);
+    if (importedCount > 0) {
+      sileo.success({
+        title: "Cards Imported!",
+        description: `${importedCount} card${importedCount > 1 ? "s" : ""} saved to your account.`,
+      });
+      onClose();
     }
   };
 
@@ -112,7 +142,6 @@ export function SyncCardsModal({
                     Connect your Gmail to automatically discover credit cards linked to your bank alerts and statements.
                   </p>
                 </div>
-
                 <button
                   type="button"
                   onClick={handleConnectGoogle}
@@ -142,24 +171,96 @@ export function SyncCardsModal({
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={handleScanCards}
-                  disabled={scanning}
-                  className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {scanning ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Scanning Bank Messages...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Scan & Import Cards</span>
-                    </>
-                  )}
-                </button>
+                {scanned && discoveredCards.length > 0 && (
+                  <div className="flex flex-col gap-2.5">
+                    <p className="text-xs text-neutral-400 font-medium">
+                      {discoveredCards.length} card{discoveredCards.length > 1 ? "s" : ""} found — confirm details to import
+                    </p>
+                    {discoveredCards.map((card, i) => (
+                      <div
+                        key={i}
+                        className="rounded-xl bg-white/[0.04] border border-white/10 p-3.5 flex flex-col gap-2.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-amber-400 shrink-0" />
+                          <span className="text-sm font-semibold text-white">
+                            {card.card_name || `${card.bank_name} Credit Card`}
+                          </span>
+                        </div>
+                        {card.card_last4 ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-neutral-400">Last 4 digits:</span>
+                            <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-md">
+                              •••• {card.card_last4}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs text-neutral-400">
+                              Last 4 digits <span className="text-red-400">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={4}
+                              placeholder="e.g. 2693"
+                              value={userLast4[i] || ""}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                                setUserLast4((prev) => ({ ...prev, [i]: val }));
+                              }}
+                              className="w-full bg-white/[0.06] border border-white/15 rounded-lg px-3 py-2 text-sm font-mono text-white placeholder-neutral-600 focus:outline-none focus:border-amber-400/60 focus:bg-white/10 transition-all"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {(!scanned || discoveredCards.length === 0) && (
+                  <button
+                    type="button"
+                    onClick={handleScanCards}
+                    disabled={scanning}
+                    className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {scanning ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Scanning Bank Messages...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Scan & Import Cards</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {scanned && discoveredCards.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleImport}
+                    disabled={importing || !allLast4Filled}
+                    className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-950 font-bold text-sm shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {importing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Saving Cards...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>
+                          Import {discoveredCards.length} Card{discoveredCards.length > 1 ? "s" : ""}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </motion.div>

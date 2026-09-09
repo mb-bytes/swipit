@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CardItem } from "./cards-section";
 import { sileo } from "sileo";
 import { Dropdown } from "@/components/ui/dropdown";
+import api from "@/api/axios";
 
 export interface TransactionItem {
   id: string;
@@ -37,7 +38,7 @@ export function AddTransactionModal({
   );
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const numAmount = parseFloat(amount);
     if (!merchant.trim() || isNaN(numAmount) || numAmount <= 0) {
@@ -48,34 +49,47 @@ export function AddTransactionModal({
       return;
     }
 
+    const card = cards.find((c) => c.cardName === selectedCard) ?? cards[0];
+    if (!card) {
+      sileo.error({ title: "No card selected", description: "Please add a card first." });
+      return;
+    }
+
     setSubmitting(true);
-    const calculatedReward = Math.round(numAmount * 0.04);
+    try {
+      const res = await api.post("/api/cards/transactions", {
+        card_id: card.id,
+        merchant: merchant.trim(),
+        amount: numAmount,
+      });
 
-    const newTxn: TransactionItem = {
-      id: `txn-${Date.now()}`,
-      merchant: merchant.trim(),
-      date: new Date().toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-      amount: numAmount,
-      cardName: selectedCard || cards[0]?.cardName || "Axis Flipkart",
-      rewardEarned: Math.max(calculatedReward, 10),
-      category: "Shopping",
-    };
+      const data = res.data;
+      const newTxn: TransactionItem = {
+        id: data.transaction_id,
+        merchant: data.merchant,
+        date: data.transaction_date,
+        amount: data.amount,
+        cardName: card.cardName,
+        rewardEarned: data.reward_earned,
+        category: data.category ?? "Shopping",
+      };
 
-    setTimeout(() => {
       onTransactionAdded(newTxn);
       sileo.success({
         title: "Transaction Logged",
-        description: `₹${numAmount} at ${merchant} recorded. Earned +₹${newTxn.rewardEarned}!`,
+        description: `₹${numAmount} at ${merchant.trim()} recorded. Earned +₹${data.reward_earned}!`,
       });
-      setSubmitting(false);
       setMerchant("");
       setAmount("");
       onClose();
-    }, 300);
+    } catch {
+      sileo.error({
+        title: "Couldn't Save Transaction",
+        description: "A server error occurred. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

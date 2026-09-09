@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .card_schemas import CreateCardRequest
+from .card_schemas import CreateCardRequest, CreateManualTransactionRequest
 from .card_service import card_service
 from app.db.session import get_db
 from app.api.dependencies import get_curr_user
@@ -111,3 +111,47 @@ async def get_user_transactions(db: AsyncSession = Depends(get_db), current_user
             "reward_earned": round(float(tx.amount) * 0.04, 2),
         })
     return txns
+
+@card_router.post("/transactions", summary="Manually add a transaction")
+async def add_transaction(
+    body: CreateManualTransactionRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_curr_user),
+):
+    card_result = await db.execute(
+        select(CardModel).where(CardModel.card_id == body.card_id, CardModel.user_id == current_user.user_id)
+    )
+    if not card_result.scalars().first():
+        raise HTTPException(status_code=404, detail="Card not found or does not belong to this user")
+
+    try:
+        txn = await card_service.create_manual_transaction(
+            db,
+            card_id=body.card_id,
+            merchant=body.merchant,
+            amount=body.amount,
+            category=body.category,
+            transaction_date=body.transaction_date,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {
+        "transaction_id": str(txn.transaction_id),
+        "merchant": txn.merchant,
+        "amount": float(txn.amount),
+        "category": txn.category,
+        "transaction_date": txn.transaction_date.strftime("%d %b %Y"),
+        "reward_earned": round(float(txn.amount) * 0.04, 2),
+    }
+
+@card_router.delete("/transactions/{transaction_id}")
+async def delete_transaction(transaction_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user = Depends(get_curr_user)):
+    try:
+        await card_service.delete_transaction(db, transaction_id, current_user.user_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return JSONResponse(content={"message": "Transaction has been deleted"})

@@ -33,15 +33,7 @@ def parse_axis(body: str) -> dict | None:
         return None
 
     if not (amount_match and merchant_match and dt_match):
-        return {
-            "bank_name": "Axis Bank",
-            "card_name": "Axis Bank Credit Card",
-            "card_last4": last4_match.group(1),
-            "amount": float(amount_match.group(1).replace(",", "")) if amount_match else 0.0,
-            "merchant": merchant_match.group(1).strip() if merchant_match else "Axis Bank",
-            "transaction_date": datetime.now().date(),
-            "transaction_time": datetime.now().time(),
-        }
+        return None
 
     date_str = dt_match.group(1)
     time_str = dt_match.group(2)

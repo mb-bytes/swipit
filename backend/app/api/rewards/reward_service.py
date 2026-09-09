@@ -110,11 +110,10 @@ class RewardService:
         if not card:
             raise ValueError(f"Card not found for transaction {transaction_id}")
         if not card.product_id:
-            raise ValueError(f"Card {card.card_id} has no product linked — cannot calculate rewards")
-
+            return
         reward_card = (await db.execute(select(RewardCard).where(RewardCard.product_id==card.product_id))).scalar_one_or_none()
         if not reward_card:
-            raise ValueError(f"No reward config found for product_id={card.product_id}")
+            return
 
         merchant_key = categorize_service.normalize_merchant(tx.merchant)
         tx_input = TransactionInput(amount=float(tx.amount), category=tx.category or "unknown", merchant_key=merchant_key, card_network=reward_card.network or "", transaction_date=tx.transaction_date)

@@ -3,7 +3,9 @@ from sqlalchemy.future import select
 from app.db.models.cards import CardModel, Transaction, CardProduct
 from app.api.merchants.categorize_service import categorize_service
 from fastapi import HTTPException, status
+from fastapi.responses import JSONResponse
 import uuid
+from datetime import date as date_type
 
 
 class CardService:
@@ -136,6 +138,54 @@ class CardService:
         db.add(txn)
         await db.commit()
         return txn
+
+    async def create_manual_transaction(
+        self,
+        db: AsyncSession,
+        card_id: uuid.UUID,
+        merchant: str,
+        amount: float,
+        category: str | None = None,
+        transaction_date: date_type | None = None,
+    ) -> Transaction:
+        if transaction_date is None:
+            transaction_date = date_type.today()
+
+        resolved_category = category or await categorize_service.categorize_transaction(db, merchant)
+
+        txn = Transaction(
+            card_id=card_id,
+            merchant=merchant,
+            amount=amount,
+            category=resolved_category,
+            transaction_date=transaction_date,
+            transaction_time=None,
+            raw_email_id=f"manual-{uuid.uuid4()}",
+        )
+        db.add(txn)
+        await db.commit()
+        await db.refresh(txn)
+        return txn
+
+    async def delete_transaction(self, db: AsyncSession, transaction_id: uuid.UUID, user_id: uuid.UUID):
+        stmt = (
+            select(Transaction)
+            .join(CardModel, Transaction.card_id == CardModel.card_id)
+            .where(
+                Transaction.transaction_id == transaction_id,
+                CardModel.user_id == user_id,
+            )
+        )
+        result = await db.execute(stmt)
+        transaction = result.scalars().first()
+        if not transaction:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Transaction not found or does not belong to this user",
+            )
+        await db.delete(transaction)
+        await db.commit()
+        return True
 
 
 card_service = CardService()

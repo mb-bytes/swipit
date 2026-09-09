@@ -8,7 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TextReveal } from "./ui/text-reveal";
 import { CardsSection } from "./ui/cards-section";
 import { TransactionsSection } from "./ui/transactions-section";
+import { UnmatchedBanner } from "./ui/unmatched-banner";
+import { UnmatchedDrawer } from "./ui/unmatched-drawer";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,6 +27,9 @@ export function Home() {
 
   const [cards, setCards] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [unmatchedItems, setUnmatchedItems] = useState([]);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const fetchGoogleStatus = async () => {
     try {
@@ -35,6 +41,15 @@ export function Home() {
       });
     } catch {
       setGoogleStatus({ loading: false, connected: false, email: null });
+    }
+  };
+
+  const fetchUnmatched = async () => {
+    try {
+      const res = await api.get("/api/unmatched");
+      setUnmatchedItems(res.data || []);
+      setBannerDismissed(false);
+    } catch {
     }
   };
 
@@ -83,9 +98,13 @@ export function Home() {
     }
   };
 
+  const fetchAll = async () => {
+    await Promise.all([fetchCardsAndTransactions(), fetchUnmatched()]);
+  };
+
   useEffect(() => {
     fetchGoogleStatus();
-    fetchCardsAndTransactions();
+    fetchAll();
   }, []);
 
   useEffect(() => {
@@ -136,6 +155,43 @@ export function Home() {
     setTransactions((prev) => [newTxn, ...prev]);
   };
 
+  const handleDeleteTransaction = async (transactionId) => {
+    setTransactions((prev) => prev.filter((t) => t.id !== transactionId));
+    try {
+      await api.delete(`/api/cards/transactions/${transactionId}`);
+      sileo.success({ title: "Transaction deleted" });
+    } catch (e) {
+      await fetchCardsAndTransactions();
+      sileo.error({
+        title: "Couldn't delete transaction",
+        description: "A server error has occurred",
+      });
+    }
+  };
+
+  const handleTransactionAssigned = (unmatchedId, txn) => {
+    setUnmatchedItems((prev) => prev.filter((u) => u.id !== unmatchedId));
+    setTransactions((prev) => [
+      {
+        id: txn.id,
+        cardId: txn.cardId,
+        merchant: txn.merchant,
+        date: txn.date,
+        amount: txn.amount,
+        cardName: txn.cardName,
+        rewardEarned: txn.rewardEarned,
+        category: txn.category,
+      },
+      ...prev,
+    ]);
+  };
+
+  const handleTransactionDismissed = (unmatchedId) => {
+    setUnmatchedItems((prev) => prev.filter((u) => u.id !== unmatchedId));
+  };
+
+  const showBanner = unmatchedItems.length > 0 && !bannerDismissed;
+
   return (
     <div className="flex flex-1 h-full overflow-hidden">
       <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f2eee5] p-5 md:p-8 paper-grain overflow-y-auto">
@@ -185,12 +241,20 @@ export function Home() {
 
         <hr className="border-neutral-300/80" />
 
+        <AnimatePresence>
+          {showBanner && (
+            <UnmatchedBanner
+              count={unmatchedItems.length}
+              onReview={() => setDrawerOpen(true)}
+              onDismiss={() => setBannerDismissed(true)}
+            />
+          )}
+        </AnimatePresence>
+
         <CardsSection
           cards={cards}
           onAddCard={handleAddCard}
           onDeleteCard={handleDeleteCard}
-          googleConnected={googleStatus.connected}
-          googleEmail={googleStatus.email}
           userName={displayName}
         />
 
@@ -199,13 +263,24 @@ export function Home() {
         <TransactionsSection
           transactions={transactions}
           onAddTransaction={handleAddTransaction}
-          onRefreshTransactions={fetchCardsAndTransactions}
+          onDeleteTransaction={handleDeleteTransaction}
+          onRefreshTransactions={fetchAll}
           cards={cards}
           googleConnected={googleStatus.connected}
         />
       </div>
+
+      <UnmatchedDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        items={unmatchedItems}
+        cards={cards}
+        onAssigned={handleTransactionAssigned}
+        onDismissed={handleTransactionDismissed}
+      />
     </div>
   );
 }
 
 export default Home;
+

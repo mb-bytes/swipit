@@ -103,4 +103,11 @@ async def get_curr_user(db: AsyncSession = Depends(get_db), token_data: dict = D
     return current_user
 
 
+async def get_curr_user_flexible(db: AsyncSession = Depends(get_db), token_data: dict = Depends(TokenBearer())):
+    username = token_data['user']['username']
+    current_user = await user_service.get_user_by_username(db, username)
+
+    return current_user
+
+
         

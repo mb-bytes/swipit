@@ -2,6 +2,7 @@ from app.db.models.user import UserModel, ConnectedAccount
 from app.db.models.cards import CardProduct, CardModel, Transaction
 from app.db.models.card_rewards import RewardCard, SpendTracker
 from app.db.models.merchants import MerchantCategoryModel
+from app.db.models.unmatched import UnmatchedTransaction
 
 __all__ = [
     "UserModel",
@@ -12,4 +13,5 @@ __all__ = [
     "RewardCard",
     "SpendTracker",
     "MerchantCategoryModel",
+    "UnmatchedTransaction",
 ]
