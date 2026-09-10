@@ -136,11 +136,19 @@ export const SidebarLink = ({
   active = false,
   ...props
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, setOpen, animate } = useSidebar();
+  const handleClick = (e) => {
+    if (link.onClick) {
+      link.onClick(e);
+    }
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setOpen(false);
+    }
+  };
   return (
     <button
       type="button"
-      onClick={link.onClick}
+      onClick={handleClick}
       className={cn(
         "flex items-center w-full gap-3 group/sidebar px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left",
         active

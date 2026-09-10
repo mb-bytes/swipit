@@ -9,6 +9,7 @@ from app.api.dependencies import get_curr_user
 from app.db.models.unmatched import UnmatchedTransaction
 from app.db.models.cards import CardModel, Transaction
 from app.api.merchants.categorize_service import categorize_service
+from app.api.cards.card_routes import title_case
 from .unmatched_schemas import AssignCardRequest
 
 unmatched_router = APIRouter(tags=["unmatched"])
@@ -19,6 +20,17 @@ async def list_unmatched(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),
 ):
+    from sqlalchemy import delete
+
+    subquery = select(Transaction.raw_email_id).where(Transaction.raw_email_id.isnot(None))
+    await db.execute(
+        delete(UnmatchedTransaction).where(
+            UnmatchedTransaction.user_id == current_user.user_id,
+            UnmatchedTransaction.raw_email_id.in_(subquery),
+        )
+    )
+    await db.commit()
+
     result = await db.execute(
         select(UnmatchedTransaction)
         .where(UnmatchedTransaction.user_id == current_user.user_id)
@@ -29,7 +41,7 @@ async def list_unmatched(
         {
             "id": str(r.id),
             "bank_name": r.bank_name,
-            "merchant": r.merchant,
+            "merchant": title_case(r.merchant),
             "amount": float(r.amount),
             "currency": r.currency,
             "transaction_date": r.transaction_date.strftime("%d %b %Y"),
@@ -68,16 +80,28 @@ async def assign_card(
 
     category = await categorize_service.categorize_transaction(db, unmatched.merchant)
 
-    txn = Transaction(
-        card_id=body.card_id,
-        merchant=unmatched.merchant,
-        amount=unmatched.amount,
-        category=category,
-        transaction_date=unmatched.transaction_date,
-        transaction_time=unmatched.transaction_time,
-        raw_email_id=unmatched.raw_email_id,
+    existing_txn_result = await db.execute(
+        select(Transaction).where(Transaction.raw_email_id == unmatched.raw_email_id)
     )
-    db.add(txn)
+    existing_txn = existing_txn_result.scalars().first()
+
+    if existing_txn:
+        existing_txn.card_id = body.card_id
+        if category and not existing_txn.category:
+            existing_txn.category = category
+        txn = existing_txn
+    else:
+        txn = Transaction(
+            card_id=body.card_id,
+            merchant=unmatched.merchant,
+            amount=unmatched.amount,
+            category=category,
+            transaction_date=unmatched.transaction_date,
+            transaction_time=unmatched.transaction_time,
+            raw_email_id=unmatched.raw_email_id,
+        )
+        db.add(txn)
+
     await db.delete(unmatched)
     await db.commit()
     await db.refresh(txn)
@@ -87,7 +111,7 @@ async def assign_card(
 
     return {
         "transaction_id": str(txn.transaction_id),
-        "merchant": txn.merchant,
+        "merchant": title_case(txn.merchant),
         "amount": float(txn.amount),
         "category": txn.category,
         "transaction_date": txn.transaction_date.strftime("%d %b %Y"),
@@ -95,6 +119,21 @@ async def assign_card(
         "card_name": card.card_name,
         "reward_earned": round(float(txn.amount) * 0.04, 2),
     }
+
+
+@unmatched_router.delete("/all")
+async def dismiss_all_unmatched(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_curr_user),
+):
+    from sqlalchemy import delete
+    await db.execute(
+        delete(UnmatchedTransaction).where(
+            UnmatchedTransaction.user_id == current_user.user_id
+        )
+    )
+    await db.commit()
+    return JSONResponse(content={"message": "All unmatched transactions dismissed"})
 
 
 @unmatched_router.delete("/{unmatched_id}")

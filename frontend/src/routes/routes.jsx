@@ -7,6 +7,7 @@ import LoginContainer from "@/components/Login/Login.jsx";
 import AuthCallback from "@/components/Auth/AuthCallback.jsx";
 import DashboardContainer from "@/components/Dashboard/DashboardContainer.jsx";
 import Home from "@/components/Dashboard/Home/Home.jsx";
+import Spends from "@/components/Dashboard/Spends/Spends.jsx";
 import NotFoundPage from "@/components/NotFound/NotFoundPage.jsx";
 
 export function AppRoutes() {
@@ -31,14 +32,14 @@ export function AppRoutes() {
       />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route
-        path="/dashboard"
         element={
           <ProtectedRoute>
             <DashboardContainer />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Home />} />
+        <Route path="/dashboard" element={<Home />} />
+        <Route path="/spends" element={<Spends />} />
       </Route>
       <Route path="/404" element={<NotFoundPage />} />
       <Route path="*" element={<NotFoundPage />} />

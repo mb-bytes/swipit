@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDashboard } from "@/contexts/DashboardContext";
 import { TextReveal } from "./ui/text-reveal";
 import { CardsSection } from "./ui/cards-section";
 import { TransactionsSection } from "./ui/transactions-section";
@@ -16,20 +17,31 @@ import { AnimatePresence } from "motion/react";
 export function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
+  const {
+    cards,
+    transactions,
+    unmatchedItems,
+    loading,
+    initialized,
+    fetchAll,
+    addTransaction,
+    deleteTransaction,
+    addCard,
+    deleteCard,
+    assignUnmatched,
+    dismissUnmatched,
+    dismissAllUnmatched,
+  } = useDashboard();
+
   const [googleStatus, setGoogleStatus] = useState({
     loading: true,
     connected: false,
     email: null,
   });
-  const [error, setError] = useState("");
-
-  const displayName = user?.name || user?.username || "Friend";
-
-  const [cards, setCards] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [unmatchedItems, setUnmatchedItems] = useState([]);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const displayName = user?.name || user?.username || "Friend";
 
   const fetchGoogleStatus = async () => {
     try {
@@ -44,67 +56,9 @@ export function Home() {
     }
   };
 
-  const fetchUnmatched = async () => {
-    try {
-      const res = await api.get("/api/unmatched");
-      setUnmatchedItems(res.data || []);
-      setBannerDismissed(false);
-    } catch {
-    }
-  };
-
-  const fetchCardsAndTransactions = async () => {
-    try {
-      const cardsRes = await api.get("/api/cards/my-cards");
-      if (cardsRes.data && Array.isArray(cardsRes.data)) {
-        setCards(
-          cardsRes.data.map((c) => ({
-            id: c.card_id,
-            cardName: c.card_name || c.product_name || "Card",
-            cardLast4: c.card_last4 || "1234",
-            bankName: c.bank_name || "Bank",
-            cardHolder: displayName.toUpperCase(),
-            cardExpiration: "xx/xx",
-            theme: "gray-light",
-          })),
-        );
-      } else {
-        setCards([]);
-      }
-    } catch (e) {
-      setError("Error while fetching your cards, please try again");
-    }
-
-    try {
-      const txRes = await api.get("/api/cards/transactions");
-      if (txRes.data && Array.isArray(txRes.data)) {
-        setTransactions(
-          txRes.data.map((t) => ({
-            id: t.transaction_id,
-            cardId: t.card_id,
-            merchant: t.merchant,
-            date: t.transaction_date,
-            amount: parseFloat(t.amount) || 0,
-            cardName: t.card_name || "Credit Card",
-            rewardEarned: parseFloat(t.reward_earned) || 0,
-            category: t.category,
-          })),
-        );
-      } else {
-        setTransactions([]);
-      }
-    } catch {
-      setError("Error while fetching your transactions, please try again");
-    }
-  };
-
-  const fetchAll = async () => {
-    await Promise.all([fetchCardsAndTransactions(), fetchUnmatched()]);
-  };
-
   useEffect(() => {
     fetchGoogleStatus();
-    fetchAll();
+    if (!initialized) fetchAll(displayName);
   }, []);
 
   useEffect(() => {
@@ -126,24 +80,16 @@ export function Home() {
   };
 
   const handleAddCard = (newCard) => {
-    setCards((prev) => [newCard, ...prev]);
+    addCard(newCard);
   };
 
   const handleDeleteCard = async (cardId) => {
-    const cardToDelete = cards.find((c) => c.id === cardId);
-    setCards((prev) => prev.filter((c) => c.id !== cardId));
-    setTransactions((prev) =>
-      prev.filter(
-        (t) => t.cardId !== cardId && t.cardName !== cardToDelete?.cardName,
-      ),
-    );
-
+    deleteCard(cardId);
     try {
       await api.delete(`/api/cards/${cardId}`);
-      await fetchCardsAndTransactions();
       sileo.success({ title: "Card deleted" });
-    } catch (e) {
-      await fetchCardsAndTransactions();
+    } catch {
+      await fetchAll(displayName);
       sileo.error({
         title: "Couldn't delete card",
         description: "A server error has occurred",
@@ -152,16 +98,16 @@ export function Home() {
   };
 
   const handleAddTransaction = (newTxn) => {
-    setTransactions((prev) => [newTxn, ...prev]);
+    addTransaction(newTxn);
   };
 
   const handleDeleteTransaction = async (transactionId) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== transactionId));
+    deleteTransaction(transactionId);
     try {
       await api.delete(`/api/cards/transactions/${transactionId}`);
       sileo.success({ title: "Transaction deleted" });
-    } catch (e) {
-      await fetchCardsAndTransactions();
+    } catch {
+      await fetchAll(displayName);
       sileo.error({
         title: "Couldn't delete transaction",
         description: "A server error has occurred",
@@ -170,31 +116,51 @@ export function Home() {
   };
 
   const handleTransactionAssigned = (unmatchedId, txn) => {
-    setUnmatchedItems((prev) => prev.filter((u) => u.id !== unmatchedId));
-    setTransactions((prev) => [
-      {
-        id: txn.id,
-        cardId: txn.cardId,
-        merchant: txn.merchant,
-        date: txn.date,
-        amount: txn.amount,
-        cardName: txn.cardName,
-        rewardEarned: txn.rewardEarned,
-        category: txn.category,
-      },
-      ...prev,
-    ]);
+    assignUnmatched(unmatchedId, {
+      id: txn.id,
+      cardId: txn.cardId,
+      merchant: txn.merchant,
+      date: txn.date,
+      amount: txn.amount,
+      cardName: txn.cardName,
+      rewardEarned: txn.rewardEarned,
+      category: txn.category,
+    });
   };
 
   const handleTransactionDismissed = (unmatchedId) => {
-    setUnmatchedItems((prev) => prev.filter((u) => u.id !== unmatchedId));
+    dismissUnmatched(unmatchedId);
+  };
+
+  const handleDeleteAllUnmatched = () => {
+    const count = unmatchedItems.length;
+    sileo.action({
+      title: "Delete unmatched transactions?",
+      description: `Permanently delete all ${count} unmatched transaction${count !== 1 ? "s" : ""}?`,
+      button: {
+        title: "Delete All",
+        onClick: () => {
+          sileo.promise(
+            api.delete("/api/unmatched/all").then(() => {
+              dismissAllUnmatched();
+              setDrawerOpen(false);
+            }),
+            {
+              loading: { title: "Deleting transactions..." },
+              success: { title: "All unmatched transactions deleted" },
+              error: { title: "Failed to delete unmatched transactions" },
+            }
+          );
+        },
+      },
+    });
   };
 
   const showBanner = unmatchedItems.length > 0 && !bannerDismissed;
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f2eee5] p-5 md:p-8 paper-grain overflow-y-auto">
+      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 paper-grain overflow-y-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
           <div className="flex items-center">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#111215]">
@@ -247,6 +213,7 @@ export function Home() {
               count={unmatchedItems.length}
               onReview={() => setDrawerOpen(true)}
               onDismiss={() => setBannerDismissed(true)}
+              onDeleteAll={handleDeleteAllUnmatched}
             />
           )}
         </AnimatePresence>
@@ -261,10 +228,10 @@ export function Home() {
         <hr className="border-neutral-300/80" />
 
         <TransactionsSection
-          transactions={transactions}
+          transactions={transactions.slice(0, 5)}
           onAddTransaction={handleAddTransaction}
           onDeleteTransaction={handleDeleteTransaction}
-          onRefreshTransactions={fetchAll}
+          onRefreshTransactions={() => fetchAll(displayName)}
           cards={cards}
           googleConnected={googleStatus.connected}
         />
@@ -277,6 +244,7 @@ export function Home() {
         cards={cards}
         onAssigned={handleTransactionAssigned}
         onDismissed={handleTransactionDismissed}
+        onDismissAll={dismissAllUnmatched}
       />
     </div>
   );

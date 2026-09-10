@@ -20,12 +20,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { sileo } from "sileo";
 
 export function SidebarDemo({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -78,10 +79,23 @@ export function SidebarDemo({ children }) {
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            {open ? <Logo /> : <LogoIcon />}
+            {open ? (
+              <Logo onClick={() => navigate("/dashboard")} />
+            ) : (
+              <LogoIcon onClick={() => navigate("/dashboard")} />
+            )}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
+                <SidebarLink
+                  key={idx}
+                  link={{
+                    ...link,
+                    onClick: () => {
+                      if (link.href) navigate(link.href);
+                    },
+                  }}
+                  active={location.pathname === link.href}
+                />
               ))}
             </div>
           </div>
@@ -245,17 +259,17 @@ function UserProfileDropdown({ user, onLogout }) {
   );
 }
 
-export const Logo = () => {
+export const Logo = ({ onClick }) => {
   return (
-    <div className="py-1">
+    <div className="py-1 cursor-pointer" onClick={onClick}>
       <BrandLogo size="sm" />
     </div>
   );
 };
 
-export const LogoIcon = () => {
+export const LogoIcon = ({ onClick }) => {
   return (
-    <div className="py-1">
+    <div className="py-1 cursor-pointer" onClick={onClick}>
       <BrandLogo size="sm" iconOnly={true} />
     </div>
   );

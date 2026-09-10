@@ -8,9 +8,10 @@ interface UnmatchedBannerProps {
   count: number;
   onReview: () => void;
   onDismiss: () => void;
+  onDeleteAll?: () => void;
 }
 
-export function UnmatchedBanner({ count, onReview, onDismiss }: UnmatchedBannerProps) {
+export function UnmatchedBanner({ count, onReview, onDismiss, onDeleteAll }: UnmatchedBannerProps) {
   if (count === 0) return null;
 
   return (
@@ -34,23 +35,35 @@ export function UnmatchedBanner({ count, onReview, onDismiss }: UnmatchedBannerP
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={onReview}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-neutral-950 transition-all active:scale-98 cursor-pointer"
-      >
-        <span>Review & assign</span>
-        <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        {onDeleteAll && (
+          <button
+            type="button"
+            onClick={onDeleteAll}
+            className="inline-flex items-center rounded-xl border border-red-300/80 bg-white/80 hover:bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-all active:scale-98 cursor-pointer"
+          >
+            Delete all
+          </button>
+        )}
 
-      <button
-        type="button"
-        onClick={onDismiss}
-        className="shrink-0 text-amber-600 hover:text-amber-900 rounded-md p-1 hover:bg-amber-100 transition-colors cursor-pointer"
-        title="Dismiss banner"
-      >
-        <X className="w-4 h-4" />
-      </button>
+        <button
+          type="button"
+          onClick={onReview}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-neutral-950 transition-all active:scale-98 cursor-pointer"
+        >
+          <span>Review & assign</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="text-amber-600 hover:text-amber-900 rounded-md p-1 hover:bg-amber-100 transition-colors cursor-pointer"
+          title="Dismiss banner"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
     </motion.div>
   );
 }

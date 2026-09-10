@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -31,6 +31,7 @@ interface UnmatchedDrawerProps {
   cards: CardItem[];
   onAssigned: (unmatchedId: string, txn: { id: string; merchant: string; amount: number; date: string; cardName: string; rewardEarned: number; category: string | null; cardId: string }) => void;
   onDismissed: (unmatchedId: string) => void;
+  onDismissAll?: () => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -43,9 +44,10 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onDismissed }: UnmatchedDrawerProps) {
+export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onDismissed, onDismissAll }: UnmatchedDrawerProps) {
   const [selectedCards, setSelectedCards] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   const handleAssign = async (item: UnmatchedItem) => {
     const cardName = selectedCards[item.id] ?? cards[0]?.cardName;
@@ -90,6 +92,30 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
     }
   };
 
+  const handleDismissAll = () => {
+    const count = items.length;
+    sileo.action({
+      title: "Delete unmatched transactions?",
+      description: `Permanently delete all ${count} unmatched transaction${count !== 1 ? "s" : ""}?`,
+      button: {
+        title: "Delete All",
+        onClick: () => {
+          sileo.promise(
+            api.delete("/api/unmatched/all").then(() => {
+              onDismissAll?.();
+              onClose();
+            }),
+            {
+              loading: { title: "Deleting transactions..." },
+              success: { title: "All unmatched transactions deleted" },
+              error: { title: "Failed to delete unmatched transactions" },
+            }
+          );
+        },
+      },
+    });
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -120,13 +146,25 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
                   <p className="text-xs text-neutral-400 mt-0.5">{items.length} transaction{items.length !== 1 ? "s" : ""} need a card assigned</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-neutral-400 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {items.length > 0 && (
+                  <button
+                    type="button"
+                    disabled={isDeletingAll}
+                    onClick={handleDismissAll}
+                    className="text-xs font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-2.5 py-1.5 rounded-lg border border-red-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isDeletingAll ? "Deleting..." : "Delete All"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-neutral-400 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">

@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { RefreshCw, Plus, Inbox, Loader2 } from "lucide-react";
+import { RefreshCw, Plus, Inbox, Loader2, ChevronRight, ChevronDown, CalendarDays, CreditCard as CardIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNavigate } from "react-router-dom";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
 import DeleteButton from "@/components/ui/delete-button";
+import { getBankLogo } from "@/lib/bank-logos.js";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 
@@ -16,6 +18,33 @@ interface TransactionsSectionProps {
   onRefreshTransactions?: () => void | Promise<void>;
   cards: CardItem[];
   googleConnected: boolean;
+  showViewAll?: boolean;
+}
+
+function getThisMonthAfterDate(): string {
+  const now = new Date();
+  return `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/01`;
+}
+
+function getQuarterAfterDate(quarter: "Q1" | "Q2" | "Q3" | "Q4"): string {
+  const year = new Date().getFullYear();
+  const startMonths: Record<string, number> = { Q1: 1, Q2: 4, Q3: 7, Q4: 10 };
+  return `${year}/${String(startMonths[quarter]).padStart(2, "0")}/01`;
+}
+
+type SyncPeriod = "this-month" | "Q1" | "Q2" | "Q3" | "Q4";
+
+const PERIOD_OPTIONS: { value: SyncPeriod; label: string }[] = [
+  { value: "this-month", label: "This Month" },
+  { value: "Q1", label: "Q1 (Jan – Mar)" },
+  { value: "Q2", label: "Q2 (Apr – Jun)" },
+  { value: "Q3", label: "Q3 (Jul – Sep)" },
+  { value: "Q4", label: "Q4 (Oct – Dec)" },
+];
+
+function periodToAfterDate(period: SyncPeriod): string {
+  if (period === "this-month") return getThisMonthAfterDate();
+  return getQuarterAfterDate(period);
 }
 
 export function TransactionsSection({
@@ -25,10 +54,25 @@ export function TransactionsSection({
   onRefreshTransactions,
   cards,
   googleConnected,
+  showViewAll = true,
 }: TransactionsSectionProps) {
+  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<SyncPeriod>("this-month");
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const periodDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (periodDropdownRef.current && !periodDropdownRef.current.contains(e.target as Node)) {
+        setPeriodOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -40,7 +84,7 @@ export function TransactionsSection({
 
   const pollTaskStatus = (taskId: string) => {
     let attempts = 0;
-    const maxAttempts = 60; 
+    const maxAttempts = 60;
 
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
@@ -81,7 +125,7 @@ export function TransactionsSection({
     }, 2000);
   };
 
-  const handleSyncGmail = async () => {
+  const startSync = async (period: SyncPeriod) => {
     if (cards.length === 0) {
       sileo.info({
         title: "No Cards Found",
@@ -101,7 +145,7 @@ export function TransactionsSection({
 
     setIsSyncing(true);
     try {
-      const afterDate = `${new Date().getFullYear()}/01/01`;
+      const afterDate = periodToAfterDate(period);
       const res = await api.post("/api/gmail/ingest", null, {
         params: { after_date: afterDate },
       });
@@ -119,6 +163,17 @@ export function TransactionsSection({
         description: detail || "Could not initiate Gmail sync. Please try again.",
       });
     }
+  };
+
+  const handleSyncClick = () => {
+    if (isSyncing) return;
+    setPeriodOpen((prev) => !prev);
+  };
+
+  const handlePeriodSelect = (period: SyncPeriod) => {
+    setSelectedPeriod(period);
+    setPeriodOpen(false);
+    startSync(period);
   };
 
   const handleOpenAddModal = () => {
@@ -149,6 +204,8 @@ export function TransactionsSection({
     }
   };
 
+  const selectedLabel = PERIOD_OPTIONS.find((o) => o.value === selectedPeriod)?.label ?? "This Month";
+
   return (
     <section className="flex flex-col gap-4 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -165,26 +222,71 @@ export function TransactionsSection({
         </div>
 
         <div className="flex items-center flex-wrap gap-2 text-xs font-medium text-neutral-600">
-          <button
-            type="button"
-            onClick={handleSyncGmail}
-            disabled={isSyncing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/80 border border-neutral-300 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 text-neutral-700 ${
-                isSyncing ? "animate-spin text-amber-600" : ""
-              }`}
-            />
-            <span>{isSyncing ? "Syncing transactions..." : "Sync Transaction from gmail"}</span>
-          </button>
+          <div ref={periodDropdownRef} className="relative">
+            <button
+              id="sync-gmail-btn"
+              type="button"
+              onClick={handleSyncClick}
+              disabled={isSyncing}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 text-neutral-700 ${
+                  isSyncing ? "animate-spin text-amber-600" : ""
+                }`}
+              />
+              <span>
+                {isSyncing
+                  ? "Syncing…"
+                  : `Sync from Gmail — ${selectedLabel}`}
+              </span>
+              {!isSyncing && (
+                <ChevronDown
+                  className={`w-3 h-3 text-neutral-500 transition-transform duration-150 ${periodOpen ? "rotate-180" : ""}`}
+                />
+              )}
+            </button>
+
+            <AnimatePresence>
+              {periodOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden"
+                >
+                  <div className="px-3 pt-2.5 pb-1 flex items-center gap-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100">
+                    <CalendarDays className="w-3 h-3" />
+                    Select sync period
+                  </div>
+                  {PERIOD_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      id={`sync-period-${opt.value}`}
+                      type="button"
+                      onClick={() => handlePeriodSelect(opt.value)}
+                      className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        selectedPeriod === opt.value
+                          ? "bg-neutral-100 text-neutral-950"
+                          : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <span className="text-neutral-400 font-mono text-xs">or</span>
 
           <button
+            id="add-transaction-manual-btn"
             type="button"
             onClick={() => handleOpenAddModal()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-all shadow-2xs font-semibold cursor-pointer active:scale-98"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111215] text-[#f8f9fb] hover:bg-neutral-800 transition-all shadow-2xs font-semibold cursor-pointer active:scale-98"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Manually</span>
@@ -192,10 +294,10 @@ export function TransactionsSection({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="w-full">
         {transactions.length === 0 ? (
-          <div className="rounded-2xl border border-neutral-300/80 bg-white/60 p-8 flex flex-col items-center justify-center text-center shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
+          <div className="rounded-2xl border border-neutral-200/90 bg-white/70 backdrop-blur-xs p-8 flex flex-col items-center justify-center text-center shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
               <Inbox className="w-5 h-5" />
             </div>
             <p className="text-sm font-semibold text-neutral-800">
@@ -206,57 +308,98 @@ export function TransactionsSection({
             </p>
           </div>
         ) : (
-          <AnimatePresence initial={false}>
-            {transactions.map((tx) => (
-              <motion.div
-                key={tx.id}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.2 } }}
-                layout
-                className="rounded-2xl border border-neutral-300/80 bg-white/80 hover:bg-white hover:border-neutral-400/80 transition-colors duration-150 p-4 md:px-6 md:py-4 shadow-2xs grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4 select-none"
-              >
-                {/* Left: Merchant & Date */}
-                <div className="flex flex-col min-w-0 justify-center">
-                  <span className="text-sm md:text-base font-bold text-[#111215] truncate">
-                    {tx.merchant}
-                  </span>
-                  <span className="text-xs text-neutral-500 mt-0.5">
-                    {tx.date}
-                  </span>
-                </div>
+          <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[540px]">
+                <thead>
+                  <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
+                    <th className="py-3 px-4 sm:px-6">Merchant</th>
+                    <th className="py-3 px-4">Card</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4 text-right">Spent</th>
+                    <th className="py-3 px-4 text-right">Reward</th>
+                    <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100/90 text-sm">
+                  {transactions.map((tx) => {
+                    const matchedCard = cards?.find(
+                      (c) =>
+                        c.id === tx.cardId ||
+                        c.cardName?.toLowerCase() === tx.cardName?.toLowerCase()
+                    );
+                    const cardName = tx.cardName || matchedCard?.cardName || "Credit Card";
+                    const bankName = matchedCard?.bankName || "";
+                    const bankLogo = matchedCard?.logo || getBankLogo(bankName, cardName);
 
-                {/* Middle: Amount Details */}
-                <div className="flex flex-col items-center justify-center text-center px-2 min-w-0">
-                  <span className="text-sm md:text-base font-mono font-bold text-neutral-900 tracking-tight whitespace-nowrap">
-                    - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-xs text-neutral-600 font-medium mt-0.5 truncate max-w-[140px] sm:max-w-[220px]">
-                    {tx.cardName}
-                  </span>
-                </div>
+                    return (
+                      <tr
+                        key={tx.id}
+                        className="hover:bg-neutral-50/80 transition-colors group"
+                      >
+                        <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
+                          {tx.merchant}
+                        </td>
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="relative group/tooltip inline-flex items-center">
+                            {bankLogo ? (
+                              <img
+                                src={bankLogo}
+                                alt={cardName}
+                                className="w-6 h-6 object-contain rounded-md p-0.5 bg-white border border-neutral-200/90 shadow-2xs cursor-pointer"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
+                                <CardIcon className="w-3.5 h-3.5" />
+                              </div>
+                            )}
+                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:flex flex-col items-center z-50 whitespace-nowrap">
+                              <div className="rounded-lg bg-neutral-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl border border-neutral-800">
+                                {cardName}
+                              </div>
+                              <div className="w-2 h-2 -mt-1 rotate-45 bg-neutral-900 border-r border-b border-neutral-800" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-xs font-mono text-neutral-500 whitespace-nowrap">
+                          {tx.date}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-mono font-semibold text-neutral-900 whitespace-nowrap">
+                          - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
+                        </td>
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60">
+                            + Rs {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                          <DeleteButton
+                            className="scale-75 origin-right shadow-xs"
+                            onConfirm={() => handleDelete(tx.id)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                {/* Right: Reward Earned & Delete Button */}
-                <div className="flex items-center justify-end gap-3 sm:gap-4 min-w-0">
-                  <div className="flex flex-col items-end justify-center text-right shrink-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
-                      Reward Earned
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-sm md:text-base font-mono font-bold text-emerald-700 mt-0.5 whitespace-nowrap">
-                      + Rs {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
-                    </span>
-                  </div>
-
-                  <div className="shrink-0 flex items-center justify-end">
-                    <DeleteButton
-                      className="scale-75 origin-right shadow-xs"
-                      onConfirm={() => handleDelete(tx.id)}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+            {showViewAll && (
+              <div className="border-t border-neutral-200/70 px-4 py-2.5 sm:px-6 bg-neutral-50/40 flex items-center justify-between text-xs text-neutral-500 select-none">
+                <span>Showing {transactions.length} recent transactions</span>
+                <button
+                  id="view-all-spends-btn"
+                  type="button"
+                  onClick={() => navigate("/spends")}
+                  className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black transition-colors cursor-pointer group"
+                >
+                  View all spends
+                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

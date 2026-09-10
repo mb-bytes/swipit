@@ -189,6 +189,7 @@ CARDS=[
     "product_name": "Axis Rewards Credit Card",
     "card_network": "Visa",
     "reward_type": "points",
+    "point_value_inr": 0.20,
     "base_rate": {
       "rate_type": "points_per_amount",
       "points": 2,

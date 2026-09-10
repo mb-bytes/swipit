@@ -77,7 +77,7 @@ async def seed():
                 network=c.get("card_network"),
                 annual_fee=c.get("annual_fee", 0),
                 reward_unit=c.get("reward_type") or "points",
-                point_value_inr=1.0 if c.get("reward_type") == "cashback" else 0.25,
+                point_value_inr=c.get("point_value_inr") if c.get("point_value_inr") is not None else (1.0 if c.get("reward_type") == "cashback" else 0.25),
                 config=config_payload,
                 is_active=True,
             ))

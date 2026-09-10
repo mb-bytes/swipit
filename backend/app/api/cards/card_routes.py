@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,11 +8,45 @@ from .card_service import card_service
 from app.db.session import get_db
 from app.api.dependencies import get_curr_user
 from app.db.models.cards import CardProduct, CardModel, Transaction
+from app.db.models.card_rewards import RewardCard
 
 from sqlalchemy.future import select
 
 
 card_router = APIRouter(tags=["card-router"])
+
+
+def title_case(s: str) -> str:
+    if not s:
+        return s
+    return " ".join(word.capitalize() for word in s.split())
+
+
+def compute_reward(amount: float, reward: RewardCard | None) -> float:
+    if reward is None:
+        return 0.0
+    try:
+        config = reward.config or {}
+        base = config.get("base_rate", {})
+        rate_type = base.get("rate_type", "")
+        point_value = float(reward.point_value_inr or 0)
+
+        if rate_type == "points_per_amount":
+            points_per_block = float(base.get("points", 0))
+            per_spend = float(base.get("per_spend_amount", 1))
+            if per_spend <= 0:
+                return 0.0
+            blocks = int(amount / per_spend)
+            points = blocks * points_per_block
+            return round(points * point_value, 2)
+
+        if rate_type == "percentage":
+            rate = float(base.get("rate", 0))
+            return round(amount * rate / 100, 2)
+
+        return 0.0
+    except Exception:
+        return 0.0
 
 
 @card_router.post("/create", summary="Add a card manually using a catalogue product")
@@ -88,27 +122,59 @@ async def get_user_cards(db: AsyncSession = Depends(get_db), current_user=Depend
     return cards
 
 
-@card_router.get("/transactions", summary="List recent transactions for current user")
-async def get_user_transactions(db: AsyncSession = Depends(get_db), current_user=Depends(get_curr_user)):
+@card_router.get("/transactions/recent", summary="List the N most recent transactions (home dashboard)")
+async def get_recent_transactions(
+    limit: int = Query(default=5, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_curr_user),
+):
     result = await db.execute(
-        select(Transaction, CardModel)
+        select(Transaction, CardModel, RewardCard)
         .join(CardModel, Transaction.card_id == CardModel.card_id)
+        .outerjoin(RewardCard, RewardCard.product_id == CardModel.product_id)
         .where(CardModel.user_id == current_user.user_id)
         .order_by(Transaction.transaction_date.desc())
-        .limit(25)
+        .limit(limit)
     )
     txns = []
     for row in result.all():
-        tx, card = row
+        tx, card, reward = row
         txns.append({
             "transaction_id": str(tx.transaction_id),
             "card_id": str(card.card_id),
-            "merchant": tx.merchant,
+            "merchant": title_case(tx.merchant),
             "amount": float(tx.amount),
             "category": tx.category,
             "transaction_date": tx.transaction_date.strftime("%d %b %Y") if hasattr(tx.transaction_date, "strftime") else str(tx.transaction_date),
+            "raw_date": tx.transaction_date.isoformat() if hasattr(tx.transaction_date, "isoformat") else str(tx.transaction_date),
             "card_name": card.card_name,
-            "reward_earned": round(float(tx.amount) * 0.04, 2),
+            "reward_earned": compute_reward(float(tx.amount), reward),
+        })
+    return txns
+
+
+@card_router.get("/transactions", summary="List all transactions for current user")
+async def get_user_transactions(db: AsyncSession = Depends(get_db), current_user=Depends(get_curr_user)):
+    result = await db.execute(
+        select(Transaction, CardModel, RewardCard)
+        .join(CardModel, Transaction.card_id == CardModel.card_id)
+        .outerjoin(RewardCard, RewardCard.product_id == CardModel.product_id)
+        .where(CardModel.user_id == current_user.user_id)
+        .order_by(Transaction.transaction_date.desc())
+    )
+    txns = []
+    for row in result.all():
+        tx, card, reward = row
+        txns.append({
+            "transaction_id": str(tx.transaction_id),
+            "card_id": str(card.card_id),
+            "merchant": title_case(tx.merchant),
+            "amount": float(tx.amount),
+            "category": tx.category,
+            "transaction_date": tx.transaction_date.strftime("%d %b %Y") if hasattr(tx.transaction_date, "strftime") else str(tx.transaction_date),
+            "raw_date": tx.transaction_date.isoformat() if hasattr(tx.transaction_date, "isoformat") else str(tx.transaction_date),
+            "card_name": card.card_name,
+            "reward_earned": compute_reward(float(tx.amount), reward),
         })
     return txns
 
@@ -121,8 +187,16 @@ async def add_transaction(
     card_result = await db.execute(
         select(CardModel).where(CardModel.card_id == body.card_id, CardModel.user_id == current_user.user_id)
     )
-    if not card_result.scalars().first():
+    card = card_result.scalars().first()
+    if not card:
         raise HTTPException(status_code=404, detail="Card not found or does not belong to this user")
+
+    reward = None
+    if card.product_id:
+        reward_result = await db.execute(
+            select(RewardCard).where(RewardCard.product_id == card.product_id)
+        )
+        reward = reward_result.scalars().first()
 
     try:
         txn = await card_service.create_manual_transaction(
@@ -138,11 +212,14 @@ async def add_transaction(
 
     return {
         "transaction_id": str(txn.transaction_id),
-        "merchant": txn.merchant,
+        "card_id": str(txn.card_id),
+        "merchant": title_case(txn.merchant),
         "amount": float(txn.amount),
         "category": txn.category,
-        "transaction_date": txn.transaction_date.strftime("%d %b %Y"),
-        "reward_earned": round(float(txn.amount) * 0.04, 2),
+        "transaction_date": txn.transaction_date.strftime("%d %b %Y") if hasattr(txn.transaction_date, "strftime") else str(txn.transaction_date),
+        "raw_date": txn.transaction_date.isoformat() if hasattr(txn.transaction_date, "isoformat") else str(txn.transaction_date),
+        "card_name": card.card_name,
+        "reward_earned": compute_reward(float(txn.amount), reward),
     }
 
 @card_router.delete("/transactions/{transaction_id}")

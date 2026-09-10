@@ -16,6 +16,7 @@ export interface TransactionItem {
   cardName: string;
   rewardEarned: number;
   category?: string;
+  cardId?: string;
 }
 
 interface AddTransactionModalProps {

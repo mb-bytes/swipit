@@ -141,15 +141,30 @@ class GmailService:
         after_date: str,
     ) -> dict:
         from app.db.models.unmatched import UnmatchedTransaction
+        from app.db.models.cards import Transaction
         from sqlalchemy.future import select as sa_select
 
         ingested, skipped, failed, queued = 0, 0, 0, 0
+
+        txns_res = await db.execute(sa_select(Transaction.raw_email_id).where(Transaction.raw_email_id.isnot(None)))
+        unmatched_res = await db.execute(
+            sa_select(UnmatchedTransaction.raw_email_id).where(
+                UnmatchedTransaction.user_id == uuid.UUID(str(user_id)),
+                UnmatchedTransaction.raw_email_id.isnot(None),
+            )
+        )
+        known_email_ids = set(txns_res.scalars().all()) | set(unmatched_res.scalars().all())
 
         for sender, parser in parsers.items():
             messages = await asyncio.to_thread(
                 self.search_bank_emails, gmail_client, sender, after_date
             )
             for msg in messages:
+                msg_id = msg.get("id")
+                if not msg_id or msg_id in known_email_ids:
+                    skipped += 1
+                    continue
+
                 try:
                     raw_bytes = await self.fetch_raw_message_with_retry(
                         gmail_client, msg["id"]
@@ -172,6 +187,16 @@ class GmailService:
                     card = await card_service.get_card_by_last4(db, user_id, card_last4)
 
                     if card is None:
+                        existing_txn = await db.execute(
+                            sa_select(Transaction.transaction_id).where(
+                                Transaction.raw_email_id == msg["id"]
+                            )
+                        )
+                        if existing_txn.scalars().first() is not None:
+                            known_email_ids.add(msg["id"])
+                            skipped += 1
+                            continue
+
                         existing = await db.execute(
                             sa_select(UnmatchedTransaction).where(
                                 UnmatchedTransaction.raw_email_id == msg["id"]
@@ -190,14 +215,17 @@ class GmailService:
                             )
                             db.add(unmatched)
                             await db.commit()
+                            known_email_ids.add(msg["id"])
                             queued += 1
                         else:
+                            known_email_ids.add(msg["id"])
                             skipped += 1
                         continue
 
                     result = await card_service.save_transaction(
                         db, card.card_id, msg["id"], parsed
                     )
+                    known_email_ids.add(msg["id"])
                     if result is None:
                         skipped += 1
                     else:
