@@ -49,7 +49,6 @@ class RewardService:
             reward, rate = self.compute_raw_reward(transaction.amount, matched_category_rule)
             return RewardResult(reward_earned=reward, rule_applied="category_rate", rate_used=rate, is_excluded=False)
         
-        # fallback to base rate
         reward, rate = self.compute_raw_reward(transaction.amount, base_rate)
         return RewardResult(reward_earned=reward, rule_applied="base_rate", rate_used=rate, is_excluded=False)
 

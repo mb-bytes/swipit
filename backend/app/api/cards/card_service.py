@@ -26,6 +26,7 @@ class CardService:
         user_id: uuid.UUID,
         card_name: str,
         card_last4: str | None,
+        product_id: uuid.UUID | None = None,
     ) -> CardModel:
         if card_last4:
             result = await db.execute(
@@ -44,13 +45,25 @@ class CardService:
             )
         card = result.scalars().first()
         if card is None:
+            if not product_id:
+                prod = (await db.execute(select(CardProduct).where(CardProduct.product_name == card_name))).scalars().first()
+                if prod:
+                    product_id = prod.product_id
             card = CardModel(
                 user_id=user_id,
                 card_name=card_name,
                 card_last4=card_last4,
+                product_id=product_id,
             )
             db.add(card)
             await db.flush()
+        elif card.product_id is None:
+            if product_id:
+                card.product_id = product_id
+            else:
+                prod = (await db.execute(select(CardProduct).where(CardProduct.product_name == card_name))).scalars().first()
+                if prod:
+                    card.product_id = prod.product_id
         return card
 
     async def remove_card(self, db: AsyncSession, card_id: uuid.UUID, user_id: uuid.UUID):
@@ -111,7 +124,9 @@ class CardService:
             user_id=user_id,
             card_name=product.product_name,
             card_last4=card_last4,
+            product_id=product.product_id,
         )
+        card.product_id = product.product_id
         await db.commit()
         return card
         

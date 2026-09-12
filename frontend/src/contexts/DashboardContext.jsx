@@ -27,7 +27,6 @@ export function DashboardProvider({ children }) {
           cardName: c.card_name || c.product_name || "Card",
           cardLast4: c.card_last4 || "1234",
           bankName: c.bank_name || "Bank",
-          cardHolder: displayName.toUpperCase(),
           cardExpiration: "xx/xx",
           theme: "gray-light",
         }))

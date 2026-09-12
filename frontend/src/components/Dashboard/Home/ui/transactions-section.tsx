@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { RefreshCw, Plus, Inbox, Loader2, ChevronRight, ChevronDown, CalendarDays, CreditCard as CardIcon } from "lucide-react";
+import { RefreshCw, Plus, Inbox, Loader2, ChevronRight, CreditCard as CardIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
 import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
+import { beautifyMerchantName } from "@/lib/merchant-utils";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 
@@ -19,32 +20,6 @@ interface TransactionsSectionProps {
   cards: CardItem[];
   googleConnected: boolean;
   showViewAll?: boolean;
-}
-
-function getThisMonthAfterDate(): string {
-  const now = new Date();
-  return `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/01`;
-}
-
-function getQuarterAfterDate(quarter: "Q1" | "Q2" | "Q3" | "Q4"): string {
-  const year = new Date().getFullYear();
-  const startMonths: Record<string, number> = { Q1: 1, Q2: 4, Q3: 7, Q4: 10 };
-  return `${year}/${String(startMonths[quarter]).padStart(2, "0")}/01`;
-}
-
-type SyncPeriod = "this-month" | "Q1" | "Q2" | "Q3" | "Q4";
-
-const PERIOD_OPTIONS: { value: SyncPeriod; label: string }[] = [
-  { value: "this-month", label: "This Month" },
-  { value: "Q1", label: "Q1 (Jan – Mar)" },
-  { value: "Q2", label: "Q2 (Apr – Jun)" },
-  { value: "Q3", label: "Q3 (Jul – Sep)" },
-  { value: "Q4", label: "Q4 (Oct – Dec)" },
-];
-
-function periodToAfterDate(period: SyncPeriod): string {
-  if (period === "this-month") return getThisMonthAfterDate();
-  return getQuarterAfterDate(period);
 }
 
 export function TransactionsSection({
@@ -59,20 +34,7 @@ export function TransactionsSection({
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [periodOpen, setPeriodOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<SyncPeriod>("this-month");
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const periodDropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (periodDropdownRef.current && !periodDropdownRef.current.contains(e.target as Node)) {
-        setPeriodOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -102,7 +64,7 @@ export function TransactionsSection({
           await onRefreshTransactions?.();
           sileo.success({
             title: "Transactions Synced",
-            description: "Your latest transactions have been synced successfully.",
+            description: "Last 5 days of transactions have been synced successfully.",
           });
         } else if (status === "FAILURE") {
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -125,7 +87,7 @@ export function TransactionsSection({
     }, 2000);
   };
 
-  const startSync = async (period: SyncPeriod) => {
+  const startSyncLast5Days = async () => {
     if (cards.length === 0) {
       sileo.info({
         title: "No Cards Found",
@@ -145,10 +107,7 @@ export function TransactionsSection({
 
     setIsSyncing(true);
     try {
-      const afterDate = periodToAfterDate(period);
-      const res = await api.post("/api/gmail/ingest", null, {
-        params: { after_date: afterDate },
-      });
+      const res = await api.post("/api/gmail/sync-last-5-days");
       const taskId = res.data?.task_id;
       if (taskId) {
         pollTaskStatus(taskId);
@@ -163,17 +122,6 @@ export function TransactionsSection({
         description: detail || "Could not initiate Gmail sync. Please try again.",
       });
     }
-  };
-
-  const handleSyncClick = () => {
-    if (isSyncing) return;
-    setPeriodOpen((prev) => !prev);
-  };
-
-  const handlePeriodSelect = (period: SyncPeriod) => {
-    setSelectedPeriod(period);
-    setPeriodOpen(false);
-    startSync(period);
   };
 
   const handleOpenAddModal = () => {
@@ -204,8 +152,6 @@ export function TransactionsSection({
     }
   };
 
-  const selectedLabel = PERIOD_OPTIONS.find((o) => o.value === selectedPeriod)?.label ?? "This Month";
-
   return (
     <section className="flex flex-col gap-4 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -222,63 +168,22 @@ export function TransactionsSection({
         </div>
 
         <div className="flex items-center flex-wrap gap-2 text-xs font-medium text-neutral-600">
-          <div ref={periodDropdownRef} className="relative">
-            <button
-              id="sync-gmail-btn"
-              type="button"
-              onClick={handleSyncClick}
-              disabled={isSyncing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 text-neutral-700 ${
-                  isSyncing ? "animate-spin text-amber-600" : ""
-                }`}
-              />
-              <span>
-                {isSyncing
-                  ? "Syncing…"
-                  : `Sync from Gmail — ${selectedLabel}`}
-              </span>
-              {!isSyncing && (
-                <ChevronDown
-                  className={`w-3 h-3 text-neutral-500 transition-transform duration-150 ${periodOpen ? "rotate-180" : ""}`}
-                />
-              )}
-            </button>
-
-            <AnimatePresence>
-              {periodOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1.5 z-50 min-w-[180px] rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden"
-                >
-                  <div className="px-3 pt-2.5 pb-1 flex items-center gap-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100">
-                    <CalendarDays className="w-3 h-3" />
-                    Select sync period
-                  </div>
-                  {PERIOD_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      id={`sync-period-${opt.value}`}
-                      type="button"
-                      onClick={() => handlePeriodSelect(opt.value)}
-                      className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                        selectedPeriod === opt.value
-                          ? "bg-neutral-100 text-neutral-950"
-                          : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <button
+            id="sync-gmail-btn"
+            type="button"
+            onClick={startSyncLast5Days}
+            disabled={isSyncing}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 text-neutral-700 ${
+                isSyncing ? "animate-spin text-amber-600" : ""
+              }`}
+            />
+            <span>
+              {isSyncing ? "Syncing last 5 days…" : "Sync last 5 days"}
+            </span>
+          </button>
 
           <span className="text-neutral-400 font-mono text-xs">or</span>
 
@@ -338,7 +243,7 @@ export function TransactionsSection({
                         className="hover:bg-neutral-50/80 transition-colors group"
                       >
                         <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
-                          {tx.merchant}
+                          {beautifyMerchantName(tx.merchant)}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="relative group/tooltip inline-flex items-center">

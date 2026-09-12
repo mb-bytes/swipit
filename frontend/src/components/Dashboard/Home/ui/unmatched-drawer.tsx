@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, X, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
+import { AlertTriangle, X, CheckCircle2, CreditCard, Loader2, ChevronsRight } from "lucide-react";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -48,6 +48,14 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
   const [selectedCards, setSelectedCards] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [showAssignAll, setShowAssignAll] = useState(false);
+  const [assignAllCard, setAssignAllCard] = useState<string>(cards[0]?.cardName ?? "");
+  const [isAssigningAll, setIsAssigningAll] = useState(false);
+
+  const cardOptions = cards.map((c) => ({
+    value: c.cardName,
+    label: `${c.cardName} (\u2022\u2022\u2022\u2022 ${c.cardLast4})`,
+  }));
 
   const handleAssign = async (item: UnmatchedItem) => {
     const cardName = selectedCards[item.id] ?? cards[0]?.cardName;
@@ -116,6 +124,30 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
     });
   };
 
+  const handleAssignAll = async () => {
+    const card = cards.find((c) => c.cardName === (assignAllCard || cards[0]?.cardName));
+    if (!card) {
+      sileo.error({ title: "Select a card", description: "Choose which card to assign all transactions to." });
+      return;
+    }
+    setIsAssigningAll(true);
+    try {
+      const res = await api.post("/api/unmatched/assign-all", { card_id: card.id });
+      const data = res.data;
+      sileo.success({
+        title: "All assigned",
+        description: `${data.assigned} transaction${data.assigned !== 1 ? "s" : ""} assigned to ${data.card_name}.`,
+      });
+      setShowAssignAll(false);
+      onDismissAll?.();
+      onClose();
+    } catch {
+      sileo.error({ title: "Failed to assign all", description: "A server error occurred." });
+    } finally {
+      setIsAssigningAll(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -148,14 +180,28 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
               </div>
               <div className="flex items-center gap-2">
                 {items.length > 0 && (
-                  <button
-                    type="button"
-                    disabled={isDeletingAll}
-                    onClick={handleDismissAll}
-                    className="text-xs font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-2.5 py-1.5 rounded-lg border border-red-500/20 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isDeletingAll ? "Deleting..." : "Delete All"}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={isAssigningAll}
+                      onClick={() => setShowAssignAll((v) => !v)}
+                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer disabled:opacity-50 ${
+                        showAssignAll
+                          ? "text-amber-300 bg-amber-500/20 border-amber-500/30"
+                          : "text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20"
+                      }`}
+                    >
+                      Assign All
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDeletingAll}
+                      onClick={handleDismissAll}
+                      className="text-xs font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-2.5 py-1.5 rounded-lg border border-red-500/20 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isDeletingAll ? "Deleting..." : "Delete All"}
+                    </button>
+                  </>
                 )}
                 <button
                   type="button"
@@ -167,6 +213,53 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
               </div>
             </div>
 
+            <AnimatePresence>
+              {showAssignAll && items.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                  className="shrink-0"
+                >
+                  <div className="px-5 py-4 bg-amber-500/[0.07] border-b border-amber-500/20 flex flex-col gap-3">
+                    <p className="text-xs text-amber-300/80 font-medium">
+                      Assign all {items.length} unmatched transactions to one card
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                      <Dropdown
+                        className="flex-1"
+                        triggerClassName="w-full rounded-xl bg-white/[0.06] border border-white/10 px-3 py-2 text-xs text-white focus:ring-2 focus:ring-amber-400/50"
+                        menuClassName="bg-[#1e1f23] border border-white/10 text-white text-sm"
+                        value={assignAllCard || cards[0]?.cardName || ""}
+                        onChange={(val) => setAssignAllCard(val)}
+                        items={cardOptions}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isAssigningAll || cards.length === 0}
+                      onClick={handleAssignAll}
+                      className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isAssigningAll ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Assigning all...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronsRight className="w-3.5 h-3.5" />
+                          <span>Assign all {items.length} transactions</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
@@ -177,7 +270,7 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
               ) : (
                 items.map((item) => {
                   const isBusy = loadingId === item.id;
-                  const cardOptions = cards.map((c) => ({
+                  const itemCardOptions = cards.map((c) => ({
                     value: c.cardName,
                     label: `${c.cardName} (\u2022\u2022\u2022\u2022 ${c.cardLast4})`
                   }));
@@ -222,7 +315,7 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
                           menuClassName="bg-[#1e1f23] border border-white/10 text-white text-sm"
                           value={selectedCards[item.id] ?? cards[0]?.cardName ?? ""}
                           onChange={(val) => setSelectedCards((prev) => ({ ...prev, [item.id]: val }))}
-                          items={cardOptions}
+                          items={itemCardOptions}
                         />
                       </div>
 

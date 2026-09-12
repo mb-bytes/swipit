@@ -14,12 +14,14 @@ import {
   RotateCcw,
   Sparkles,
   BarChart3,
+  RefreshCw,
 } from "lucide-react";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 import { useDashboard } from "@/contexts/DashboardContext";
 import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
+import { beautifyMerchantName } from "@/lib/merchant-utils";
 import { MonoRoundedLineChart } from "@/components/charts/MonoRoundedLineChart";
 import { MonoRoundedDonutChart } from "@/components/charts/MonoRoundedDonutChart";
 import { MonoRoundedFunnelChart } from "@/components/charts/MonoRoundedFunnelChart";
@@ -61,36 +63,50 @@ const QUARTERS = [
   { id: 4, label: "Q4", name: "Q4 (Oct - Dec)", months: [9, 10, 11] },
 ];
 
+const SYNC_PERIOD_OPTIONS = [
+  { value: "last-30-days", label: "Last 30 Days", quarterNumber: null },
+  { value: "Q1", label: "Q1 (Jan – Mar)", quarterNumber: 1 },
+  { value: "Q2", label: "Q2 (Apr – Jun)", quarterNumber: 2 },
+  { value: "Q3", label: "Q3 (Jul – Sep)", quarterNumber: 3 },
+  { value: "Q4", label: "Q4 (Oct – Dec)", quarterNumber: 4 },
+];
+
 function parseDateComponents(tx) {
   if (tx._parsed) return tx._parsed;
-  let year = new Date().getFullYear();
-  let month = new Date().getMonth();
+  const now = new Date();
+  let year = now.getFullYear();
+  let month = now.getMonth();
   let day = 1;
 
-  if (
-    tx.rawDate &&
-    typeof tx.rawDate === "string" &&
-    tx.rawDate.includes("-")
-  ) {
-    const parts = tx.rawDate.split("T")[0].split("-");
-    if (parts.length >= 3) {
-      year = parseInt(parts[0], 10) || year;
-      month = (parseInt(parts[1], 10) || 1) - 1;
-      day = parseInt(parts[2], 10) || 1;
+  const raw = tx.rawDate || tx.raw_date || tx.date || tx.transaction_date;
+  if (raw instanceof Date && !isNaN(raw.getTime())) {
+    year = raw.getFullYear();
+    month = raw.getMonth();
+    day = raw.getDate();
+  } else if (typeof raw === "string") {
+    if (raw.includes("-")) {
+      const parts = raw.split("T")[0].split("-");
+      if (parts.length >= 3) {
+        year = parseInt(parts[0], 10) || year;
+        month = (parseInt(parts[1], 10) || 1) - 1;
+        day = parseInt(parts[2], 10) || 1;
+      }
+    } else if (raw.includes("/")) {
+      const parts = raw.split("/");
+      if (parts.length >= 3) {
+        year = parseInt(parts[0], 10) || year;
+        month = (parseInt(parts[1], 10) || 1) - 1;
+        day = parseInt(parts[2], 10) || 1;
+      }
+    } else {
+      const parts = raw.trim().split(/\s+/);
+      if (parts.length >= 3) {
+        day = parseInt(parts[0], 10) || 1;
+        const mIdx = SHORT_MONTHS.indexOf(parts[1]);
+        if (mIdx !== -1) month = mIdx;
+        year = parseInt(parts[2], 10) || year;
+      }
     }
-  } else if (tx.date && typeof tx.date === "string") {
-    const parts = tx.date.trim().split(/\s+/);
-    if (parts.length >= 3) {
-      day = parseInt(parts[0], 10) || 1;
-      const mIdx = SHORT_MONTHS.indexOf(parts[1]);
-      if (mIdx !== -1) month = mIdx;
-      year = parseInt(parts[2], 10) || year;
-    }
-  } else {
-    const d = new Date();
-    year = d.getFullYear();
-    month = d.getMonth();
-    day = d.getDate();
   }
 
   const quarter = Math.floor(month / 3) + 1;
@@ -146,9 +162,39 @@ export function Spends() {
   const [visibleCount, setVisibleCount] = useState(50);
   const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false);
   const [excludeDropdownOpen, setExcludeDropdownOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncPeriodOpen, setSyncPeriodOpen] = useState(false);
+  const [selectedSyncPeriod, setSelectedSyncPeriod] = useState("last-30-days");
+  const [googleConnected, setGoogleConnected] = useState(false);
 
   const periodRef = useRef(null);
   const excludeRef = useRef(null);
+  const syncDropdownRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const currentQuarter = Math.floor(currentMonth / 3) + 1;
+
+  useEffect(() => {
+    async function checkGoogle() {
+      try {
+        const res = await api.get("/auth/google/status");
+        setGoogleConnected(Boolean(res.data?.connected));
+      } catch {
+        setGoogleConnected(false);
+      }
+    }
+    checkGoogle();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -158,21 +204,115 @@ export function Spends() {
       if (excludeRef.current && !excludeRef.current.contains(e.target)) {
         setExcludeDropdownOpen(false);
       }
+      if (syncDropdownRef.current && !syncDropdownRef.current.contains(e.target)) {
+        setSyncPeriodOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const pollTaskStatus = (taskId) => {
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
+
+    pollIntervalRef.current = setInterval(async () => {
+      attempts += 1;
+      try {
+        const res = await api.get(`/api/gmail/task/${taskId}`);
+        const status = res.data?.status;
+
+        if (status === "SUCCESS") {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setIsSyncing(false);
+          await fetchAll();
+          sileo.success({
+            title: "Transactions Synced",
+            description: "Your transactions have been synced successfully.",
+          });
+        } else if (status === "FAILURE") {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setIsSyncing(false);
+          sileo.error({
+            title: "Sync Failed",
+            description: res.data?.error || "Failed to sync transactions from Gmail.",
+          });
+        } else if (attempts >= maxAttempts) {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setIsSyncing(false);
+          await fetchAll();
+        }
+      } catch {
+        if (attempts >= maxAttempts) {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setIsSyncing(false);
+        }
+      }
+    }, 2000);
+  };
+
+  const startSync = async (period) => {
+    if (cards.length === 0) {
+      sileo.info({
+        title: "No Cards Found",
+        description: "Add at least one card before syncing transactions.",
+      });
+      return;
+    }
+
+    if (!googleConnected) {
+      sileo.info({
+        title: "Gmail Not Connected",
+        description: "Connect your Gmail account to sync bank alerts automatically.",
+      });
+      window.location.href = "http://localhost:8000/auth/google/login?action=connect";
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      let afterDate = "";
+      if (period === "last-30-days") {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        afterDate = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+      } else {
+        const startMonths = { Q1: "01", Q2: "04", Q3: "07", Q4: "10" };
+        afterDate = `${currentYear}/${startMonths[period]}/01`;
+      }
+
+      const res = await api.post("/api/gmail/ingest", null, {
+        params: { after_date: afterDate },
+      });
+      const taskId = res.data?.task_id;
+      if (taskId) {
+        pollTaskStatus(taskId);
+      } else {
+        setTimeout(() => setIsSyncing(false), 2000);
+      }
+    } catch (err) {
+      setIsSyncing(false);
+      const detail = err?.response?.data?.detail;
+      sileo.error({
+        title: "Sync Error",
+        description: detail || "Could not initiate Gmail sync. Please try again.",
+      });
+    }
+  };
+
   const availableYears = useMemo(() => {
     const years = new Set();
-    const currentYear = new Date().getFullYear();
     years.add(currentYear);
     transactions.forEach((tx) => {
       const p = parseDateComponents(tx);
       years.add(p.year);
     });
     return Array.from(years).sort((a, b) => b - a);
-  }, [transactions]);
+  }, [transactions, currentYear]);
 
   const toggleExcludeCard = (cardId) => {
     setExcludedCardIds((prev) => {
@@ -192,18 +332,17 @@ export function Spends() {
     setVisibleCount(50);
   };
 
-  const {
-    filteredTxns,
-    lineData,
-    donutData,
-    funnelData,
-    totalSpendPeriod,
-    periodLabel,
-  } = useMemo(() => {
+  const analyticsData = useMemo(() => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
     const list = [];
     let totalSpend = 0;
 
     const timeBuckets = {};
+    const dateOrderMap = {};
     const categoryTotals = {};
     const merchantTotals = {};
 
@@ -211,33 +350,22 @@ export function Spends() {
       if (excludedCardIds.has(tx.cardId)) return;
 
       const p = parseDateComponents(tx);
-      const yearMatch = p.year === selectedYear;
-
-      let periodMatch = false;
-      if (periodMode === "month") {
-        periodMatch = yearMatch && p.month === selectedMonth;
-      } else {
-        periodMatch = yearMatch && p.quarter === selectedQuarter;
-      }
-
-      if (!periodMatch) return;
+      const txDate = new Date(p.year, p.month, p.day);
+      if (txDate < thirtyDaysAgo || txDate > now) return;
 
       list.push(tx);
       const amt = Number(tx.amount) || 0;
       totalSpend += amt;
 
-      if (periodMode === "month") {
-        const key = `${p.day} ${SHORT_MONTHS[p.month]}`;
-        timeBuckets[key] = (timeBuckets[key] || 0) + amt;
-      } else {
-        const key = SHORT_MONTHS[p.month];
-        timeBuckets[key] = (timeBuckets[key] || 0) + amt;
-      }
+      const key = `${p.day} ${SHORT_MONTHS[p.month]}`;
+      timeBuckets[key] = (timeBuckets[key] || 0) + amt;
+      dateOrderMap[key] = txDate.getTime();
 
       const cat = tx.category || "General";
       categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
 
-      const merch = tx.merchant || "Unknown";
+      const rawMerch = tx.merchant || "Unknown";
+      const merch = beautifyMerchantName(rawMerch);
       if (!merchantTotals[merch]) {
         merchantTotals[merch] = { volume: 0, count: 0 };
       }
@@ -245,25 +373,17 @@ export function Spends() {
       merchantTotals[merch].count += 1;
     });
 
-    let line = [];
-    if (periodMode === "month") {
-      line = Object.entries(timeBuckets).map(([label, value]) => ({
+    let line = Object.entries(timeBuckets)
+      .map(([label, value]) => ({
         label,
         value: Math.round(value),
-      }));
-      if (line.length === 0) {
-        line = [{ label: `${MONTH_NAMES[selectedMonth]} 1`, value: 0 }];
-      }
-    } else {
-      const qMonths = QUARTERS.find((q) => q.id === selectedQuarter)
-        ?.months || [0, 1, 2];
-      line = qMonths.map((mIdx) => {
-        const label = SHORT_MONTHS[mIdx];
-        return {
-          label,
-          value: Math.round(timeBuckets[label] || 0),
-        };
-      });
+        time: dateOrderMap[label] || 0,
+      }))
+      .sort((a, b) => a.time - b.time)
+      .map(({ label, value }) => ({ label, value }));
+
+    if (line.length === 0) {
+      line = [{ label: "Today", value: 0 }];
     }
 
     const sortedCats = Object.entries(categoryTotals)
@@ -301,16 +421,52 @@ export function Spends() {
 
     const funnel = sortedMerchants.slice(0, 5);
 
-    const label =
-      periodMode === "month"
-        ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
-        : `Q${selectedQuarter} ${selectedYear} (${QUARTERS.find((q) => q.id === selectedQuarter)?.name.split(" ")[1] || ""})`;
-
     return {
       filteredTxns: list,
       lineData: line,
       donutData: donut,
       funnelData: funnel,
+      totalSpend,
+    };
+  }, [transactions, excludedCardIds]);
+
+  const {
+    filteredTxns,
+    totalSpendPeriod,
+    periodLabel,
+  } = useMemo(() => {
+    const list = [];
+    let totalSpend = 0;
+
+    transactions.forEach((tx) => {
+      if (excludedCardIds.has(tx.cardId)) return;
+
+      const p = parseDateComponents(tx);
+      const yearMatch = p.year === selectedYear;
+
+      let periodMatch = false;
+      if (periodMode === "month") {
+        periodMatch = yearMatch && p.month === selectedMonth;
+      } else {
+        periodMatch = yearMatch && p.quarter === selectedQuarter;
+      }
+
+      if (!periodMatch) return;
+
+      list.push(tx);
+      const amt = Number(tx.amount) || 0;
+      totalSpend += amt;
+    });
+
+    const qObj = QUARTERS.find((q) => q.id === selectedQuarter);
+    const qMonths = qObj ? qObj.name.replace(/^Q\d\s*/, "") : "";
+    const label =
+      periodMode === "month"
+        ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
+        : `Q${selectedQuarter} ${selectedYear} ${qMonths}`;
+
+    return {
+      filteredTxns: list,
       totalSpendPeriod: totalSpend,
       periodLabel: label,
     };
@@ -342,8 +498,8 @@ export function Spends() {
   };
 
   return (
-    <div className="flex flex-1 h-full overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 paper-grain overflow-y-auto">
+    <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
+      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
@@ -359,18 +515,86 @@ export function Spends() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2">
+            <div ref={syncDropdownRef} className="relative">
+              <button
+                id="sync-spends-btn"
+                type="button"
+                onClick={() => !isSyncing && setSyncPeriodOpen((prev) => !prev)}
+                disabled={isSyncing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium text-neutral-700"
+              >
+                <RefreshCw
+                  className={`w-3.5 h-3.5 text-neutral-700 ${
+                    isSyncing ? "animate-spin text-amber-600" : ""
+                  }`}
+                />
+                <span>
+                  {isSyncing
+                    ? "Syncing…"
+                    : `Sync from Gmail — ${SYNC_PERIOD_OPTIONS.find((o) => o.value === selectedSyncPeriod)?.label ?? "Last 30 Days"}`}
+                </span>
+                {!isSyncing && (
+                  <ChevronDown
+                    className={`w-3 h-3 text-neutral-500 transition-transform duration-150 ${
+                      syncPeriodOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                )}
+              </button>
+
+              {syncPeriodOpen && (
+                <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[200px] rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 pt-2.5 pb-1 flex items-center gap-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100">
+                    <Calendar className="w-3 h-3" />
+                    Select sync period
+                  </div>
+                  {SYNC_PERIOD_OPTIONS.map((opt) => {
+                    const isQuarterDisabled =
+                      opt.quarterNumber !== null && opt.quarterNumber > currentQuarter;
+                    return (
+                      <button
+                        key={opt.value}
+                        id={`sync-spends-period-${opt.value}`}
+                        type="button"
+                        disabled={isQuarterDisabled}
+                        onClick={() => {
+                          if (isQuarterDisabled) return;
+                          setSelectedSyncPeriod(opt.value);
+                          setSyncPeriodOpen(false);
+                          startSync(opt.value);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors flex items-center justify-between ${
+                          isQuarterDisabled
+                            ? "opacity-40 cursor-not-allowed bg-neutral-50 text-neutral-400"
+                            : selectedSyncPeriod === opt.value
+                            ? "bg-neutral-100 text-neutral-950 cursor-pointer"
+                            : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950 cursor-pointer"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isQuarterDisabled && (
+                          <span className="text-[10px] font-normal text-neutral-400">
+                            Unavailable
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 bg-white/90 border border-neutral-200/90 px-3 py-1.5 rounded-full shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-neutral-900" />
               <span>
-                ₹{totalSpendPeriod.toLocaleString("en-IN")} spent in{" "}
-                {periodLabel}
+                ₹{analyticsData.totalSpend.toLocaleString("en-IN")} spent (Last 30 days)
               </span>
             </span>
           </div>
         </div>
 
-        {filteredTxns.length < 5 ? (
+        {analyticsData.filteredTxns.length < 5 ? (
           <div className="rounded-3xl border border-neutral-300/80 bg-white/70 p-8 md:p-12 flex flex-col items-center justify-center text-center shadow-2xs backdrop-blur-xs min-h-[280px]">
             <div className="w-12 h-12 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
               <BarChart3 className="w-6 h-6 text-neutral-700" />
@@ -379,12 +603,12 @@ export function Spends() {
               Not enough transactions yet
             </h3>
             <p className="text-xs text-neutral-500 mt-1 max-w-md leading-relaxed">
-              At least 5 transactions in {periodLabel} are required to generate
+              At least 5 transactions in the last 30 days are required to generate
               spend trends, category distribution, and top merchant analytics.
             </p>
             <div className="mt-4 flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200">
-                <span>{filteredTxns.length} / 5 transactions found</span>
+                <span>{analyticsData.filteredTxns.length} / 5 transactions found</span>
               </span>
             </div>
           </div>
@@ -392,28 +616,28 @@ export function Spends() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
             <div className="lg:col-span-7 flex flex-col h-full">
               <MonoRoundedLineChart
-                data={lineData}
+                data={analyticsData.lineData}
                 theme="light"
                 title="Spend Dynamics"
-                subtitle={`Spends for ${periodLabel}`}
-                badgeText="Spline Dynamics"
+                subtitle="Last 30 Days"
+                badgeText="Last 30 Days"
                 className="h-full flex-1"
               />
             </div>
 
             <div className="lg:col-span-5 flex flex-col justify-between gap-5 h-full">
               <MonoRoundedDonutChart
-                data={donutData}
+                data={analyticsData.donutData}
                 theme="light"
                 title="Top Categories"
-                subtitle="Top 3 categories"
+                subtitle="Last 30 days"
                 className="flex-1"
               />
               <MonoRoundedFunnelChart
-                data={funnelData}
+                data={analyticsData.funnelData}
                 theme="light"
                 title="Top 5 Merchants"
-                subtitle="by spends"
+                subtitle="Last 30 days"
                 className="flex-1"
               />
             </div>
@@ -422,7 +646,7 @@ export function Spends() {
 
         <hr className="border-neutral-300/80 my-1" />
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
           <div className="flex flex-col gap-2">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
               Transactions for {periodLabel}
@@ -604,27 +828,34 @@ export function Spends() {
 
                 {periodMode === "quarter" && (
                   <div className="flex flex-col gap-1.5">
-                    {QUARTERS.map((q) => (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedQuarter(q.id);
-                          setPeriodDropdownOpen(false);
-                          setVisibleCount(50);
-                        }}
-                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                          selectedQuarter === q.id
-                            ? "bg-neutral-900 text-white font-bold shadow-xs"
-                            : "bg-neutral-50 hover:bg-neutral-100 text-neutral-700"
-                        }`}
-                      >
-                        <span className="font-semibold">{q.label}</span>
-                        <span className="text-neutral-400 font-normal">
-                          {q.name}
-                        </span>
-                      </button>
-                    ))}
+                    {QUARTERS.map((q) => {
+                      const isQDisabled = selectedYear === currentYear && q.id > currentQuarter;
+                      return (
+                        <button
+                          key={q.id}
+                          type="button"
+                          disabled={isQDisabled}
+                          onClick={() => {
+                            if (isQDisabled) return;
+                            setSelectedQuarter(q.id);
+                            setPeriodDropdownOpen(false);
+                            setVisibleCount(50);
+                          }}
+                          className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-medium transition-all ${
+                            isQDisabled
+                              ? "opacity-40 cursor-not-allowed bg-neutral-50 text-neutral-400"
+                              : selectedQuarter === q.id
+                              ? "bg-neutral-900 text-white font-bold shadow-xs cursor-pointer"
+                              : "bg-neutral-50 hover:bg-neutral-100 text-neutral-700 cursor-pointer"
+                          }`}
+                        >
+                          <span className="font-semibold">{q.label}</span>
+                          <span className="text-neutral-400 font-normal">
+                            {q.name} {isQDisabled ? "(Unavailable)" : ""}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -632,6 +863,7 @@ export function Spends() {
           </div>
         </div>
 
+        <div className="w-full shrink-0 flex flex-col gap-4 pb-16 min-h-[300px]">
         {loading ? (
           <div className="flex flex-1 items-center justify-center gap-2 text-neutral-500 py-16">
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -663,7 +895,7 @@ export function Spends() {
             )}
           </div>
         ) : (
-          <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden">
+          <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden w-full shrink-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[540px]">
                 <thead>
@@ -697,7 +929,7 @@ export function Spends() {
                       >
                         <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <span>{tx.merchant}</span>
+                            <span>{beautifyMerchantName(tx.merchant)}</span>
                             {tx.category && (
                               <span className="text-[10px] font-medium text-neutral-500 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 rounded-full">
                                 {tx.category}
@@ -770,6 +1002,7 @@ export function Spends() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

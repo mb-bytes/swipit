@@ -19,6 +19,8 @@ PARSERS = {
     "fedmail@federal.bank.in": parse_federal,
 }
 
+from datetime import date, timedelta
+
 @gmail_router.post("/ingest", summary="Ingest Gmail transactions into registered cards")
 async def ingest_gmail(
     after_date: str = "2026/07/25",
@@ -35,6 +37,31 @@ async def ingest_gmail(
             detail="Please register at least one card before syncing Gmail transactions",
         )
 
+    task = ingest_gmail_for_user.delay(str(user_id), after_date)
+    return {
+        "status": "pending",
+        "task_id": task.id,
+        "message": "Gmail sync has started in the background",
+    }
+
+
+@gmail_router.post("/sync-last-5-days", summary="Ingest last 5 days of Gmail transactions")
+@gmail_router.post("/sync-recent", summary="Ingest last 5 days of Gmail transactions")
+async def sync_last_5_days(
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_curr_user),
+):
+    user_id = current_user.user_id
+    card_result = await db.execute(
+        select(CardModel).where(CardModel.user_id == user_id).limit(1)
+    )
+    if not card_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please register at least one card before syncing Gmail transactions",
+        )
+
+    after_date = (date.today() - timedelta(days=5)).strftime("%Y/%m/%d")
     task = ingest_gmail_for_user.delay(str(user_id), after_date)
     return {
         "status": "pending",

@@ -121,6 +121,70 @@ async def assign_card(
     }
 
 
+@unmatched_router.post("/assign-all")
+async def assign_all_unmatched(
+    body: AssignCardRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_curr_user),
+):
+    card_result = await db.execute(
+        select(CardModel).where(
+            CardModel.card_id == body.card_id,
+            CardModel.user_id == current_user.user_id,
+        )
+    )
+    card = card_result.scalars().first()
+    if not card:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Card not found")
+
+    result = await db.execute(
+        select(UnmatchedTransaction).where(
+            UnmatchedTransaction.user_id == current_user.user_id
+        )
+    )
+    items = result.scalars().all()
+
+    from app.celery_task import call_manage_transaction
+
+    assigned_ids = []
+    for unmatched in items:
+        category = await categorize_service.categorize_transaction(db, unmatched.merchant)
+
+        existing_txn_result = await db.execute(
+            select(Transaction).where(Transaction.raw_email_id == unmatched.raw_email_id)
+        )
+        existing_txn = existing_txn_result.scalars().first()
+
+        if existing_txn:
+            existing_txn.card_id = body.card_id
+            if category and not existing_txn.category:
+                existing_txn.category = category
+            txn = existing_txn
+        else:
+            txn = Transaction(
+                card_id=body.card_id,
+                merchant=unmatched.merchant,
+                amount=unmatched.amount,
+                category=category,
+                transaction_date=unmatched.transaction_date,
+                transaction_time=unmatched.transaction_time,
+                raw_email_id=unmatched.raw_email_id,
+            )
+            db.add(txn)
+
+        await db.delete(unmatched)
+        await db.flush()
+        await db.refresh(txn)
+        assigned_ids.append(str(txn.transaction_id))
+
+    await db.commit()
+
+    for txn_id in assigned_ids:
+        call_manage_transaction.delay(txn_id)
+
+    return {"assigned": len(assigned_ids), "card_name": card.card_name}
+
+
 @unmatched_router.delete("/all")
 async def dismiss_all_unmatched(
     db: AsyncSession = Depends(get_db),
