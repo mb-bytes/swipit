@@ -15,6 +15,8 @@ import {
   IconSettings,
   IconUser,
   IconSelector,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
 } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -34,9 +36,8 @@ export function SidebarDemo({ children }) {
       .promise(logout(), {
         loading: {
           title: "Signing out...",
-          description: "Clearing your session",
         },
-        success: { title: "Signed out" },
+        success: { title: "Logged out successfully" },
         error: { title: "Sign out failed", description: "Please try again" },
       })
       .then(() => {
@@ -79,11 +80,45 @@ export function SidebarDemo({ children }) {
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            {open ? (
-              <Logo onClick={() => navigate("/dashboard")} />
-            ) : (
-              <LogoIcon onClick={() => navigate("/dashboard")} />
-            )}
+            {/* Top Brand Logo & Toggle Button */}
+            <div
+              className={cn(
+                "flex items-center min-h-[40px] px-0.5",
+                open ? "justify-between" : "justify-center w-full",
+              )}
+            >
+              {open && (
+                <div
+                  className="cursor-pointer overflow-hidden flex items-center"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <BrandLogo size="sm" />
+                </div>
+              )}
+
+              <div className="relative group/toggle shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOpen((prev) => !prev)}
+                  className="p-2 rounded-xl text-neutral-600 hover:text-neutral-950 hover:bg-neutral-300/60 transition-colors cursor-pointer flex items-center justify-center"
+                  title={open ? "Collapse sidebar" : "Expand sidebar"}
+                >
+                  {open ? (
+                    <IconLayoutSidebarLeftCollapse className="w-5 h-5" />
+                  ) : (
+                    <IconLayoutSidebarLeftExpand className="w-5 h-5" />
+                  )}
+                </button>
+                {!open && (
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/toggle:flex items-center z-50 whitespace-nowrap">
+                    <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800">
+                      Expand sidebar
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink
@@ -134,12 +169,6 @@ function UserProfileDropdown({ user, onLogout }) {
     };
   }, [menuOpen]);
 
-  useEffect(() => {
-    if (!sidebarOpen) {
-      setMenuOpen(false);
-    }
-  }, [sidebarOpen]);
-
   const displayName = user?.name || user?.username || "User";
   const userInitials = displayName
     .split(" ")
@@ -149,15 +178,20 @@ function UserProfileDropdown({ user, onLogout }) {
     .toUpperCase();
 
   return (
-    <div ref={menuRef} className="relative w-full">
+    <div ref={menuRef} className="relative w-full group/profile">
       <AnimatePresence>
-        {sidebarOpen && menuOpen && (
+        {menuOpen && (
           <motion.div
             initial={{ opacity: 0, y: 6, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-full mb-2.5 left-0 w-56 rounded-2xl bg-[#1e1f23] border border-white/[0.08] shadow-2xl p-1.5 flex flex-col gap-0.5 text-neutral-300 z-50 select-none"
+            className={cn(
+              "absolute rounded-2xl bg-[#1e1f23] border border-white/[0.08] shadow-2xl p-1.5 flex flex-col gap-0.5 text-neutral-300 z-50 select-none",
+              sidebarOpen
+                ? "bottom-full mb-2.5 left-0 w-56"
+                : "left-full bottom-0 ml-3.5 w-52"
+            )}
           >
             <button
               type="button"
@@ -200,7 +234,8 @@ function UserProfileDropdown({ user, onLogout }) {
         type="button"
         onClick={() => setMenuOpen((prev) => !prev)}
         className={cn(
-          "flex items-center w-full gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left group",
+          "flex items-center w-full rounded-xl transition-all duration-150 cursor-pointer text-left group",
+          sidebarOpen ? "gap-3 px-3 py-2.5" : "justify-center py-2.5 px-0",
           menuOpen
             ? "bg-[#111215] text-[#f2eee5] shadow-xs"
             : "text-neutral-700 hover:bg-neutral-300/50 hover:text-neutral-900",
@@ -225,25 +260,14 @@ function UserProfileDropdown({ user, onLogout }) {
           )}
         </div>
 
-        <motion.span
-          animate={{
-            display: sidebarOpen ? "inline-block" : "none",
-            opacity: sidebarOpen ? 1 : 0,
-          }}
-          className={cn(
-            "text-sm tracking-tight whitespace-pre inline-block !p-0 !m-0 transition-colors truncate flex-1",
-            menuOpen
-              ? "text-[#f2eee5] font-semibold"
-              : "text-neutral-800 font-medium",
-          )}
-        >
-          {displayName}
-        </motion.span>
+        {sidebarOpen && (
+          <span className="text-sm tracking-tight whitespace-nowrap truncate flex-1 font-medium text-neutral-800 transition-colors">
+            {displayName}
+          </span>
+        )}
 
         {sidebarOpen && (
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <span
             className={cn(
               "shrink-0 transition-colors",
               menuOpen
@@ -252,9 +276,17 @@ function UserProfileDropdown({ user, onLogout }) {
             )}
           >
             <IconSelector className="w-4 h-4" />
-          </motion.span>
+          </span>
         )}
       </button>
+
+      {!sidebarOpen && !menuOpen && (
+        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/profile:flex items-center z-50 whitespace-nowrap">
+          <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800">
+            {displayName}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

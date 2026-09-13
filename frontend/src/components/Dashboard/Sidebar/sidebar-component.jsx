@@ -19,7 +19,7 @@ export const SidebarProvider = ({
   children,
   open: openProp,
   setOpen: setOpenProp,
-  animate = true
+  animate = true,
 }) => {
   const [openState, setOpenState] = useState(false);
 
@@ -33,12 +33,7 @@ export const SidebarProvider = ({
   );
 };
 
-export const Sidebar = ({
-  children,
-  open,
-  setOpen,
-  animate
-}) => {
+export const Sidebar = ({ children, open, setOpen, animate }) => {
   return (
     <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
       {children}
@@ -50,55 +45,48 @@ export const SidebarBody = (props) => {
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar {...(props)} />
+      <MobileSidebar {...props} />
     </>
   );
 };
 
-export const DesktopSidebar = ({
-  className,
-  children,
-  ...props
-}) => {
-  const { open, setOpen, animate } = useSidebar();
+export const DesktopSidebar = ({ className, children, ...props }) => {
+  const { open, animate } = useSidebar();
   return (
     <>
-      <motion.div
+      <div
         className={cn(
-          "h-full px-3.5 py-4 hidden md:flex md:flex-col bg-[#eae5d9]/90 backdrop-blur-xs border-r border-neutral-300/80 shrink-0 select-none z-30 transition-colors",
-          className
+          "h-full px-3.5 py-4 hidden md:flex md:flex-col bg-[#eae5d9]/90 backdrop-blur-xs border-r border-neutral-300/80 shrink-0 select-none z-30 transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] will-change-[width]",
+          className,
         )}
-        animate={{
+        style={{
           width: animate ? (open ? "260px" : "72px") : "260px",
         }}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        {...props}>
+        {...props}
+      >
         {children}
-      </motion.div>
+      </div>
     </>
   );
 };
 
-export const MobileSidebar = ({
-  className,
-  children,
-  ...props
-}) => {
+export const MobileSidebar = ({ className, children, ...props }) => {
   const { open, setOpen } = useSidebar();
   return (
     <>
       <div
         className={cn(
-          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-[#eae5d9] border-b border-neutral-300/80 w-full z-40"
+          "h-14 px-4 flex flex-row md:hidden items-center justify-between bg-[#eae5d9] border-b border-neutral-300/80 w-full z-40",
         )}
-        {...props}>
+        {...props}
+      >
         <div className="flex justify-between items-center w-full">
           <BrandLogo size="sm" />
           <button
             type="button"
             onClick={() => setOpen(!open)}
-            className="p-2 rounded-xl bg-white/70 border border-neutral-300/80 text-neutral-800 hover:bg-white cursor-pointer shadow-2xs">
+            className="p-2 rounded-xl bg-white/70 border border-neutral-300/80 text-neutral-800 hover:bg-white cursor-pointer shadow-2xs"
+          >
             <IconMenu2 className="w-5 h-5 text-neutral-800" />
           </button>
         </div>
@@ -114,11 +102,13 @@ export const MobileSidebar = ({
               }}
               className={cn(
                 "fixed h-full w-full inset-0 bg-[#f2eee5] p-6 z-[100] flex flex-col justify-between paper-grain",
-                className
-              )}>
+                className,
+              )}
+            >
               <div
                 className="absolute right-5 top-5 z-50 p-2 rounded-xl bg-white/80 border border-neutral-300/80 text-neutral-800 cursor-pointer shadow-2xs hover:bg-white"
-                onClick={() => setOpen(!open)}>
+                onClick={() => setOpen(!open)}
+              >
                 <IconX className="w-5 h-5" />
               </div>
               {children}
@@ -130,12 +120,7 @@ export const MobileSidebar = ({
   );
 };
 
-export const SidebarLink = ({
-  link,
-  className,
-  active = false,
-  ...props
-}) => {
+export const SidebarLink = ({ link, className, active = false, ...props }) => {
   const { open, setOpen, animate } = useSidebar();
   const handleClick = (e) => {
     if (link.onClick) {
@@ -146,46 +131,68 @@ export const SidebarLink = ({
     }
   };
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={cn(
-        "flex items-center w-full gap-3 group/sidebar px-3 py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left",
-        active
-          ? "bg-[#111215] text-[#f2eee5] shadow-xs"
-          : "text-neutral-700 hover:bg-neutral-300/50 hover:text-neutral-900",
-        className
-      )}
-      {...props}>
-      <span className={cn(
-        "shrink-0 transition-transform duration-200 group-hover/sidebar:scale-110",
-        active ? "text-[#f2eee5]" : "text-neutral-600"
-      )}>
-        {link.icon}
-      </span>
-      <motion.span
-        animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
-          opacity: animate ? (open ? 1 : 0) : 1,
-        }}
+    <div className="relative group/tooltip w-full">
+      <button
+        type="button"
+        onClick={handleClick}
         className={cn(
-          "text-sm font-medium tracking-tight whitespace-pre inline-block !p-0 !m-0 transition-colors truncate",
-          active ? "text-[#f2eee5] font-semibold" : "text-neutral-800"
-        )}>
-        {link.label}
-      </motion.span>
-      {link.badge && open && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          "flex items-center w-full group/sidebar py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left",
+          open ? "gap-3 px-3" : "justify-center px-0",
+          active
+            ? "bg-[#111215] text-[#f2eee5] shadow-xs"
+            : "text-neutral-700 hover:bg-neutral-300/50 hover:text-neutral-900",
+          className,
+        )}
+        {...props}
+      >
+        <span
           className={cn(
-            "ml-auto text-[9px] font-mono px-1.5 py-0.5 rounded-md font-bold shrink-0",
-            active ? "bg-white/20 text-white" : "bg-[#d9480f]/10 text-[#d9480f] border border-[#d9480f]/20"
-          )}>
-          {link.badge}
+            "shrink-0 transition-transform duration-200 group-hover/sidebar:scale-110",
+            active ? "text-[#f2eee5]" : "text-neutral-600",
+          )}
+        >
+          {link.icon}
+        </span>
+        <motion.span
+          animate={{
+            display: animate ? (open ? "inline-block" : "none") : "inline-block",
+            opacity: animate ? (open ? 1 : 0) : 1,
+          }}
+          className={cn(
+            "text-sm font-medium tracking-tight whitespace-pre inline-block !p-0 !m-0 transition-colors truncate",
+            active ? "text-[#f2eee5] font-semibold" : "text-neutral-800",
+          )}
+        >
+          {link.label}
         </motion.span>
+        {link.badge && open && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={cn(
+              "ml-auto text-[9px] font-mono px-1.5 py-0.5 rounded-md font-bold shrink-0",
+              active
+                ? "bg-white/20 text-white"
+                : "bg-[#d9480f]/10 text-[#d9480f] border border-[#d9480f]/20",
+            )}
+          >
+            {link.badge}
+          </motion.span>
+        )}
+      </button>
+
+      {!open && (
+        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/tooltip:flex items-center z-50 whitespace-nowrap">
+          <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800 flex items-center gap-1.5">
+            <span>{link.label}</span>
+            {link.badge && (
+              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-400 text-neutral-950 font-bold">
+                {link.badge}
+              </span>
+            )}
+          </div>
+        </div>
       )}
-    </button>
+    </div>
   );
 };
-

@@ -12,6 +12,25 @@ export function DashboardProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
+  const [googleStatus, setGoogleStatus] = useState({
+    loading: true,
+    connected: false,
+    email: null,
+  });
+
+  const fetchGoogleStatus = useCallback(async () => {
+    try {
+      const res = await api.get("/auth/google/status");
+      setGoogleStatus({
+        loading: false,
+        connected: Boolean(res.data?.connected),
+        email: res.data?.email || null,
+      });
+    } catch {
+      setGoogleStatus({ loading: false, connected: false, email: null });
+    }
+  }, []);
+
   const fetchAll = useCallback(async (displayName = "User") => {
     setLoading(true);
     try {
@@ -29,6 +48,9 @@ export function DashboardProvider({ children }) {
           bankName: c.bank_name || "Bank",
           cardExpiration: "xx/xx",
           theme: "gray-light",
+          rewardType: c.reward_type || c.reward_unit || null,
+          rewardUnit: c.reward_unit || c.reward_type || null,
+          pointValueInr: c.point_value_inr != null ? Number(c.point_value_inr) : null,
         }))
       );
 
@@ -42,6 +64,9 @@ export function DashboardProvider({ children }) {
           amount: parseFloat(t.amount) || 0,
           cardName: t.card_name || "Credit Card",
           rewardEarned: parseFloat(t.reward_earned) || 0,
+          pointsEarned: parseFloat(t.points_earned) || 0,
+          rewardUnit: t.reward_unit || null,
+          pointValueInr: t.point_value_inr != null ? Number(t.point_value_inr) : null,
           category: t.category,
         }))
       );
@@ -55,10 +80,11 @@ export function DashboardProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    fetchGoogleStatus();
     if (!initialized) {
       fetchAll();
     }
-  }, [initialized, fetchAll]);
+  }, [initialized, fetchAll, fetchGoogleStatus]);
 
   const addTransaction = (tx) => setTransactions((prev) => [tx, ...prev]);
 
@@ -98,6 +124,8 @@ export function DashboardProvider({ children }) {
         assignUnmatched,
         dismissUnmatched,
         dismissAllUnmatched,
+        googleStatus,
+        fetchGoogleStatus,
       }}
     >
       {children}

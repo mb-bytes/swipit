@@ -100,6 +100,7 @@ interface CreditCardProps {
     perk?: string;
     type?: CreditCardType;
     width?: number;
+    fullWidth?: boolean;
     className?: string;
     showIcons?: boolean;
 }
@@ -126,6 +127,7 @@ export const CreditCard = ({
     perk,
     type = "gray-dark",
     width,
+    fullWidth = false,
     className,
     showIcons = false,
 }: CreditCardProps) => {
@@ -145,6 +147,111 @@ export const CreditCard = ({
 
     const isDarkType = type === "gray-dark" || type === "brand-dark" || type === "transparent" || type === "transparent-gradient";
     const resolvedLogo = logo || getBankLogo(company);
+
+    if (fullWidth) {
+        return (
+            <div
+                className={cx(
+                    "relative flex flex-col justify-between w-full h-full min-h-[210px] overflow-hidden rounded-2xl p-5 shadow-2xl transition-all duration-300 select-none",
+                    styles[type].root,
+                    className
+                )}
+            >
+                {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2 bg-neutral-800"></div>
+                )}
+                {VERTICAL_STRIP_TYPES.includes(type as (typeof VERTICAL_STRIP_TYPES)[number]) && (
+                    <div className="pointer-events-none absolute inset-y-0 right-22 left-0 z-0 bg-neutral-800"></div>
+                )}
+                {type === "transparent-gradient" && (
+                    <div className="absolute -top-4 -left-4 grid grid-cols-2 blur-3xl">
+                        <div className="size-20 rounded-tl-full bg-pink-500 opacity-30 mix-blend-normal" />
+                        <div className="size-20 rounded-tr-full bg-orange-500 opacity-50 mix-blend-normal" />
+                        <div className="size-20 rounded-bl-full bg-blue-500 opacity-30 mix-blend-normal" />
+                        <div className="bg-green-500 size-20 rounded-br-full opacity-30 mix-blend-normal" />
+                    </div>
+                )}
+
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0 pr-7">
+                        {resolvedLogo && (
+                            <img
+                                src={resolvedLogo}
+                                alt={company ? `${company} logo` : "Bank logo"}
+                                className="w-6 h-6 object-contain shrink-0 rounded-xs bg-white p-0.5"
+                            />
+                        )}
+                        <span className={cx("text-base font-black tracking-tight truncate", styles[type].company)} title={company}>
+                            {company}
+                        </span>
+                        {cardTier && (
+                            <span className={cx("text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-bold shrink-0", isDarkType ? "bg-white/15 text-white/90" : "bg-black/10 text-neutral-800")}>
+                                {cardTier}
+                            </span>
+                        )}
+                    </div>
+
+                    {showIcons && <PaypassIcon className={cx("w-5 h-5 shrink-0", styles[type].paypassIcon)} />}
+                </div>
+
+                <div className="relative flex items-center justify-between my-2">
+                    <div className="w-11 h-8 rounded-md bg-gradient-to-tr from-amber-300 via-amber-100 to-amber-400 border border-amber-500/50 shadow-inner relative overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div className="border-r border-b border-amber-600/40" />
+                            <div className="border-b border-amber-600/40" />
+                            <div className="border-r border-amber-600/40" />
+                            <div />
+                        </div>
+                        <div className="w-4 h-4 rounded-full border border-amber-600/50 relative z-10" />
+                    </div>
+
+                    {perk && (
+                        <div className={cx("text-xs font-mono tracking-widest font-semibold uppercase px-3 py-1 rounded-full", isDarkType ? "text-emerald-300 bg-emerald-500/15 border border-emerald-400/30" : "text-neutral-700 bg-neutral-100")}>
+                            {perk}
+                        </div>
+                    )}
+                </div>
+
+                <div className={cx("relative font-mono text-base tracking-[0.2em] font-semibold my-1", styles[type].footerText)}>
+                    {cardNumber}
+                </div>
+
+                <div className={cx("relative flex items-end justify-between pt-2 border-t", isDarkType ? "border-white/10" : "border-black/5")}>
+                    <div className="flex min-w-0 flex-col">
+                        <span className={cx("text-[9px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
+                            Cardholder
+                        </span>
+                        <p
+                            style={{ wordBreak: "break-word" }}
+                            className={cx("text-xs font-bold leading-tight tracking-[0.4px] uppercase truncate max-w-[200px] mt-0.5", styles[type].footerText)}
+                        >
+                            {cardHolder}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-right">
+                        <div className="flex flex-col items-end">
+                            <span className={cx("text-[9px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
+                                Valid Thru
+                            </span>
+                            <span className={cx("text-xs font-mono font-bold leading-tight mt-0.5", styles[type].footerText)}>
+                                {cardExpiration}
+                            </span>
+                        </div>
+
+                        <div className="flex flex-col items-end">
+                            <span className={cx("text-[9px] font-mono tracking-wider uppercase leading-none", isDarkType ? "text-neutral-400" : "text-neutral-500")}>
+                                CVV
+                            </span>
+                            <span className="text-xs font-mono font-bold leading-tight text-amber-400 mt-0.5">
+                                777
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

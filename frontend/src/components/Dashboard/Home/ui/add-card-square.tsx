@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BorderBeam } from "./border-beam";
+import { BorderBeam } from "border-beam";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -12,12 +12,13 @@ interface AddCardSquareProps {
 export function AddCardSquare({ onAddManual }: AddCardSquareProps) {
   return (
     <BorderBeam
-      borderWidth={1.5}
-      duration={4}
-      borderRadius="1rem"
+      size="line"
+      colorVariant="colorful"
+      theme="dark"
+      borderRadius={18}
       className="shrink-0"
     >
-      <div className="w-[187px] h-[187px] bg-[#121316] p-4 flex flex-col items-center justify-center text-center select-none">
+      <div className="w-[187px] h-[187px] rounded-2xl bg-[#121316] p-4 flex flex-col items-center justify-center text-center select-none shadow-sm relative">
         <motion.button
           type="button"
           whileHover={{ scale: 1.03 }}

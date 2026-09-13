@@ -69,6 +69,7 @@ SEED_MERCHANT_MAP: dict[str, str] = {
     "1mg": C.HEALTHCARE,
     "cult.fit": C.HEALTHCARE,
     "fitpass": C.HEALTHCARE,
+    "thyrocare": C.HEALTHCARE,
 
     # Rent & Wallets
     "cred": C.RENT,

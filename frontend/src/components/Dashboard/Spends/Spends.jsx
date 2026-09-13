@@ -18,10 +18,11 @@ import {
 } from "lucide-react";
 import api from "@/api/axios";
 import { sileo } from "sileo";
+import { Skeleton } from "boneyard-js/react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
-import { beautifyMerchantName } from "@/lib/merchant-utils";
+import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import { MonoRoundedLineChart } from "@/components/charts/MonoRoundedLineChart";
 import { MonoRoundedDonutChart } from "@/components/charts/MonoRoundedDonutChart";
 import { MonoRoundedFunnelChart } from "@/components/charts/MonoRoundedFunnelChart";
@@ -123,6 +124,7 @@ export function Spends() {
     initialized,
     deleteTransaction,
     fetchAll,
+    googleStatus,
   } = useDashboard();
 
   useEffect(() => {
@@ -165,7 +167,7 @@ export function Spends() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncPeriodOpen, setSyncPeriodOpen] = useState(false);
   const [selectedSyncPeriod, setSelectedSyncPeriod] = useState("last-30-days");
-  const [googleConnected, setGoogleConnected] = useState(false);
+  const googleConnected = Boolean(googleStatus?.connected);
 
   const periodRef = useRef(null);
   const excludeRef = useRef(null);
@@ -175,18 +177,6 @@ export function Spends() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const currentQuarter = Math.floor(currentMonth / 3) + 1;
-
-  useEffect(() => {
-    async function checkGoogle() {
-      try {
-        const res = await api.get("/auth/google/status");
-        setGoogleConnected(Boolean(res.data?.connected));
-      } catch {
-        setGoogleConnected(false);
-      }
-    }
-    checkGoogle();
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -361,7 +351,8 @@ export function Spends() {
       timeBuckets[key] = (timeBuckets[key] || 0) + amt;
       dateOrderMap[key] = txDate.getTime();
 
-      const cat = tx.category || "General";
+      const rawCat = tx.category || "General";
+      const cat = beautifyCategory(rawCat);
       categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
 
       const rawMerch = tx.merchant || "Unknown";
@@ -433,10 +424,12 @@ export function Spends() {
   const {
     filteredTxns,
     totalSpendPeriod,
+    totalCashbackPeriod,
     periodLabel,
   } = useMemo(() => {
     const list = [];
     let totalSpend = 0;
+    let totalCashback = 0;
 
     transactions.forEach((tx) => {
       if (excludedCardIds.has(tx.cardId)) return;
@@ -456,6 +449,8 @@ export function Spends() {
       list.push(tx);
       const amt = Number(tx.amount) || 0;
       totalSpend += amt;
+      const reward = Number(tx.rewardEarned) || 0;
+      totalCashback += reward;
     });
 
     const qObj = QUARTERS.find((q) => q.id === selectedQuarter);
@@ -468,6 +463,7 @@ export function Spends() {
     return {
       filteredTxns: list,
       totalSpendPeriod: totalSpend,
+      totalCashbackPeriod: totalCashback,
       periodLabel: label,
     };
   }, [
@@ -478,6 +474,15 @@ export function Spends() {
     selectedQuarter,
     excludedCardIds,
   ]);
+
+  const formattedCashback = useMemo(() => {
+    return (
+      Math.round(totalCashbackPeriod * 100) / 100
+    ).toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }, [totalCashbackPeriod]);
 
   const displayedTxns = useMemo(() => {
     return filteredTxns.slice(0, visibleCount);
@@ -588,69 +593,130 @@ export function Spends() {
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 bg-white/90 border border-neutral-200/90 px-3 py-1.5 rounded-full shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-neutral-900" />
               <span>
-                ₹{analyticsData.totalSpend.toLocaleString("en-IN")} spent (Last 30 days)
+                {loading ? (
+                  <span className="inline-block w-24 h-3 bg-neutral-200/80 rounded animate-pulse align-middle" />
+                ) : (
+                  `₹${analyticsData.totalSpend.toLocaleString("en-IN")} spent (Last 30 days)`
+                )}
               </span>
             </span>
           </div>
         </div>
 
-        {analyticsData.filteredTxns.length < 5 ? (
-          <div className="rounded-3xl border border-neutral-300/80 bg-white/70 p-8 md:p-12 flex flex-col items-center justify-center text-center shadow-2xs backdrop-blur-xs min-h-[280px]">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
-              <BarChart3 className="w-6 h-6 text-neutral-700" />
+        <Skeleton
+          name="spends-charts"
+          loading={loading}
+          animate="pulse"
+          transition={true}
+          fallback={
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-[300px]">
+              <div className="lg:col-span-7 rounded-3xl border border-neutral-200/80 bg-white/70 p-6 flex flex-col gap-4 animate-pulse min-h-[300px]">
+                <div className="flex justify-between items-center">
+                  <div className="w-32 h-5 bg-neutral-200/80 rounded-md" />
+                  <div className="w-20 h-4 bg-neutral-200/80 rounded-md" />
+                </div>
+                <div className="flex-1 w-full bg-neutral-100/80 rounded-2xl min-h-[220px]" />
+              </div>
+              <div className="lg:col-span-5 flex flex-col justify-between gap-5">
+                <div className="rounded-3xl border border-neutral-200/80 bg-white/70 p-5 flex flex-col gap-3 animate-pulse h-[145px]">
+                  <div className="w-28 h-4 bg-neutral-200/80 rounded-md" />
+                  <div className="flex-1 w-full bg-neutral-100/80 rounded-xl" />
+                </div>
+                <div className="rounded-3xl border border-neutral-200/80 bg-white/70 p-5 flex flex-col gap-3 animate-pulse h-[145px]">
+                  <div className="w-28 h-4 bg-neutral-200/80 rounded-md" />
+                  <div className="flex-1 w-full bg-neutral-100/80 rounded-xl" />
+                </div>
+              </div>
             </div>
-            <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-              Not enough transactions yet
-            </h3>
-            <p className="text-xs text-neutral-500 mt-1 max-w-md leading-relaxed">
-              At least 5 transactions in the last 30 days are required to generate
-              spend trends, category distribution, and top merchant analytics.
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200">
-                <span>{analyticsData.filteredTxns.length} / 5 transactions found</span>
-              </span>
+          }
+        >
+          {analyticsData.filteredTxns.length < 5 ? (
+            <div className="rounded-3xl border border-neutral-300/80 bg-white/70 p-8 md:p-12 flex flex-col items-center justify-center text-center shadow-2xs backdrop-blur-xs min-h-[280px]">
+              <div className="w-12 h-12 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
+                <BarChart3 className="w-6 h-6 text-neutral-700" />
+              </div>
+              <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+                Not enough transactions yet
+              </h3>
+              <p className="text-xs text-neutral-500 mt-1 max-w-md leading-relaxed">
+                At least 5 transactions in the last 30 days are required to generate
+                spend trends, category distribution, and top merchant analytics.
+              </p>
+              <div className="mt-4 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200">
+                  <span>{analyticsData.filteredTxns.length} / 5 transactions found</span>
+                </span>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            <div className="lg:col-span-7 flex flex-col h-full">
-              <MonoRoundedLineChart
-                data={analyticsData.lineData}
-                theme="light"
-                title="Spend Dynamics"
-                subtitle="Last 30 Days"
-                badgeText="Last 30 Days"
-                className="h-full flex-1"
-              />
-            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+              <div className="lg:col-span-7 flex flex-col h-full">
+                <MonoRoundedLineChart
+                  data={analyticsData.lineData}
+                  theme="light"
+                  title="Spend Dynamics"
+                  subtitle="Last 30 Days"
+                  badgeText="Last 30 Days"
+                  className="h-full flex-1"
+                />
+              </div>
 
-            <div className="lg:col-span-5 flex flex-col justify-between gap-5 h-full">
-              <MonoRoundedDonutChart
-                data={analyticsData.donutData}
-                theme="light"
-                title="Top Categories"
-                subtitle="Last 30 days"
-                className="flex-1"
-              />
-              <MonoRoundedFunnelChart
-                data={analyticsData.funnelData}
-                theme="light"
-                title="Top 5 Merchants"
-                subtitle="Last 30 days"
-                className="flex-1"
-              />
+              <div className="lg:col-span-5 flex flex-col justify-between gap-5 h-full">
+                <MonoRoundedDonutChart
+                  data={analyticsData.donutData}
+                  theme="light"
+                  title="Top Categories"
+                  subtitle="Last 30 days"
+                  className="flex-1"
+                />
+                <MonoRoundedFunnelChart
+                  data={analyticsData.funnelData}
+                  theme="light"
+                  title="Top 5 Merchants"
+                  subtitle="Last 30 days"
+                  className="flex-1"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </Skeleton>
 
         <hr className="border-neutral-300/80 my-1" />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
-              Transactions for {periodLabel}
-            </h2>
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
+                Transactions for {periodLabel}
+              </h2>
+
+              {loading ? (
+                <div className="w-36 h-6 rounded-full bg-neutral-200/80 animate-pulse" />
+              ) : (
+                <span
+                  id="period-cashback-badge"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold shadow-2xs transition-all ${
+                    totalCashbackPeriod > 0
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80"
+                      : "bg-neutral-100/90 text-neutral-600 border border-neutral-200/90"
+                  }`}
+                >
+                  <Sparkles
+                    className={`w-3.5 h-3.5 shrink-0 ${
+                      totalCashbackPeriod > 0
+                        ? "text-emerald-600"
+                        : "text-neutral-400"
+                    }`}
+                  />
+                  <span>
+                    {totalCashbackPeriod > 0
+                      ? `+ ₹${formattedCashback}`
+                      : "₹0"}{" "}
+                    cashback collected
+                  </span>
+                </span>
+              )}
+            </div>
 
             <div className="relative inline-block" ref={excludeRef}>
               <button
@@ -688,7 +754,20 @@ export function Spends() {
                     )}
                   </div>
 
-                  {cards.length === 0 ? (
+                  {loading ? (
+                    <div className="flex flex-col gap-1.5 py-1">
+                      {[1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 p-2 rounded-xl bg-neutral-50 animate-pulse"
+                        >
+                          <div className="w-3.5 h-3.5 rounded bg-neutral-200/80 shrink-0" />
+                          <div className="w-24 h-3 rounded bg-neutral-200/80" />
+                          <div className="w-8 h-2.5 rounded bg-neutral-200/80 ml-auto" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : cards.length === 0 ? (
                     <p className="text-xs text-neutral-400 py-2 text-center">
                       No cards found
                     </p>
@@ -830,6 +909,21 @@ export function Spends() {
                   <div className="flex flex-col gap-1.5">
                     {QUARTERS.map((q) => {
                       const isQDisabled = selectedYear === currentYear && q.id > currentQuarter;
+                      const qCashback = transactions.reduce((sum, tx) => {
+                        if (excludedCardIds.has(tx.cardId)) return sum;
+                        const p = parseDateComponents(tx);
+                        if (p.year === selectedYear && p.quarter === q.id) {
+                          return sum + (Number(tx.rewardEarned) || 0);
+                        }
+                        return sum;
+                      }, 0);
+                      const formattedQCashback = (
+                        Math.round(qCashback * 100) / 100
+                      ).toLocaleString("en-IN", {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      });
+
                       return (
                         <button
                           key={q.id}
@@ -849,10 +943,29 @@ export function Spends() {
                               : "bg-neutral-50 hover:bg-neutral-100 text-neutral-700 cursor-pointer"
                           }`}
                         >
-                          <span className="font-semibold">{q.label}</span>
-                          <span className="text-neutral-400 font-normal">
-                            {q.name} {isQDisabled ? "(Unavailable)" : ""}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{q.label}</span>
+                            <span
+                              className={`font-normal ${
+                                selectedQuarter === q.id
+                                  ? "text-neutral-300"
+                                  : "text-neutral-400"
+                              }`}
+                            >
+                              {q.name} {isQDisabled ? "(Unavailable)" : ""}
+                            </span>
+                          </div>
+                          {!isQDisabled && qCashback > 0 && (
+                            <span
+                              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                                selectedQuarter === q.id
+                                  ? "bg-white/20 text-emerald-300"
+                                  : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                              }`}
+                            >
+                              +₹{formattedQCashback}
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -864,12 +977,56 @@ export function Spends() {
         </div>
 
         <div className="w-full shrink-0 flex flex-col gap-4 pb-16 min-h-[300px]">
-        {loading ? (
-          <div className="flex flex-1 items-center justify-center gap-2 text-neutral-500 py-16">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="text-sm font-medium">Loading transactions…</span>
-          </div>
-        ) : filteredTxns.length === 0 ? (
+          <Skeleton
+            name="dashboard-transactions"
+            loading={loading}
+            animate="pulse"
+            transition={true}
+            fallback={
+              <div className="rounded-2xl border border-neutral-200/90 bg-white/85 shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[540px]">
+                    <thead>
+                      <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
+                        <th className="py-3 px-4 sm:px-6">Merchant</th>
+                        <th className="py-3 px-4">Card</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4 text-right">Spent</th>
+                        <th className="py-3 px-4 text-right">Reward</th>
+                        <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100/90 text-sm">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <tr key={i} className="animate-pulse">
+                          <td className="py-3.5 px-4 sm:px-6">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-neutral-200/80 shrink-0" />
+                              <div className="w-28 h-4 bg-neutral-200/80 rounded-md" />
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="w-20 h-4 bg-neutral-200/80 rounded-md" />
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="w-16 h-3.5 bg-neutral-200/80 rounded-md" />
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="w-14 h-4 bg-neutral-200/80 rounded-md ml-auto" />
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="w-12 h-4 bg-neutral-200/80 rounded-md ml-auto" />
+                          </td>
+                          <td className="py-3.5 px-4 sm:px-6 w-12"></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          >
+            {filteredTxns.length === 0 ? (
           <div className="rounded-2xl border border-neutral-300/80 bg-white/60 p-12 flex flex-col items-center justify-center text-center shadow-2xs">
             <div className="w-12 h-12 rounded-2xl bg-neutral-200 flex items-center justify-center text-neutral-600 mb-3">
               <Inbox className="w-6 h-6" />
@@ -932,7 +1089,7 @@ export function Spends() {
                             <span>{beautifyMerchantName(tx.merchant)}</span>
                             {tx.category && (
                               <span className="text-[10px] font-medium text-neutral-500 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 rounded-full">
-                                {tx.category}
+                                {beautifyCategory(tx.category)}
                               </span>
                             )}
                           </div>
@@ -972,7 +1129,7 @@ export function Spends() {
                         </td>
                         <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
                           <DeleteButton
-                            className="scale-75 origin-right shadow-xs"
+                            className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
                             onConfirm={() => handleDelete(tx.id)}
                           />
                         </td>
@@ -1002,6 +1159,7 @@ export function Spends() {
             </div>
           </div>
         )}
+        </Skeleton>
         </div>
       </div>
     </div>

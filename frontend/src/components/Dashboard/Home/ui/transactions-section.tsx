@@ -4,16 +4,18 @@ import React, { useState, useRef, useEffect } from "react";
 import { RefreshCw, Plus, Inbox, Loader2, ChevronRight, CreditCard as CardIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "boneyard-js/react";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
 import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
-import { beautifyMerchantName } from "@/lib/merchant-utils";
+import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 
 interface TransactionsSectionProps {
   transactions: TransactionItem[];
+  loading?: boolean;
   onAddTransaction: (txn: TransactionItem) => void;
   onDeleteTransaction?: (transactionId: string) => void | Promise<void>;
   onRefreshTransactions?: () => void | Promise<void>;
@@ -24,6 +26,7 @@ interface TransactionsSectionProps {
 
 export function TransactionsSection({
   transactions,
+  loading = false,
   onAddTransaction,
   onDeleteTransaction,
   onRefreshTransactions,
@@ -200,112 +203,164 @@ export function TransactionsSection({
       </div>
 
       <div className="w-full">
-        {transactions.length === 0 ? (
-          <div className="rounded-2xl border border-neutral-200/90 bg-white/70 backdrop-blur-xs p-8 flex flex-col items-center justify-center text-center shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
-              <Inbox className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-semibold text-neutral-800">
-              No Transactions Yet
-            </p>
-            <p className="text-xs text-neutral-500 mt-1 max-w-sm">
-              Add a card first, then sync from Gmail or add transactions manually.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[540px]">
-                <thead>
-                  <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
-                    <th className="py-3 px-4 sm:px-6">Merchant</th>
-                    <th className="py-3 px-4">Card</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4 text-right">Spent</th>
-                    <th className="py-3 px-4 text-right">Reward</th>
-                    <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100/90 text-sm">
-                  {transactions.map((tx) => {
-                    const matchedCard = cards?.find(
-                      (c) =>
-                        c.id === tx.cardId ||
-                        c.cardName?.toLowerCase() === tx.cardName?.toLowerCase()
-                    );
-                    const cardName = tx.cardName || matchedCard?.cardName || "Credit Card";
-                    const bankName = matchedCard?.bankName || "";
-                    const bankLogo = matchedCard?.logo || getBankLogo(bankName, cardName);
-
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-neutral-50/80 transition-colors group"
-                      >
-                        <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
-                          {beautifyMerchantName(tx.merchant)}
-                        </td>
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="relative group/tooltip inline-flex items-center">
-                            {bankLogo ? (
-                              <img
-                                src={bankLogo}
-                                alt={cardName}
-                                className="w-6 h-6 object-contain rounded-md p-0.5 bg-white border border-neutral-200/90 shadow-2xs cursor-pointer"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
-                                <CardIcon className="w-3.5 h-3.5" />
-                              </div>
-                            )}
-                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:flex flex-col items-center z-50 whitespace-nowrap">
-                              <div className="rounded-lg bg-neutral-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl border border-neutral-800">
-                                {cardName}
-                              </div>
-                              <div className="w-2 h-2 -mt-1 rotate-45 bg-neutral-900 border-r border-b border-neutral-800" />
-                            </div>
+        <Skeleton
+          name="dashboard-transactions"
+          loading={loading}
+          animate="pulse"
+          transition={true}
+          fallback={
+            <div className="rounded-2xl border border-neutral-200/90 bg-white/85 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[540px]">
+                  <thead>
+                    <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
+                      <th className="py-3 px-4 sm:px-6">Merchant</th>
+                      <th className="py-3 px-4">Card</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4 text-right">Spent</th>
+                      <th className="py-3 px-4 text-right">Reward</th>
+                      <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100/90 text-sm">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="py-3.5 px-4 sm:px-6">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-neutral-200/80 shrink-0" />
+                            <div className="w-28 h-4 bg-neutral-200/80 rounded-md" />
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-xs font-mono text-neutral-500 whitespace-nowrap">
-                          {tx.date}
+                        <td className="py-3.5 px-4">
+                          <div className="w-20 h-4 bg-neutral-200/80 rounded-md" />
                         </td>
-                        <td className="py-3.5 px-4 text-right font-mono font-semibold text-neutral-900 whitespace-nowrap">
-                          - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
+                        <td className="py-3.5 px-4">
+                          <div className="w-16 h-3.5 bg-neutral-200/80 rounded-md" />
                         </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60">
-                            + Rs {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
-                          </span>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="w-14 h-4 bg-neutral-200/80 rounded-md ml-auto" />
                         </td>
-                        <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
-                          <DeleteButton
-                            className="scale-75 origin-right shadow-xs"
-                            onConfirm={() => handleDelete(tx.id)}
-                          />
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="w-12 h-4 bg-neutral-200/80 rounded-md ml-auto" />
                         </td>
+                        <td className="py-3.5 px-4 sm:px-6 w-12"></td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {showViewAll && (
-              <div className="border-t border-neutral-200/70 px-4 py-2.5 sm:px-6 bg-neutral-50/40 flex items-center justify-between text-xs text-neutral-500 select-none">
-                <span>Showing {transactions.length} recent transactions</span>
-                <button
-                  id="view-all-spends-btn"
-                  type="button"
-                  onClick={() => navigate("/spends")}
-                  className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black transition-colors cursor-pointer group"
-                >
-                  View all spends
-                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          }
+        >
+          {transactions.length === 0 ? (
+            <div className="rounded-2xl border border-neutral-200/90 bg-white/70 backdrop-blur-xs p-8 flex flex-col items-center justify-center text-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
+                <Inbox className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-semibold text-neutral-800">
+                No Transactions Yet
+              </p>
+              <p className="text-xs text-neutral-500 mt-1 max-w-sm">
+                Add a card first, then sync from Gmail or add transactions manually.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[540px]">
+                  <thead>
+                    <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
+                      <th className="py-3 px-4 sm:px-6">Merchant</th>
+                      <th className="py-3 px-4">Card</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4 text-right">Spent</th>
+                      <th className="py-3 px-4 text-right">Reward</th>
+                      <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100/90 text-sm">
+                    {transactions.map((tx) => {
+                      const matchedCard = cards?.find(
+                        (c) =>
+                          c.id === tx.cardId ||
+                          c.cardName?.toLowerCase() === tx.cardName?.toLowerCase()
+                      );
+                      const cardName = tx.cardName || matchedCard?.cardName || "Credit Card";
+                      const bankName = matchedCard?.bankName || "";
+                      const bankLogo = matchedCard?.logo || getBankLogo(bankName, cardName);
+
+                      return (
+                        <tr
+                          key={tx.id}
+                          className="hover:bg-neutral-50/80 transition-colors group"
+                        >
+                          <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span>{beautifyMerchantName(tx.merchant)}</span>
+                              {tx.category && (
+                                <span className="text-[10px] font-medium text-neutral-500 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 rounded-full">
+                                  {beautifyCategory(tx.category)}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <div className="relative group/tooltip inline-flex items-center">
+                              {bankLogo ? (
+                                <img
+                                  src={bankLogo}
+                                  alt={cardName}
+                                  className="w-6 h-6 object-contain rounded-md p-0.5 bg-white border border-neutral-200/90 shadow-2xs cursor-pointer"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
+                                  <CardIcon className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                              <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/tooltip:block bg-neutral-900 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap z-30 shadow-md">
+                                {cardName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-neutral-500 whitespace-nowrap text-xs">
+                            {tx.date}
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-medium text-neutral-900 whitespace-nowrap">
+                            ₹{tx.amount?.toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-medium text-emerald-600 whitespace-nowrap">
+                            +₹{tx.rewardEarned?.toLocaleString("en-IN") || 0}
+                          </td>
+                          <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                            <DeleteButton
+                              className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
+                              onConfirm={() => handleDelete(tx.id)}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {showViewAll && (
+                <div className="border-t border-neutral-200/70 px-4 py-2.5 sm:px-6 bg-neutral-50/40 flex items-center justify-between text-xs text-neutral-500 select-none">
+                  <span>Showing {transactions.length} recent transactions</span>
+                  <button
+                    id="view-all-spends-btn"
+                    type="button"
+                    onClick={() => navigate("/spends")}
+                    className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black transition-colors cursor-pointer group"
+                  >
+                    View all spends
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </Skeleton>
       </div>
 
       <AddTransactionModal

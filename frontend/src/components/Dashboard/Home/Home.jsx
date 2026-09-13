@@ -31,33 +31,16 @@ export function Home() {
     assignUnmatched,
     dismissUnmatched,
     dismissAllUnmatched,
+    googleStatus,
+    fetchGoogleStatus,
   } = useDashboard();
 
-  const [googleStatus, setGoogleStatus] = useState({
-    loading: true,
-    connected: false,
-    email: null,
-  });
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const displayName = user?.name || user?.username || "Friend";
 
-  const fetchGoogleStatus = async () => {
-    try {
-      const res = await api.get("/auth/google/status");
-      setGoogleStatus({
-        loading: false,
-        connected: res.data.connected,
-        email: res.data.email,
-      });
-    } catch {
-      setGoogleStatus({ loading: false, connected: false, email: null });
-    }
-  };
-
   useEffect(() => {
-    fetchGoogleStatus();
     if (!initialized) fetchAll(displayName);
   }, []);
 
@@ -173,7 +156,12 @@ export function Home() {
           </div>
 
           <div className="flex flex-col items-start md:items-end text-xs">
-            {googleStatus.connected ? (
+            {googleStatus.loading ? (
+              <div className="flex flex-col items-start md:items-end gap-1 py-1">
+                <div className="w-48 h-3.5 bg-neutral-200/80 rounded animate-pulse" />
+                <div className="w-28 h-2.5 bg-neutral-200/60 rounded animate-pulse" />
+              </div>
+            ) : googleStatus.connected ? (
               <>
                 <div className="flex items-center gap-1.5 text-neutral-800 font-medium">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -220,6 +208,7 @@ export function Home() {
 
         <CardsSection
           cards={cards}
+          loading={loading}
           onAddCard={handleAddCard}
           onDeleteCard={handleDeleteCard}
           userName={displayName}
@@ -229,6 +218,7 @@ export function Home() {
 
         <TransactionsSection
           transactions={transactions.slice(0, 5)}
+          loading={loading}
           onAddTransaction={handleAddTransaction}
           onDeleteTransaction={handleDeleteTransaction}
           onRefreshTransactions={() => fetchAll(displayName)}

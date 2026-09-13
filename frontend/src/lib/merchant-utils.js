@@ -29,7 +29,7 @@ const MERCHANT_MATCHERS = [
   { key: "swiggy", patterns: ["swigy", "swiggi", "swiggy"] },
   { key: "instamart", patterns: ["instama", "instamart"] },
   { key: "zomato", patterns: ["zomto", "zmt", "zomato"] },
-  { key: "blinkit", patterns: ["blnkit", "blinkit", "grofers"] },
+  { key: "blinkit", patterns: ["blnkit", "blinkit", "grofers", "blinki"] },
   { key: "zepto", patterns: ["zeptonow", "zepto"] },
   { key: "bigbasket", patterns: ["bbdaily", "bbinstant", "bigbasket"] },
   { key: "cleartrip", patterns: ["cleartrp", "clrtrip", "cltrip", "cleartrip"] },
@@ -66,5 +66,52 @@ export function beautifyMerchantName(rawName) {
   return base
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+const CATEGORY_DISPLAY_MAP = {
+  online_shopping: "Online Shopping",
+  shopping: "Shopping",
+  food_dining: "Food & Dining",
+  dining: "Dining",
+  food: "Food",
+  groceries: "Groceries",
+  grocery: "Groceries",
+  travel: "Travel",
+  flights: "Flights",
+  hotels: "Hotels",
+  entertainment: "Entertainment",
+  movies: "Movies",
+  utilities: "Utilities",
+  bills: "Bills & Utilities",
+  fuel: "Fuel",
+  health_wellness: "Health & Wellness",
+  health: "Health",
+  medical: "Medical",
+  jewellery: "Jewellery",
+  jewelry: "Jewellery",
+  electronics: "Electronics",
+  education: "Education",
+  investment: "Investment",
+  finance: "Finance",
+  insurance: "Insurance",
+  personal_care: "Personal Care",
+  transportation: "Transportation",
+  commute: "Commute",
+  other: "Other",
+  others: "Other",
+  general: "General",
+};
+
+export function beautifyCategory(rawCategory) {
+  if (!rawCategory) return "";
+  const clean = String(rawCategory).trim().toLowerCase();
+  if (CATEGORY_DISPLAY_MAP[clean]) {
+    return CATEGORY_DISPLAY_MAP[clean];
+  }
+  // Replace underscores, hyphens, and multiple spaces with a single space
+  const words = clean.replace(/[_-]+/g, " ").trim().split(/\s+/);
+  return words
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }

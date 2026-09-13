@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const accessTokenRef = useRef(null);
 
@@ -210,6 +211,7 @@ export function AuthProvider({ children }) {
   const isAuthenticated = Boolean(user && accessToken);
 
   const logout = async () => {
+    setIsLoggingOut(true);
     try {
       await api.get("/api/user/logout");
     } catch (err) {
@@ -218,6 +220,9 @@ export function AuthProvider({ children }) {
       accessTokenRef.current = null;
       setAccessToken(null);
       setUser(null);
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1000);
     }
   };
 
@@ -232,6 +237,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         logout,
         loading,
+        isLoggingOut,
       }}
     >
       {children}
