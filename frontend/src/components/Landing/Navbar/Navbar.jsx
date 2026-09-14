@@ -14,24 +14,7 @@ import {
 import { MetalButton } from "./MetalButton.jsx";
 import { useSmoothScroll } from "@/components/motion/smooth-scroll-context";
 
-const NAV_ITEMS = [
-  {
-    name: "Platform",
-    link: "#home",
-  },
-  {
-    name: "Who It's For",
-    link: "#persona",
-  },
-  {
-    name: "Features",
-    link: "#features",
-  },
-  {
-    name: "Contact",
-    link: "#contact",
-  },
-];
+import { NAV_ITEMS } from "@/constants";
 
 export function NavbarDemo() {
   const { scrollTo } = useSmoothScroll();

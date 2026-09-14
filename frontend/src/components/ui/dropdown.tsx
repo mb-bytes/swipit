@@ -272,6 +272,7 @@ export type DropdownProps = {
   className?: string;
   triggerClassName?: string;
   menuClassName?: string;
+  side?: "top" | "bottom";
 };
 
 export function Dropdown({
@@ -286,6 +287,7 @@ export function Dropdown({
   className = "",
   triggerClassName = "",
   menuClassName = "",
+  side = "bottom",
 }: DropdownProps) {
   const reduced = useReducedMotion();
   const {
@@ -336,12 +338,16 @@ export function Dropdown({
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -6 }}
+            initial={
+              reduced
+                ? { opacity: 0 }
+                : { opacity: 0, scale: 0.95, y: side === "top" ? 6 : -6 }
+            }
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{
               opacity: 0,
               scale: 0.97,
-              y: -5,
+              y: side === "top" ? 5 : -5,
               transition: reduced ? NONE : { duration: 0.12, ease: EXIT },
             }}
             transition={
@@ -349,8 +355,12 @@ export function Dropdown({
                 ? NONE
                 : { ...OPEN, opacity: { duration: 0.12, ease: EASE } }
             }
-            style={{ transformOrigin: "top left" }}
-            className={`absolute left-0 top-[calc(100%+6px)] z-50 w-full min-w-[220px] rounded-[14px] border border-white/[0.12] bg-[#1c1c1c] p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-md ${menuClassName}`}
+            style={{
+              transformOrigin: side === "top" ? "bottom left" : "top left",
+            }}
+            className={`absolute left-0 ${
+              side === "top" ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]"
+            } z-50 w-full min-w-[220px] rounded-[14px] border border-white/[0.12] bg-[#1c1c1c] p-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.85)] backdrop-blur-md ${menuClassName}`}
           >
             <ul
               {...listProps}

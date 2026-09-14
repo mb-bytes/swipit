@@ -14,14 +14,7 @@ interface AddCardModalProps {
   defaultCardHolder?: string;
 }
 
-const DEFAULT_POPULAR_CARDS = [
-  { bank: "Axis Bank", name: "Axis Bank Flipkart Credit Card", network: "Visa" },
-  // { bank: "HDFC Bank", name: "HDFC Millennia Credit Card", network: "Mastercard" },
-  // { bank: "HDFC Bank", name: "HDFC Regalia Gold", network: "Visa" },
-  // { bank: "ICICI Bank", name: "Amazon Pay ICICI Card", network: "Visa" },
-  // { bank: "SBI Card", name: "SBI Cashback Card", network: "Visa" },
-  { bank: "Federal Bank", name: "Federal Scapia Card", network: "Visa" },
-];
+import { DEFAULT_POPULAR_CARDS } from "@/constants";
 
 export function AddCardModal({
   isOpen,

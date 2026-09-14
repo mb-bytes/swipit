@@ -3,6 +3,8 @@ import federalLogo from "@/assets/bank-logos/federal.png";
 import hdfcLogo from "@/assets/bank-logos/hdfc.png";
 import hsbcLogo from "@/assets/bank-logos/hsbc.png";
 import iciciLogo from "@/assets/bank-logos/icici.png";
+import kotakLogo from "@/assets/bank-logos/kotak.png";
+import sbiLogo from "@/assets/bank-logos/sbi.png";
 
 export const KNOWN_BANK_LOGOS = {
   axis: axisLogo,
@@ -10,6 +12,8 @@ export const KNOWN_BANK_LOGOS = {
   hdfc: hdfcLogo,
   hsbc: hsbcLogo,
   icici: iciciLogo,
+  kotak: kotakLogo,
+  sbi: sbiLogo,
 };
 
 const dynamicLogos = {};

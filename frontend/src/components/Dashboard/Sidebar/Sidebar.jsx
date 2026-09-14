@@ -190,7 +190,7 @@ function UserProfileDropdown({ user, onLogout }) {
               "absolute rounded-2xl bg-[#1e1f23] border border-white/[0.08] shadow-2xl p-1.5 flex flex-col gap-0.5 text-neutral-300 z-50 select-none",
               sidebarOpen
                 ? "bottom-full mb-2.5 left-0 w-56"
-                : "left-full bottom-0 ml-3.5 w-52"
+                : "left-full bottom-0 ml-3.5 w-52",
             )}
           >
             <button

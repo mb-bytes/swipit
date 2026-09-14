@@ -10,14 +10,25 @@ recommendations_router = APIRouter(tags=["recommendations"])
 
 @recommendations_router.get(
     "/",
-    summary="Get AI-powered credit card recommendations based on your real spending",
+    summary="Get AI-powered credit card recommendations based on your real spending and preferences",
 )
 async def get_card_recommendations(
+    preferred_category: str | None = None,
+    preferred_merchant: str | None = None,
+    preferred_bank: str | None = None,
+    only_cached: bool = False,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),
 ):
     try:
-        result = await get_recommendations(user_id=current_user.user_id, db=db)
+        result = await get_recommendations(
+            user_id=current_user.user_id,
+            db=db,
+            preferred_category=preferred_category,
+            preferred_merchant=preferred_merchant,
+            preferred_bank=preferred_bank,
+            only_cached=only_cached,
+        )
         return result
     except Exception as e:
         raise HTTPException(

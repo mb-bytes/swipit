@@ -10,7 +10,12 @@ function ProtectedRoute({ children }) {
   const hasShownToast = useRef(false);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isLoggingOut && !hasShownToast.current) {
+    if (
+      !loading &&
+      !isAuthenticated &&
+      !isLoggingOut &&
+      !hasShownToast.current
+    ) {
       hasShownToast.current = true;
       sileo.error({
         title: "Please log in",
