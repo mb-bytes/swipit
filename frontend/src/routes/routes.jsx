@@ -10,6 +10,7 @@ import Home from "@/components/Dashboard/Home/Home.jsx";
 import Spends from "@/components/Dashboard/Spends/Spends.jsx";
 import TrackRewards from "@/components/Dashboard/TrackRewards/TrackRewards.jsx";
 import Recommendations from "@/components/Dashboard/Recommendations/Recommendations.jsx";
+import Profile from "@/components/Profile/Profile.jsx";
 import NotFoundPage from "@/components/NotFound/NotFoundPage.jsx";
 
 export function AppRoutes() {
@@ -45,6 +46,7 @@ export function AppRoutes() {
         <Route path="/card-rewards" element={<TrackRewards />} />
         <Route path="/track-rewards" element={<TrackRewards />} />
         <Route path="/recommendations" element={<Recommendations />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route path="/404" element={<NotFoundPage />} />
       <Route path="*" element={<NotFoundPage />} />

@@ -1,7 +1,15 @@
-import React from "react";
-import { Building2, ExternalLink, Flame, Info, RotateCcw, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Building2,
+  Clock,
+  ExternalLink,
+  Flame,
+  Info,
+  RotateCcw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getBankLogo } from "@/lib/bank-logos";
+import MatrixOrb from "@/components/ui/matrix-orb";
 
 export function RecommendationScreen({
   loading,
@@ -10,25 +18,87 @@ export function RecommendationScreen({
   isCached,
   onReset,
 }) {
+  const [analysisStep, setAnalysisStep] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(() => {
+    if (typeof recommendationsData?.ttl_seconds === "number") {
+      return recommendationsData.ttl_seconds;
+    }
+    return isCached ? 86400 : 0;
+  });
+
+  useEffect(() => {
+    if (typeof recommendationsData?.ttl_seconds === "number") {
+      setRemainingSeconds(recommendationsData.ttl_seconds);
+    } else if (isCached) {
+      setRemainingSeconds(86400);
+    } else {
+      setRemainingSeconds(0);
+    }
+  }, [recommendationsData, isCached]);
+
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setRemainingSeconds((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [remainingSeconds]);
+
+  const formatCountdown = (totalSec) => {
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setAnalysisStep((prev) => (prev + 1) % 4);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [loading]);
+
   const handleApplyClick = (card) => {
-    const query = encodeURIComponent(`${card.bank} ${card.card_name} apply online India`);
-    window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+    const query = encodeURIComponent(
+      `${card.bank} ${card.card_name} apply online India`,
+    );
+    window.open(
+      `https://www.google.com/search?q=${query}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   if (loading) {
     return (
-      <div className="flex-1 w-full rounded-3xl border border-neutral-300/90 bg-[#f2eee5]/85 backdrop-blur-xs shadow-xs p-10 sm:p-14 flex flex-col items-center justify-center text-center min-h-0">
-        <div className="w-12 h-12 rounded-2xl bg-[#111215] flex items-center justify-center shadow-md mb-4 animate-pulse">
-          <Sparkles className="w-6 h-6 text-amber-400" />
+      <div className="flex-1 w-full rounded-3xl border border-neutral-300/90 bg-[#f2eee5]/85 backdrop-blur-xs shadow-xs overflow-hidden flex flex-col justify-between min-h-0">
+        <div className="flex items-center justify-between border-b border-neutral-300/90 px-6 sm:px-8 py-3.5 bg-[#eae5d9]/90 text-xs font-mono font-bold text-neutral-600 tracking-wider">
+          <span> Step [04 / 04] </span>
         </div>
-        <h3 className="text-xl font-black tracking-tight text-[#111215] mb-2 uppercase">
-          Crunching Card Mathematics...
-        </h3>
-        <p className="text-xs text-neutral-600 max-w-sm leading-relaxed mb-6 font-mono">
-          Cross-referencing your 4-month transaction categories with issuer reward formulas and milestone waivers.
-        </p>
-        <div className="w-48 h-1.5 bg-neutral-300 rounded-full overflow-hidden">
-          <div className="h-full bg-[#c2571a] rounded-full animate-pulse w-3/4" />
+
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 sm:p-8 bg-white/70 overflow-hidden select-none">
+          <MatrixOrb
+            state="thinking"
+            size={135}
+            color="#c2571a"
+            dots={13}
+            labels={{ thinking: "" }}
+            className="mb-3"
+          />
+
+          <span className="text-xs font-mono font-bold text-amber-800 uppercase tracking-widest block mb-1.5">
+            [ REWARD MATRIX CALIBRATION ]
+          </span>
+
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#111215] mb-2 uppercase">
+            Crunching Card Mathematics...
+          </h2>
+
+          <p className="text-xs sm:text-sm text-neutral-600 max-w-md leading-relaxed mb-4 font-mono">
+            Cross-referencing your 4-month transaction categories with issuer
+            reward formulas and milestone waivers.
+          </p>
         </div>
       </div>
     );
@@ -43,32 +113,37 @@ export function RecommendationScreen({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <span className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider block">
-            [ OPTIMAL PICKS ]
+            OPTIMAL PICKS
           </span>
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#111215]">
-            Here are the cards which would be your biggest givers
+            Here are the cards which could be your biggest givers
           </h2>
           <p className="text-xs text-neutral-500 mt-0.5">
-            Calculated from your transaction history and preference profile.
+            Calculated from your transaction history (if available) and
+            preference profile.
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          onClick={onReset}
-          className="h-10 px-4 rounded-xl border-neutral-300 text-xs font-mono font-bold text-neutral-700 hover:bg-neutral-100 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-        >
-          <RotateCcw className="w-3.5 h-3.5 text-neutral-500" />
-          <span>Start Over</span>
-        </Button>
+        {isCached && remainingSeconds > 0 ? (
+          <div className="h-10 px-4 rounded-xl border border-neutral-300 bg-white/80 shadow-2xs flex items-center gap-2 text-xs font-mono font-bold text-neutral-700 select-none self-start sm:self-auto">
+            <Clock className="w-3.5 h-3.5 text-[#c2571a]" />
+            <span>Refreshes in {formatCountdown(remainingSeconds)}</span>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={onReset}
+            className="h-10 px-4 rounded-xl border-neutral-300 text-xs font-mono font-bold text-neutral-700 hover:bg-neutral-100 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-neutral-500" />
+            <span>Start Over</span>
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {recommendationsData?.recommendations?.map((card, idx) => {
           const logoUrl = getBankLogo(card.bank, card.card_name);
-          const isBankMatch =
-            preferredBank &&
-            card.bank?.toLowerCase().includes(preferredBank.toLowerCase());
 
           return (
             <div
@@ -99,17 +174,12 @@ export function RecommendationScreen({
                   </div>
                 </div>
 
-                {isBankMatch && (
-                  <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg mb-3">
-                    <Sparkles className="w-3 h-3 text-amber-600" />
-                    <span>Matches your preferred bank</span>
-                  </div>
-                )}
-
                 {card.top_perk && (
                   <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-700 mb-4 flex items-start gap-2.5">
                     <Flame className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span className="font-semibold leading-relaxed">{card.top_perk}</span>
+                    <span className="font-semibold leading-relaxed">
+                      {card.top_perk}
+                    </span>
                   </div>
                 )}
 
@@ -128,7 +198,19 @@ export function RecommendationScreen({
                         <span>
                           Best for:{" "}
                           <strong className="font-semibold text-neutral-900">
-                            {card.best_for_categories.map((c) => c.replace("_", " ")).join(", ")}
+                            {card.best_for_categories
+                              .map((c) =>
+                                String(c)
+                                  .replace(/_/g, " ")
+                                  .split(" ")
+                                  .map(
+                                    (w) =>
+                                      w.charAt(0).toUpperCase() +
+                                      w.slice(1).toLowerCase(),
+                                  )
+                                  .join(" "),
+                              )
+                              .join(", ")}
                           </strong>
                         </span>
                       </li>
@@ -141,15 +223,22 @@ export function RecommendationScreen({
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-neutral-500">Annual Fee</span>
                   <span className="font-mono font-bold text-neutral-900">
-                    {card.annual_fee === 0 ? "Lifetime Free" : `₹${card.annual_fee?.toLocaleString("en-IN")}`}
+                    {card.annual_fee === 0
+                      ? "Lifetime Free"
+                      : `₹${card.annual_fee?.toLocaleString("en-IN")}`}
                   </span>
                 </div>
 
                 {card.estimated_monthly_reward_inr > 0 && (
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500">Est. Monthly Reward</span>
+                    <span className="text-neutral-500">
+                      Est. Monthly Reward
+                    </span>
                     <span className="font-mono font-bold text-emerald-600">
-                      +₹{card.estimated_monthly_reward_inr?.toLocaleString("en-IN")}
+                      +₹
+                      {card.estimated_monthly_reward_inr?.toLocaleString(
+                        "en-IN",
+                      )}
                     </span>
                   </div>
                 )}
@@ -171,15 +260,26 @@ export function RecommendationScreen({
         <div className="flex items-center gap-2">
           <Info className="w-4 h-4 text-neutral-400 shrink-0" />
           <span>
-            Quarterly cashback if more than 4 months of transaction are available for each recommended card.
+            Quarterly cashback if more than 4 months of transaction are
+            available for each recommended card.
           </span>
         </div>
 
-        {isCached && (
-          <span className="font-mono text-[11px] text-neutral-400">
-            Evaluated for today (refreshes daily)
-          </span>
-        )}
+        <span className="font-mono text-[11px] text-neutral-400">
+          Evaluated for{" "}
+          {recommendationsData?.evaluated_at
+            ? new Date(recommendationsData.evaluated_at).toLocaleString(
+                "en-IN",
+                {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                },
+              )
+            : new Date().toLocaleString("en-IN", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+        </span>
       </div>
     </div>
   );

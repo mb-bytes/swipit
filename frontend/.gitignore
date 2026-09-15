@@ -25,4 +25,5 @@ dist-ssr
 
 skills-lock.json
 .agents
+.agents-combined
 .vscode

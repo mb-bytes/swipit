@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from openai import AsyncOpenAI
@@ -255,6 +255,14 @@ async def get_ai_recommendations(
             preferred_bank=preferred_bank,
         )
 
+def _normalize_recommendations(recs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for r in recs:
+        if "best_for_categories" in r and isinstance(r["best_for_categories"], list):
+            r["best_for_categories"] = [
+                str(c).replace("_", " ").title() for c in r["best_for_categories"]
+            ]
+    return recs
+
 async def get_recommendations(
     user_id: uuid.UUID,
     db: AsyncSession,
@@ -270,6 +278,13 @@ async def get_recommendations(
         if cached:
             res = json.loads(cached)
             res["cached"] = True
+            try:
+                ttl = await redis_client.ttl(cache_key)
+                res["ttl_seconds"] = max(0, ttl) if (ttl is not None and ttl > 0) else 0
+            except Exception:
+                res["ttl_seconds"] = 0
+            if "recommendations" in res and isinstance(res["recommendations"], list):
+                res["recommendations"] = _normalize_recommendations(res["recommendations"])
             return res
     except Exception as e:
         print(f"[recommendations] Redis read error: {e}")
@@ -284,7 +299,9 @@ async def get_recommendations(
         preferred_merchant=preferred_merchant,
         preferred_bank=preferred_bank,
     )
+    recommendations = _normalize_recommendations(recommendations)
 
+    now_iso = datetime.now(timezone.utc).isoformat()
     result = {
         "spending_summary": summary,
         "recommendations": recommendations,
@@ -294,6 +311,8 @@ async def get_recommendations(
             "preferred_bank": preferred_bank,
         },
         "cached": False,
+        "evaluated_at": now_iso,
+        "ttl_seconds": CACHE_TTL_SECONDS,
     }
 
     try:

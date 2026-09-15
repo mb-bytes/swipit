@@ -15,8 +15,7 @@ export function PreferredCategory({
   return (
     <div className="flex-1 w-full rounded-3xl border border-neutral-300/90 bg-[#f2eee5]/85 backdrop-blur-xs shadow-xs flex flex-col justify-between relative min-h-0">
       <div className="flex items-center justify-between border-b border-neutral-300/90 px-6 py-3.5 bg-[#eae5d9]/90 text-xs font-mono font-bold text-neutral-600 tracking-wider rounded-t-3xl">
-        <span>[ OPTIMIZER ]</span>
-        <span>[ 01 / 03 ]</span>
+        <span>Step [02 / 03]</span>
       </div>
 
       <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-neutral-300/90 bg-white/60">
@@ -24,7 +23,7 @@ export function PreferredCategory({
           Select Top Categories
         </span>
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#111215]">
-          [ WHERE DO YOU SPEND? ]
+          WHERE DO YOU SPEND?
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 mt-1">
           Lets start with some information. What is your most spent category?
@@ -70,9 +69,13 @@ export function PreferredCategory({
                   - {cat.code}
                 </span>
                 {isSelected ? (
-                  <span className={`w-2.5 h-2.5 rounded-full shadow-xs ${cat.selectedDot}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full shadow-xs ${cat.selectedDot}`}
+                  />
                 ) : (
-                  <span className={`w-2 h-2 rounded-full border ${cat.dotBorder} opacity-40 group-hover:opacity-100`} />
+                  <span
+                    className={`w-2 h-2 rounded-full border ${cat.dotBorder} opacity-40 group-hover:opacity-100`}
+                  />
                 )}
               </div>
 
@@ -99,7 +102,11 @@ export function PreferredCategory({
         </span>
         <Dropdown
           items={OTHER_CATEGORIES_DROPDOWN}
-          value={OTHER_CATEGORIES_DROPDOWN.some((c) => c.value === preferredCategory) ? preferredCategory : ""}
+          value={
+            OTHER_CATEGORIES_DROPDOWN.some((c) => c.value === preferredCategory)
+              ? preferredCategory
+              : ""
+          }
           onChange={(val) => onSelectCategory(val)}
           placeholder="Select category from dropdown..."
           className="w-full sm:w-72"

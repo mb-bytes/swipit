@@ -15,8 +15,7 @@ export function PreferredMerchant({
   return (
     <div className="flex-1 w-full rounded-3xl border border-neutral-300/90 bg-[#f2eee5]/85 backdrop-blur-xs shadow-xs flex flex-col justify-between relative min-h-0">
       <div className="flex items-center justify-between border-b border-neutral-300/90 px-6 py-3.5 bg-[#eae5d9]/90 text-xs font-mono font-bold text-neutral-600 tracking-wider rounded-t-3xl">
-        <span>[ OPTIMIZER ]</span>
-        <span>[ 02 / 03 ]</span>
+        <span>Step [02 / 03]</span>
       </div>
 
       <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-neutral-300/90 bg-white/60">
@@ -24,7 +23,7 @@ export function PreferredMerchant({
           Select Top Merchants
         </span>
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#111215]">
-          [ ANY PREFERRED MERCHANT? ]
+          ANY PREFERRED MERCHANT?
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 mt-1">
           Got a merchant you are basically funding at this point?
@@ -56,9 +55,7 @@ export function PreferredMerchant({
               className={`p-4 sm:p-5 text-left transition-all cursor-pointer flex flex-col justify-between min-h-[95px] sm:min-h-[110px] relative group select-none ${
                 !isTopRow ? "sm:border-t sm:border-neutral-300/80" : ""
               } ${
-                isSelected
-                  ? m.selectedBg
-                  : `${m.unselectedBg} text-[#111215]`
+                isSelected ? m.selectedBg : `${m.unselectedBg} text-[#111215]`
               }`}
             >
               <div className="flex items-center justify-between w-full">
@@ -70,9 +67,13 @@ export function PreferredMerchant({
                   - {m.code}
                 </span>
                 {isSelected ? (
-                  <span className={`w-2.5 h-2.5 rounded-full shadow-xs ${m.selectedDot}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full shadow-xs ${m.selectedDot}`}
+                  />
                 ) : (
-                  <span className={`w-2 h-2 rounded-full border ${m.dotBorder} opacity-40 group-hover:opacity-100`} />
+                  <span
+                    className={`w-2 h-2 rounded-full border ${m.dotBorder} opacity-40 group-hover:opacity-100`}
+                  />
                 )}
               </div>
 
@@ -82,7 +83,11 @@ export function PreferredMerchant({
                 </h4>
                 <span
                   className={`text-[10px] sm:text-[11px] block mt-0.5 font-mono ${
-                    isSelected ? (m.id === "Blinkit" ? "text-neutral-800" : "text-white/80") : "text-neutral-500"
+                    isSelected
+                      ? m.id === "Blinkit"
+                        ? "text-neutral-800"
+                        : "text-white/80"
+                      : "text-neutral-500"
                   }`}
                 >
                   {m.hint}
@@ -99,7 +104,11 @@ export function PreferredMerchant({
         </span>
         <Dropdown
           items={OTHER_MERCHANT_OPTIONS}
-          value={OTHER_MERCHANT_OPTIONS.some((o) => o.value === preferredMerchant) ? preferredMerchant : ""}
+          value={
+            OTHER_MERCHANT_OPTIONS.some((o) => o.value === preferredMerchant)
+              ? preferredMerchant
+              : ""
+          }
           onChange={(val) => onSelectMerchant(val)}
           placeholder="Others"
           className="w-full sm:w-72"

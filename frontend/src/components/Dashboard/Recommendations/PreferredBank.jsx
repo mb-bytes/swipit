@@ -16,8 +16,7 @@ export function PreferredBank({
   return (
     <div className="flex-1 w-full rounded-3xl border border-neutral-300/90 bg-[#f2eee5]/85 backdrop-blur-xs shadow-xs flex flex-col justify-between relative min-h-0">
       <div className="flex items-center justify-between border-b border-neutral-300/90 px-6 py-3.5 bg-[#eae5d9]/90 text-xs font-mono font-bold text-neutral-600 tracking-wider rounded-t-3xl">
-        <span>[ OPTIMIZER ]</span>
-        <span>[ 03 / 03 ]</span>
+        <span>Step [03 / 03]</span>
       </div>
 
       <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-neutral-300/90 bg-white/60">
@@ -110,7 +109,11 @@ export function PreferredBank({
         </span>
         <Dropdown
           items={OTHER_BANK_OPTIONS}
-          value={OTHER_BANK_OPTIONS.some((o) => o.value === preferredBank) ? preferredBank : ""}
+          value={
+            OTHER_BANK_OPTIONS.some((o) => o.value === preferredBank)
+              ? preferredBank
+              : ""
+          }
           onChange={(val) => onSelectBank(val)}
           placeholder="Others dropdown"
           className="w-full sm:w-72"
@@ -143,8 +146,7 @@ export function PreferredBank({
           onClick={onConfirm}
           className="h-11 px-7 bg-[#c2571a] hover:bg-[#a94813] text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>Confirm Selection</span>
-          <Sparkles className="w-4 h-4 text-amber-200" />
+          <span>Start Analysis</span>
         </Button>
       </div>
     </div>
