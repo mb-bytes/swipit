@@ -13,7 +13,7 @@ function DashboardFallback() {
 
 function DashboardContainer() {
     return (
-        <div className="h-screen w-screen overflow-hidden bg-[#f2eee5] text-[#111215] paper-grain select-none">
+        <div className="h-screen w-full max-w-full overflow-hidden bg-[#f2eee5] text-[#111215] paper-grain select-none">
             <DashboardProvider>
                 <SidebarDemo>
                     <Suspense fallback={<DashboardFallback />}>

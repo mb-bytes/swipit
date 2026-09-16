@@ -208,44 +208,37 @@ export function Settings() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 lg:p-10 paper-grain overflow-y-auto min-h-0">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-3 border-b border-neutral-200/80 shrink-0">
+      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-6 md:p-8 lg:p-10 paper-grain overflow-y-auto min-h-0">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 pb-3 border-b border-neutral-200/80 shrink-0">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#111215]">
               Account Settings
             </h1>
-            <p className="mt-1 text-sm text-neutral-500 max-w-xl">
+            <p className="mt-1 text-xs sm:text-sm text-neutral-500 max-w-xl">
               Personal identity, connected data integrations, and account lifecycle controls.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 w-full items-stretch">
           <div className="lg:col-span-6 flex flex-col h-full">
-            <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs flex flex-col justify-between h-full gap-5">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#111215] text-[#f2eee5] font-mono font-bold text-base flex items-center justify-center shadow-xs">
-                    {initials}
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-[#111215]">
-                      Personal Identity
-                    </h2>
-                    <p className="text-xs text-neutral-500">
-                      Your profile details and SwipIt account credentials
-                    </p>
-                  </div>
+            <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col justify-between h-full gap-5">
+              <div className="flex items-center gap-3 pb-3 border-b border-neutral-100">
+                <div className="w-11 h-11 rounded-xl bg-[#111215] text-[#f2eee5] font-mono font-bold text-base flex items-center justify-center shadow-xs shrink-0">
+                  {initials}
                 </div>
-
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 text-neutral-700 border border-neutral-200">
-                  <User className="w-3.5 h-3.5 text-neutral-500" />
-                  <span>SwipIt Member</span>
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-[#111215] truncate">
+                    Personal Identity
+                  </h2>
+                  <p className="text-xs text-neutral-500 truncate">
+                    Your profile details and SwipIt account credentials
+                  </p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-3">
-                <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex flex-col gap-2">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex flex-col gap-2 min-w-0">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-500">
                       Display Name
@@ -272,7 +265,7 @@ export function Settings() {
                         value={nameInput}
                         onChange={(e) => setNameInput(e.target.value)}
                         placeholder="Enter your name"
-                        className="flex-1 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-900 bg-white border border-neutral-300 focus:outline-hidden focus:border-neutral-900 shadow-2xs font-sans"
+                        className="flex-1 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-900 bg-white border border-neutral-300 focus:outline-hidden focus:border-neutral-900 shadow-2xs font-sans min-w-0"
                         autoFocus
                         disabled={isSavingName}
                       />
@@ -280,7 +273,7 @@ export function Settings() {
                         <button
                           type="submit"
                           disabled={isSavingName}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-50 flex-1 sm:flex-none"
                         >
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
                           <span>{isSavingName ? "Saving..." : "Save"}</span>
@@ -289,7 +282,7 @@ export function Settings() {
                           type="button"
                           onClick={() => setIsEditingName(false)}
                           disabled={isSavingName}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-200/70 text-neutral-700 hover:bg-neutral-300 transition-colors cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-200/70 text-neutral-700 hover:bg-neutral-300 transition-colors cursor-pointer disabled:opacity-50 flex-1 sm:flex-none"
                         >
                           <X className="w-3.5 h-3.5 text-neutral-500" />
                           <span>Cancel</span>
@@ -297,21 +290,21 @@ export function Settings() {
                       </div>
                     </form>
                   ) : (
-                    <div className="text-sm font-bold text-neutral-900">
+                    <div className="text-sm font-bold text-neutral-900 truncate">
                       {displayName}
                     </div>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                       <Mail className="w-4 h-4 text-neutral-400 shrink-0" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Primary Email
                         </div>
-                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5">
+                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5" title={email}>
                           {email}
                         </div>
                       </div>
@@ -330,14 +323,14 @@ export function Settings() {
                     </button>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                       <User className="w-4 h-4 text-neutral-400 shrink-0" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Member Handle
                         </div>
-                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5">
+                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5" title={username}>
                           {username}
                         </div>
                       </div>
@@ -358,10 +351,10 @@ export function Settings() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                       <Lock className="w-4 h-4 text-neutral-400 shrink-0" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Account Password
                         </div>
@@ -383,10 +376,10 @@ export function Settings() {
                     </button>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                       <Calendar className="w-4 h-4 text-neutral-400 shrink-0" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Member Since
                         </div>
@@ -409,8 +402,8 @@ export function Settings() {
             </div>
           </div>
 
-          <div className="lg:col-span-6 flex flex-col justify-between gap-6 h-full">
-            <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs flex flex-col gap-5">
+          <div className="lg:col-span-6 flex flex-col justify-between gap-5 sm:gap-6 h-full">
+            <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col gap-4 sm:gap-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center shrink-0">
@@ -482,7 +475,7 @@ export function Settings() {
                     <button
                       type="button"
                       onClick={() => setShowRevokeModal(true)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/80 transition-colors cursor-pointer shadow-xs shrink-0"
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/80 transition-colors cursor-pointer shadow-xs w-full sm:w-auto"
                     >
                       <Unlink className="w-3.5 h-3.5 text-red-600" />
                       <span>Revoke Access</span>
@@ -501,7 +494,7 @@ export function Settings() {
                       window.location.href =
                         "http://localhost:8000/auth/google/login?action=connect";
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs shrink-0"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs w-full sm:w-auto"
                   >
                     <ArrowUpRight className="w-4 h-4 text-amber-400" />
                     <span>Connect Gmail</span>
@@ -510,23 +503,23 @@ export function Settings() {
               )}
             </div>
 
-            <div className="rounded-2xl border border-red-200/80 bg-white p-6 shadow-xs flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-red-100">
-                <div className="flex items-center gap-3">
+            <div className="rounded-2xl border border-red-200/80 bg-white p-4 sm:p-6 shadow-xs flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-red-100 flex-wrap gap-2">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-red-50 border border-red-200/80 flex items-center justify-center shrink-0">
                     <ShieldAlert className="w-5 h-5 text-red-600" />
                   </div>
-                  <div>
-                    <h2 className="text-base font-bold text-red-950">
+                  <div className="min-w-0">
+                    <h2 className="text-base font-bold text-red-950 truncate">
                       Danger Zone
                     </h2>
-                    <p className="text-xs text-red-600/80">
+                    <p className="text-xs text-red-600/80 truncate">
                       Permanent and irreversible account actions
                     </p>
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-md bg-red-50 text-red-700 border border-red-200/60 font-mono text-[11px] font-semibold">
+                <span className="px-2.5 py-1 rounded-md bg-red-50 text-red-700 border border-red-200/60 font-mono text-[11px] font-semibold shrink-0">
                   IRREVERSIBLE
                 </span>
               </div>
@@ -547,7 +540,7 @@ export function Settings() {
                     setDeleteConfirmationText("");
                     setShowDeleteModal(true);
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors cursor-pointer shadow-xs shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors cursor-pointer shadow-xs w-full sm:w-auto shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete Account</span>

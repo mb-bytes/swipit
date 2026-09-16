@@ -182,6 +182,38 @@ class CardService:
         await db.refresh(txn)
         return txn
 
+    async def update_transaction(
+        self,
+        db: AsyncSession,
+        transaction_id: uuid.UUID,
+        user_id: uuid.UUID,
+        update_details: dict,
+    ) -> Transaction:
+        stmt = (
+            select(Transaction)
+            .join(CardModel, Transaction.card_id == CardModel.card_id)
+            .where(
+                Transaction.transaction_id == transaction_id,
+                CardModel.user_id == user_id,
+            )
+        )
+        result = await db.execute(stmt)
+        transaction = result.scalars().first()
+
+        if transaction is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Transaction not found or does not belong to this user",
+            )
+
+        protected_fields = {"transaction_id", "card_id", "raw_email_id"}
+        for key, value in update_details.items():
+            if key not in protected_fields and hasattr(transaction, key):
+                setattr(transaction, key, value)
+        await db.commit()
+        await db.refresh(transaction)
+        return transaction
+
     async def delete_transaction(self, db: AsyncSession, transaction_id: uuid.UUID, user_id: uuid.UUID):
         stmt = (
             select(Transaction)

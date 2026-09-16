@@ -47,7 +47,99 @@ if (typeof document !== "undefined" && !document.getElementById("transitions-p9"
   document.head.appendChild(__style);
 }
 
-export function NumberPopIn({ value = "123", showButton = false, className = "" }) {
+const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+function RollingDigit({ digit, delay = 0, duration = 1.2 }) {
+  const [mounted, setMounted] = useState(false);
+  const num = parseInt(digit, 10);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [digit]);
+
+  // 2 cycles of 0-9 so it spins through a full set before settling on the target digit
+  const targetIndex = 10 + (isNaN(num) ? 0 : num);
+  const targetY = mounted ? -(targetIndex * 5) : 0;
+
+  return (
+    <span className="inline-block relative overflow-hidden h-[1em] leading-[1em] align-baseline select-none">
+      {/* Invisible placeholder to establish identical width and baseline */}
+      <span className="invisible select-none opacity-0 pointer-events-none">{digit}</span>
+      <span
+        className="absolute inset-x-0 top-0 flex flex-col will-change-transform"
+        style={{
+          transform: `translateY(${targetY}%)`,
+          transition: `transform ${duration}s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`,
+        }}
+      >
+        {[...DIGITS, ...DIGITS].map((n, idx) => (
+          <span
+            key={idx}
+            className="h-[1em] leading-[1em] flex items-center justify-center text-center select-none"
+          >
+            {n}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+export function RollingNumber({
+  value = "0",
+  className = "",
+  duration = 1.2,
+  stagger = 0.05,
+}) {
+  const strValue = String(value);
+  let digitCount = 0;
+
+  return (
+    <span className={`inline-flex items-baseline ${className}`}>
+      {strValue.split("").map((ch, i) => {
+        const isDigit = /^\d$/.test(ch);
+        if (isDigit) {
+          const delay = digitCount * stagger;
+          digitCount++;
+          return (
+            <RollingDigit
+              key={`${i}-${ch}`}
+              digit={ch}
+              delay={delay}
+              duration={duration}
+            />
+          );
+        }
+        return (
+          <span key={i} className="inline-block">
+            {ch === " " ? "\u00A0" : ch}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+export function NumberPopIn({
+  value = "123",
+  showButton = false,
+  className = "",
+  variant = "pop",
+  duration = 1.2,
+}) {
+  if (variant === "rolling") {
+    return (
+      <RollingNumber
+        value={value}
+        className={className}
+        duration={duration}
+      />
+    );
+  }
+
   const [playing, setPlaying] = useState(true);
 
   useEffect(() => {
@@ -93,3 +185,4 @@ export function NumberPopIn({ value = "123", showButton = false, className = "" 
 }
 
 export default NumberPopIn;
+

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "boneyard-js/react";
 import { useDashboard } from "@/contexts/DashboardContext";
-import { NumberPopIn } from "@/components/ui/animate-number";
+import { RollingNumber } from "@/components/ui/animate-number";
 import { CreditCard } from "@/components/Signup/credit-card";
 import { Button } from "@/components/ui/button";
 import { getBankLogo } from "@/lib/bank-logos.js";
@@ -70,39 +70,50 @@ export function TrackRewards() {
       categoryMap[cat].count += 1;
     });
 
-    const sortedCards = Object.values(cardMap).sort((a, b) => b.reward - a.reward);
+    const sortedCards = Object.values(cardMap).sort(
+      (a, b) => b.reward - a.reward,
+    );
     const topCardData = sortedCards[0];
 
     const matchedCard = topCardData
       ? cards.find(
           (c) =>
             c.id === topCardData.cardId ||
-            c.cardName?.toLowerCase() === topCardData.cardName?.toLowerCase()
+            c.cardName?.toLowerCase() === topCardData.cardName?.toLowerCase(),
         )
       : cards[0];
 
     const defaultCard = cards[0] || null;
 
-    const highestCard = (matchedCard || defaultCard)
-      ? {
-          cardName: matchedCard?.cardName || defaultCard?.cardName || "Credit Card",
-          cardLast4: matchedCard?.cardLast4 || defaultCard?.cardLast4 || "••••",
-          bankName: matchedCard?.bankName || defaultCard?.bankName || "Bank",
-          cardHolder: matchedCard?.cardHolder || "Valued Member",
-          reward: topCardData ? Math.round(topCardData.reward * 100) / 100 : 0,
-          logo:
-            matchedCard?.logo ||
-            getBankLogo(
-              matchedCard?.bankName || defaultCard?.bankName,
-              matchedCard?.cardName || defaultCard?.cardName
-            ),
-        }
-      : null;
+    const highestCard =
+      matchedCard || defaultCard
+        ? {
+            cardName:
+              matchedCard?.cardName || defaultCard?.cardName || "Credit Card",
+            cardLast4:
+              matchedCard?.cardLast4 || defaultCard?.cardLast4 || "••••",
+            bankName: matchedCard?.bankName || defaultCard?.bankName || "Bank",
+            cardHolder: matchedCard?.cardHolder || "Valued Member",
+            reward: topCardData
+              ? Math.round(topCardData.reward * 100) / 100
+              : 0,
+            logo:
+              matchedCard?.logo ||
+              getBankLogo(
+                matchedCard?.bankName || defaultCard?.bankName,
+                matchedCard?.cardName || defaultCard?.cardName,
+              ),
+          }
+        : null;
 
-    const sortedMerchants = Object.values(merchantMap).sort((a, b) => b.reward - a.reward);
+    const sortedMerchants = Object.values(merchantMap).sort(
+      (a, b) => b.reward - a.reward,
+    );
     const biggestMerchant = sortedMerchants[0] || null;
 
-    const sortedCategories = Object.values(categoryMap).sort((a, b) => b.reward - a.reward);
+    const sortedCategories = Object.values(categoryMap).sort(
+      (a, b) => b.reward - a.reward,
+    );
     const topCategory = sortedCategories[0] || null;
 
     const pointsCards = cards.filter((c) => {
@@ -121,7 +132,9 @@ export function TrackRewards() {
         const cardTxns = transactions.filter(
           (t) =>
             (t.cardId && pCard.id && String(t.cardId) === String(pCard.id)) ||
-            (t.cardName && pCard.cardName && t.cardName.toLowerCase() === pCard.cardName.toLowerCase())
+            (t.cardName &&
+              pCard.cardName &&
+              t.cardName.toLowerCase() === pCard.cardName.toLowerCase()),
         );
 
         let pts = 0;
@@ -133,7 +146,7 @@ export function TrackRewards() {
           const tInr = Number(t.rewardEarned) || 0;
           if (tPts > 0) {
             pts += tPts;
-            inr += tInr || (tPts * ptVal);
+            inr += tInr || tPts * ptVal;
           } else if (tInr > 0 && ptVal > 0) {
             pts += Math.round(tInr / ptVal);
             inr += tInr;
@@ -150,16 +163,27 @@ export function TrackRewards() {
       pointsCardStats.sort((a, b) => b.points - a.points);
       const topPointsCard = pointsCardStats[0];
 
-      const totalPointsAllCards = pointsCardStats.reduce((sum, item) => sum + item.points, 0);
-      const totalInrAllCards = pointsCardStats.reduce((sum, item) => sum + item.inr, 0);
+      const totalPointsAllCards = pointsCardStats.reduce(
+        (sum, item) => sum + item.points,
+        0,
+      );
+      const totalInrAllCards = pointsCardStats.reduce(
+        (sum, item) => sum + item.inr,
+        0,
+      );
 
-      pointsCardName = topPointsCard?.card?.cardName || pointsCards[0]?.cardName || "Points Card";
+      pointsCardName =
+        topPointsCard?.card?.cardName ||
+        pointsCards[0]?.cardName ||
+        "Points Card";
       pointsCollected = totalPointsAllCards;
       pointsConvertedInr = Math.round(totalInrAllCards * 100) / 100;
     }
 
     const roundedTotal = Math.round(totalCashback * 100) / 100;
-    const hasRewardsData = transactions.length > 0 && (roundedTotal > 0 || (topCardData && topCardData.reward > 0));
+    const hasRewardsData =
+      transactions.length > 0 &&
+      (roundedTotal > 0 || (topCardData && topCardData.reward > 0));
 
     return {
       hasRewardsData,
@@ -186,8 +210,8 @@ export function TrackRewards() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 pt-6 md:pt-8 paper-grain overflow-y-auto lg:overflow-hidden min-h-0">
-        <div className="flex items-center justify-between gap-3 shrink-0 pt-1">
+      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto lg:overflow-hidden min-h-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pt-1">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
               <Gift className="w-4.5 h-4.5 text-[#f2eee5]" />
@@ -197,18 +221,22 @@ export function TrackRewards() {
                 Track Rewards
               </h1>
               <p className="text-xs text-neutral-500">
-                The official scoreboard of every single rupee you clawed back from the banks.
+                The official scoreboard of every single rupee you clawed back
+                from the banks.
               </p>
             </div>
           </div>
 
-          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full shadow-2xs shrink-0 ${
-            stats.hasRewardsData
-              ? "text-emerald-700 bg-emerald-50 border border-emerald-200/80"
-              : "text-neutral-600 bg-neutral-100 border border-neutral-200/80"
-          }`}>
-            <Sparkles className={`w-3.5 h-3.5 ${stats.hasRewardsData ? "text-emerald-600" : "text-amber-500"}`} />
-            <span>{stats.hasRewardsData ? "Rewards Optimized" : "Scoreboard Ready"}</span>
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full shadow-2xs shrink-0 w-fit ${
+              stats.hasRewardsData
+                ? "text-emerald-700 bg-emerald-50 border border-emerald-200/80"
+                : "text-neutral-600 bg-neutral-100 border border-neutral-200/80"
+            }`}
+          >
+            <span>
+              {stats.hasRewardsData ? "Rewards Optimized" : "Scoreboard Ready"}
+            </span>
           </span>
         </div>
 
@@ -250,7 +278,9 @@ export function TrackRewards() {
                   The banks are currently up 1–0. Time to balance the ledger.
                 </h3>
                 <p className="text-xs sm:text-sm text-neutral-500 mt-1 leading-relaxed">
-                  Your reward scoreboard is clean. Add your active cards and start logging transactions to see every rupee clawed back credited here in real time.
+                  Your reward scoreboard is clean. Add your active cards and
+                  start logging transactions to see every rupee clawed back
+                  credited here in real time.
                 </p>
               </div>
 
@@ -286,7 +316,11 @@ export function TrackRewards() {
                     className="w-full h-9 text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>{cards.length > 0 ? "Manage Wallet Cards" : "Add Your First Card"}</span>
+                    <span>
+                      {cards.length > 0
+                        ? "Manage Wallet Cards"
+                        : "Add Your First Card"}
+                    </span>
                   </Button>
                 </div>
 
@@ -300,7 +334,9 @@ export function TrackRewards() {
                         2. Ingest Swipes & Statements
                       </h4>
                       <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
-                        Connect Gmail for hands-free statement and transaction sync, or track your card spends to calculate actual cashback earned.
+                        Connect Gmail for hands-free statement and transaction
+                        sync, or track your card spends to calculate actual
+                        cashback earned.
                       </p>
                     </div>
                   </div>
@@ -331,7 +367,16 @@ export function TrackRewards() {
                   <Sparkles className="w-4 h-4 text-amber-600" />
                 </div>
                 <p className="text-xs text-neutral-600 leading-relaxed">
-                  <span className="font-bold text-neutral-900">Pro tip:</span> Once your swipes are logged, this scoreboard breaks down your <span className="font-medium text-neutral-800">wallet MVP card</span>, <span className="font-medium text-neutral-800">top merchant multiplier</span>, and automatically converts points into cold hard rupees.
+                  <span className="font-bold text-neutral-900">Pro tip:</span>{" "}
+                  Once your swipes are logged, this scoreboard breaks down your{" "}
+                  <span className="font-medium text-neutral-800">
+                    wallet MVP card
+                  </span>
+                  ,{" "}
+                  <span className="font-medium text-neutral-800">
+                    top merchant multiplier
+                  </span>
+                  , and automatically converts points into cold hard rupees.
                 </p>
               </div>
             </div>
@@ -344,14 +389,15 @@ export function TrackRewards() {
 
                 <div className="flex items-center justify-center font-black tracking-tight text-neutral-900 font-mono my-0.5 text-4xl sm:text-5xl lg:text-6xl">
                   <span className="text-emerald-500 mr-1">+</span>
-                  <NumberPopIn
+                  <RollingNumber
                     value={stats.totalCashback.toLocaleString("en-IN")}
                     className="font-mono text-neutral-900"
                   />
                 </div>
 
                 <p className="text-[11px] sm:text-xs text-neutral-500">
-                  Direct bank cashback credited to you — proof that playing your cards right pays.
+                  Direct bank cashback credited to you — proof that playing your
+                  cards right pays.
                 </p>
               </div>
 
@@ -403,10 +449,11 @@ export function TrackRewards() {
 
                         <div className="flex items-center gap-1 font-mono text-base sm:text-xl font-bold text-emerald-600 tracking-tight">
                           <span>+</span>
-                          <NumberPopIn
-                            value={stats.biggestMerchant.reward.toLocaleString("en-IN")}
-                            className="text-emerald-600 font-bold"
-                          />
+                          <span>
+                            {stats.biggestMerchant.reward.toLocaleString(
+                              "en-IN",
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -416,7 +463,9 @@ export function TrackRewards() {
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-1.5 px-1 text-xs sm:text-sm font-semibold text-neutral-700 select-none">
                         <ShoppingBag className="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>Your certified guilty pleasure (that paid off)</span>
+                        <span>
+                          Your certified guilty pleasure (that paid off)
+                        </span>
                       </div>
 
                       <div className="rounded-2xl border border-neutral-200/90 bg-white/95 p-3.5 sm:p-4 flex items-center justify-between shadow-2xs hover:border-neutral-300 transition-all select-none">
@@ -436,10 +485,11 @@ export function TrackRewards() {
 
                         <div className="flex items-center gap-1 font-mono text-base sm:text-xl font-bold text-emerald-600 tracking-tight">
                           <span>+</span>
-                          <NumberPopIn
-                            value={stats.topCategory.reward.toLocaleString("en-IN")}
-                            className="text-emerald-600 font-bold"
-                          />
+                          <span>
+                            {stats.topCategory.reward.toLocaleString(
+                              "en-IN",
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -458,7 +508,8 @@ export function TrackRewards() {
                         Magic conversion: Points ➔ Cold hard cashback
                       </h4>
                       <p className="text-[10px] sm:text-[11px] text-neutral-500">
-                        Because imaginary points won't pay the bills — cashback will.
+                        Because imaginary points won't pay the bills — cashback
+                        will.
                       </p>
                     </div>
                   </div>
@@ -471,7 +522,8 @@ export function TrackRewards() {
 
                     <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200/80 text-xs font-mono font-bold text-emerald-700 shadow-2xs">
                       <span>
-                        {stats.pointsCollected.toLocaleString("en-IN")} Points ~ {stats.pointsConvertedInr.toLocaleString("en-IN")} Rs
+                        {stats.pointsCollected.toLocaleString("en-IN")} Points ~{" "}
+                        {stats.pointsConvertedInr.toLocaleString("en-IN")} Rs
                       </span>
                     </div>
                   </div>

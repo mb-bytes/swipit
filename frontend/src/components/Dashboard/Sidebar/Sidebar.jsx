@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   Sidebar,
-  SidebarBody,
+  DesktopSidebar,
   SidebarLink,
   useSidebar,
 } from "./sidebar-component";
@@ -18,6 +18,8 @@ import {
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
 } from "@tabler/icons-react";
+import { List, X } from "@phosphor-icons/react";
+import { IconSwap } from "@/components/Landing/Navbar/IconSwap";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
@@ -30,6 +32,31 @@ export function SidebarDemo({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    if (mobileOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = async () => {
     sileo
@@ -71,14 +98,189 @@ export function SidebarDemo({ children }) {
     },
   ];
 
+  const displayName = user?.name || user?.username || "User";
+  const userInitials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div
       className={cn(
         "flex w-full h-screen flex-1 flex-col overflow-hidden bg-[#eae5d9] md:flex-row paper-grain text-[#111215]",
       )}
     >
+      {/* Mobile Top Header & Animated Drawer */}
+      <div className="flex md:hidden flex-col w-full shrink-0 z-40">
+        <header className="h-14 px-4 flex items-center justify-between bg-[#eae5d9]/95 backdrop-blur-md border-b border-neutral-300/80 w-full">
+          <div
+            className="cursor-pointer flex items-center select-none"
+            onClick={() => {
+              setMobileOpen(false);
+              navigate("/dashboard");
+            }}
+          >
+            <BrandLogo size="sm" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <IconSwap
+              isOpen={mobileOpen}
+              onToggle={() => setMobileOpen((prev) => !prev)}
+              iconA={<List weight="bold" className="w-5 h-5 text-neutral-900" />}
+              iconB={<X weight="bold" className="w-5 h-5 text-neutral-900" />}
+              className="p-2 rounded-xl bg-white/70 hover:bg-white border border-neutral-300/80 text-neutral-900 cursor-pointer shadow-2xs transition-colors"
+            />
+          </div>
+        </header>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 top-14 bg-black/40 backdrop-blur-xs z-50 md:hidden"
+                onClick={() => setMobileOpen(false)}
+              />
+
+              {/* Mobile Drawer Dropdown */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="fixed left-3 right-3 top-16 z-50 max-h-[calc(100vh-5rem)] overflow-y-auto overflow-x-hidden rounded-2xl bg-[#f5f0e6] p-4 shadow-2xl border border-[#ded5c4]/90 backdrop-blur-xl flex flex-col gap-3.5 md:hidden text-[#111215] box-border"
+              >
+                {/* Navigation Links */}
+                <div className="flex flex-col gap-1.5 w-full min-w-0">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 px-2">
+                    Navigation
+                  </span>
+                  {links.map((link, idx) => {
+                    const isActive = location.pathname === link.href;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          if (link.href) navigate(link.href);
+                        }}
+                        className={cn(
+                          "flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer text-left min-h-[44px] min-w-0",
+                          isActive
+                            ? "bg-[#111215] text-[#f2eee5] shadow-xs"
+                            : "text-neutral-800 hover:bg-neutral-200/70",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "shrink-0",
+                            isActive ? "text-[#f2eee5]" : "text-neutral-600",
+                          )}
+                        >
+                          {link.icon}
+                        </span>
+                        <span className="flex-1 truncate min-w-0">{link.label}</span>
+                        {link.badge && (
+                          <span
+                            className={cn(
+                              "text-[9px] font-mono px-1.5 py-0.5 rounded-md font-bold shrink-0",
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : "bg-[#d9480f]/10 text-[#d9480f] border border-[#d9480f]/20",
+                            )}
+                          >
+                            {link.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t border-[#ded5c4]" />
+
+                {/* User Account Section */}
+                <div className="flex flex-col gap-2.5 w-full min-w-0">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 px-2">
+                    Account
+                  </span>
+
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-neutral-300/70 w-full min-w-0 overflow-hidden">
+                    <div className="h-9 w-9 shrink-0 rounded-full font-mono text-xs font-bold flex items-center justify-center bg-[#111215] text-[#f2eee5] shadow-2xs overflow-hidden">
+                      {user?.picture || user?.avatar ? (
+                        <img
+                          src={user.picture || user.avatar}
+                          alt={displayName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        userInitials
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="text-sm font-bold text-neutral-900 truncate">
+                        {displayName}
+                      </div>
+                      <div className="text-xs text-neutral-500 truncate font-mono">
+                        {user?.email || (user?.username ? `@${user.username}` : "Member")}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1 w-full min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/profile");
+                      }}
+                      className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-white text-neutral-800 border border-neutral-300/80 transition-colors shadow-2xs min-h-[44px] cursor-pointer min-w-0"
+                    >
+                      <IconUser className="w-4 h-4 text-neutral-600 shrink-0" />
+                      <span className="truncate">Profile</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        navigate("/settings");
+                      }}
+                      className="flex items-center justify-center gap-1.5 px-2.5 py-2.5 rounded-xl text-xs font-semibold bg-white/80 hover:bg-white text-neutral-800 border border-neutral-300/80 transition-colors shadow-2xs min-h-[44px] cursor-pointer min-w-0"
+                    >
+                      <IconSettings className="w-4 h-4 text-neutral-600 shrink-0" />
+                      <span className="truncate">Settings</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center justify-center gap-2 w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-500/10 border border-red-500/20 transition-colors cursor-pointer min-h-[44px] mt-1 min-w-0"
+                  >
+                    <IconArrowLeft className="w-4 h-4 shrink-0" />
+                    <span>Log out</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Desktop Collapsible Sidebar */}
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10">
+        <DesktopSidebar className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
             {/* Top Brand Logo & Toggle Button */}
             <div
@@ -137,12 +339,16 @@ export function SidebarDemo({ children }) {
           <div className="relative">
             <UserProfileDropdown user={user} onLogout={handleLogout} />
           </div>
-        </SidebarBody>
+        </DesktopSidebar>
       </Sidebar>
-      {children}
+
+      <main className="flex-1 min-w-0 min-h-0 overflow-hidden flex flex-col">
+        {children}
+      </main>
     </div>
   );
 }
+
 
 function UserProfileDropdown({ user, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);

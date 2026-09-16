@@ -156,7 +156,10 @@ export function Spends() {
       if (excludeRef.current && !excludeRef.current.contains(e.target)) {
         setExcludeDropdownOpen(false);
       }
-      if (syncDropdownRef.current && !syncDropdownRef.current.contains(e.target)) {
+      if (
+        syncDropdownRef.current &&
+        !syncDropdownRef.current.contains(e.target)
+      ) {
         setSyncPeriodOpen(false);
       }
     }
@@ -191,7 +194,8 @@ export function Spends() {
           setIsSyncing(false);
           sileo.error({
             title: "Sync Failed",
-            description: res.data?.error || "Failed to sync transactions from Gmail.",
+            description:
+              res.data?.error || "Failed to sync transactions from Gmail.",
           });
         } else if (attempts >= maxAttempts) {
           if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
@@ -219,9 +223,11 @@ export function Spends() {
     if (!googleConnected) {
       sileo.info({
         title: "Gmail Not Connected",
-        description: "Connect your Gmail account to sync bank alerts automatically.",
+        description:
+          "Connect your Gmail account to sync bank alerts automatically.",
       });
-      window.location.href = "http://localhost:8000/auth/google/login?action=connect";
+      window.location.href =
+        "http://localhost:8000/auth/google/login?action=connect";
       return;
     }
 
@@ -251,7 +257,8 @@ export function Spends() {
       const detail = err?.response?.data?.detail;
       sileo.error({
         title: "Sync Error",
-        description: detail || "Could not initiate Gmail sync. Please try again.",
+        description:
+          detail || "Could not initiate Gmail sync. Please try again.",
       });
     }
   };
@@ -383,67 +390,64 @@ export function Spends() {
     };
   }, [transactions, excludedCardIds]);
 
-  const {
-    filteredTxns,
-    totalSpendPeriod,
-    totalCashbackPeriod,
-    periodLabel,
-  } = useMemo(() => {
-    const list = [];
-    let totalSpend = 0;
-    let totalCashback = 0;
+  const { filteredTxns, totalSpendPeriod, totalCashbackPeriod, periodLabel } =
+    useMemo(() => {
+      const list = [];
+      let totalSpend = 0;
+      let totalCashback = 0;
 
-    transactions.forEach((tx) => {
-      if (excludedCardIds.has(tx.cardId)) return;
+      transactions.forEach((tx) => {
+        if (excludedCardIds.has(tx.cardId)) return;
 
-      const p = parseDateComponents(tx);
-      const yearMatch = p.year === selectedYear;
+        const p = parseDateComponents(tx);
+        const yearMatch = p.year === selectedYear;
 
-      let periodMatch = false;
-      if (periodMode === "month") {
-        periodMatch = yearMatch && p.month === selectedMonth;
-      } else {
-        periodMatch = yearMatch && p.quarter === selectedQuarter;
-      }
+        let periodMatch = false;
+        if (periodMode === "month") {
+          periodMatch = yearMatch && p.month === selectedMonth;
+        } else {
+          periodMatch = yearMatch && p.quarter === selectedQuarter;
+        }
 
-      if (!periodMatch) return;
+        if (!periodMatch) return;
 
-      list.push(tx);
-      const amt = Number(tx.amount) || 0;
-      totalSpend += amt;
-      const reward = Number(tx.rewardEarned) || 0;
-      totalCashback += reward;
-    });
+        list.push(tx);
+        const amt = Number(tx.amount) || 0;
+        totalSpend += amt;
+        const reward = Number(tx.rewardEarned) || 0;
+        totalCashback += reward;
+      });
 
-    const qObj = QUARTERS.find((q) => q.id === selectedQuarter);
-    const qMonths = qObj ? qObj.name.replace(/^Q\d\s*/, "") : "";
-    const label =
-      periodMode === "month"
-        ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
-        : `Q${selectedQuarter} ${selectedYear} ${qMonths}`;
+      const qObj = QUARTERS.find((q) => q.id === selectedQuarter);
+      const qMonths = qObj ? qObj.name.replace(/^Q\d\s*/, "") : "";
+      const label =
+        periodMode === "month"
+          ? `${MONTH_NAMES[selectedMonth]} ${selectedYear}`
+          : `Q${selectedQuarter} ${selectedYear} ${qMonths}`;
 
-    return {
-      filteredTxns: list,
-      totalSpendPeriod: totalSpend,
-      totalCashbackPeriod: totalCashback,
-      periodLabel: label,
-    };
-  }, [
-    transactions,
-    selectedYear,
-    periodMode,
-    selectedMonth,
-    selectedQuarter,
-    excludedCardIds,
-  ]);
+      return {
+        filteredTxns: list,
+        totalSpendPeriod: totalSpend,
+        totalCashbackPeriod: totalCashback,
+        periodLabel: label,
+      };
+    }, [
+      transactions,
+      selectedYear,
+      periodMode,
+      selectedMonth,
+      selectedQuarter,
+      excludedCardIds,
+    ]);
 
   const formattedCashback = useMemo(() => {
-    return (
-      Math.round(totalCashbackPeriod * 100) / 100
-    ).toLocaleString("en-IN", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
+    return (Math.round(totalCashbackPeriod * 100) / 100).toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      },
+    );
   }, [totalCashbackPeriod]);
 
   const displayedTxns = useMemo(() => {
@@ -466,7 +470,7 @@ export function Spends() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
+      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
@@ -518,7 +522,8 @@ export function Spends() {
                   </div>
                   {SYNC_PERIOD_OPTIONS.map((opt) => {
                     const isQuarterDisabled =
-                      opt.quarterNumber !== null && opt.quarterNumber > currentQuarter;
+                      opt.quarterNumber !== null &&
+                      opt.quarterNumber > currentQuarter;
                     return (
                       <button
                         key={opt.value}
@@ -535,8 +540,8 @@ export function Spends() {
                           isQuarterDisabled
                             ? "opacity-40 cursor-not-allowed bg-neutral-50 text-neutral-400"
                             : selectedSyncPeriod === opt.value
-                            ? "bg-neutral-100 text-neutral-950 cursor-pointer"
-                            : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950 cursor-pointer"
+                              ? "bg-neutral-100 text-neutral-950 cursor-pointer"
+                              : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950 cursor-pointer"
                         }`}
                       >
                         <span>{opt.label}</span>
@@ -552,8 +557,7 @@ export function Spends() {
               )}
             </div>
 
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 bg-white/90 border border-neutral-200/90 px-3 py-1.5 rounded-full shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5 text-neutral-900" />
+            <span className="inline-flex items-center text-xs font-semibold text-neutral-700 bg-white/90 border border-neutral-200/90 px-3 py-1.5 rounded-full shadow-2xs">
               <span>
                 {loading ? (
                   <span className="inline-block w-24 h-3 bg-neutral-200/80 rounded animate-pulse align-middle" />
@@ -601,12 +605,15 @@ export function Spends() {
                 Not enough transactions yet
               </h3>
               <p className="text-xs text-neutral-500 mt-1 max-w-md leading-relaxed">
-                At least 5 transactions in the last 30 days are required to generate
-                spend trends, category distribution, and top merchant analytics.
+                At least 5 transactions in the last 30 days are required to
+                generate spend trends, category distribution, and top merchant
+                analytics.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200">
-                  <span>{analyticsData.filteredTxns.length} / 5 transactions found</span>
+                  <span>
+                    {analyticsData.filteredTxns.length} / 5 transactions found
+                  </span>
                 </span>
               </div>
             </div>
@@ -671,9 +678,7 @@ export function Spends() {
                     }`}
                   />
                   <span>
-                    {totalCashbackPeriod > 0
-                      ? `+ ₹${formattedCashback}`
-                      : "₹0"}{" "}
+                    {totalCashbackPeriod > 0 ? `+ ₹${formattedCashback}` : "₹0"}{" "}
                     cashback collected
                   </span>
                 </span>
@@ -870,7 +875,8 @@ export function Spends() {
                 {periodMode === "quarter" && (
                   <div className="flex flex-col gap-1.5">
                     {QUARTERS.map((q) => {
-                      const isQDisabled = selectedYear === currentYear && q.id > currentQuarter;
+                      const isQDisabled =
+                        selectedYear === currentYear && q.id > currentQuarter;
                       const qCashback = transactions.reduce((sum, tx) => {
                         if (excludedCardIds.has(tx.cardId)) return sum;
                         const p = parseDateComponents(tx);
@@ -901,8 +907,8 @@ export function Spends() {
                             isQDisabled
                               ? "opacity-40 cursor-not-allowed bg-neutral-50 text-neutral-400"
                               : selectedQuarter === q.id
-                              ? "bg-neutral-900 text-white font-bold shadow-xs cursor-pointer"
-                              : "bg-neutral-50 hover:bg-neutral-100 text-neutral-700 cursor-pointer"
+                                ? "bg-neutral-900 text-white font-bold shadow-xs cursor-pointer"
+                                : "bg-neutral-50 hover:bg-neutral-100 text-neutral-700 cursor-pointer"
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -989,139 +995,140 @@ export function Spends() {
             }
           >
             {filteredTxns.length === 0 ? (
-          <div className="rounded-2xl border border-neutral-300/80 bg-white/60 p-12 flex flex-col items-center justify-center text-center shadow-2xs">
-            <div className="w-12 h-12 rounded-2xl bg-neutral-200 flex items-center justify-center text-neutral-600 mb-3">
-              <Inbox className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-semibold text-neutral-800">
-              No Transactions Found
-            </p>
-            <p className="text-xs text-neutral-500 mt-1 max-w-sm">
-              No transactions match {periodLabel}{" "}
-              {excludedCardIds.size > 0
-                ? "with the current card exclusions."
-                : "."}
-            </p>
-            {excludedCardIds.size > 0 && (
-              <button
-                type="button"
-                onClick={clearExcludedCards}
-                className="mt-3 inline-flex items-center gap-1.5 text-xs text-neutral-700 hover:text-black font-semibold underline underline-offset-2 cursor-pointer"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>Reset card exclusions</span>
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden w-full shrink-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[540px]">
-                <thead>
-                  <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
-                    <th className="py-3 px-4 sm:px-6">Merchant</th>
-                    <th className="py-3 px-4">Card</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4 text-right">Spent</th>
-                    <th className="py-3 px-4 text-right">Reward</th>
-                    <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100/90 text-sm">
-                  {displayedTxns.map((tx) => {
-                    const matchedCard = cards?.find(
-                      (c) =>
-                        c.id === tx.cardId ||
-                        c.cardName?.toLowerCase() ===
-                          tx.cardName?.toLowerCase(),
-                    );
-                    const cardName =
-                      tx.cardName || matchedCard?.cardName || "Credit Card";
-                    const bankName = matchedCard?.bankName || "";
-                    const bankLogo =
-                      matchedCard?.logo || getBankLogo(bankName, cardName);
-
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-neutral-50/80 transition-colors group"
-                      >
-                        <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <span>{beautifyMerchantName(tx.merchant)}</span>
-                            {tx.category && (
-                              <span className="text-[10px] font-medium text-neutral-500 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 rounded-full">
-                                {beautifyCategory(tx.category)}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 whitespace-nowrap">
-                          <div className="relative group/tooltip inline-flex items-center">
-                            {bankLogo ? (
-                              <img
-                                src={bankLogo}
-                                alt={cardName}
-                                className="w-6 h-6 object-contain rounded-md p-0.5 bg-white border border-neutral-200/90 shadow-2xs cursor-pointer"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
-                                <CreditCard className="w-3.5 h-3.5" />
-                              </div>
-                            )}
-                            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:flex flex-col items-center z-50 whitespace-nowrap">
-                              <div className="rounded-lg bg-neutral-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl border border-neutral-800">
-                                {cardName}
-                              </div>
-                              <div className="w-2 h-2 -mt-1 rotate-45 bg-neutral-900 border-r border-b border-neutral-800" />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-xs font-mono text-neutral-500 whitespace-nowrap">
-                          {tx.date}
-                        </td>
-                        <td className="py-3.5 px-4 text-right font-mono font-semibold text-neutral-900 whitespace-nowrap">
-                          - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
-                        </td>
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60">
-                            + Rs{" "}
-                            {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
-                          <DeleteButton
-                            className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
-                            onConfirm={() => handleDelete(tx.id)}
-                          />
-                        </td>
+              <div className="rounded-2xl border border-neutral-300/80 bg-white/60 p-12 flex flex-col items-center justify-center text-center shadow-2xs">
+                <div className="w-12 h-12 rounded-2xl bg-neutral-200 flex items-center justify-center text-neutral-600 mb-3">
+                  <Inbox className="w-6 h-6" />
+                </div>
+                <p className="text-sm font-semibold text-neutral-800">
+                  No Transactions Found
+                </p>
+                <p className="text-xs text-neutral-500 mt-1 max-w-sm">
+                  No transactions match {periodLabel}{" "}
+                  {excludedCardIds.size > 0
+                    ? "with the current card exclusions."
+                    : "."}
+                </p>
+                {excludedCardIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearExcludedCards}
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs text-neutral-700 hover:text-black font-semibold underline underline-offset-2 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset card exclusions</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-neutral-200/90 bg-white/85 backdrop-blur-xs shadow-xs overflow-hidden w-full shrink-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[540px]">
+                    <thead>
+                      <tr className="border-b border-neutral-200/70 bg-neutral-50/60 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider select-none">
+                        <th className="py-3 px-4 sm:px-6">Merchant</th>
+                        <th className="py-3 px-4">Card</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4 text-right">Spent</th>
+                        <th className="py-3 px-4 text-right">Reward</th>
+                        <th className="py-3 px-4 sm:px-6 w-12 text-right"></th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100/90 text-sm">
+                      {displayedTxns.map((tx) => {
+                        const matchedCard = cards?.find(
+                          (c) =>
+                            c.id === tx.cardId ||
+                            c.cardName?.toLowerCase() ===
+                              tx.cardName?.toLowerCase(),
+                        );
+                        const cardName =
+                          tx.cardName || matchedCard?.cardName || "Credit Card";
+                        const bankName = matchedCard?.bankName || "";
+                        const bankLogo =
+                          matchedCard?.logo || getBankLogo(bankName, cardName);
 
-            <div className="border-t border-neutral-200/70 px-4 py-3 sm:px-6 bg-neutral-50/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500 select-none">
-              <span>
-                Showing {displayedTxns.length} of {filteredTxns.length}{" "}
-                transactions
-              </span>
-              {filteredTxns.length > visibleCount && (
-                <button
-                  type="button"
-                  onClick={() => setVisibleCount((prev) => prev + 50)}
-                  className="px-4 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer inline-flex items-center gap-1.5"
-                >
+                        return (
+                          <tr
+                            key={tx.id}
+                            className="hover:bg-neutral-50/80 transition-colors group"
+                          >
+                            <td className="py-3.5 px-4 sm:px-6 font-medium text-neutral-900 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <span>{beautifyMerchantName(tx.merchant)}</span>
+                                {tx.category && (
+                                  <span className="text-[10px] font-medium text-neutral-500 bg-neutral-100 border border-neutral-200 px-1.5 py-0.5 rounded-full">
+                                    {beautifyCategory(tx.category)}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4 whitespace-nowrap">
+                              <div className="relative group/tooltip inline-flex items-center">
+                                {bankLogo ? (
+                                  <img
+                                    src={bankLogo}
+                                    alt={cardName}
+                                    className="w-6 h-6 object-contain rounded-md p-0.5 bg-white border border-neutral-200/90 shadow-2xs cursor-pointer"
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
+                                    <CreditCard className="w-3.5 h-3.5" />
+                                  </div>
+                                )}
+                                <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:flex flex-col items-center z-50 whitespace-nowrap">
+                                  <div className="rounded-lg bg-neutral-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl border border-neutral-800">
+                                    {cardName}
+                                  </div>
+                                  <div className="w-2 h-2 -mt-1 rotate-45 bg-neutral-900 border-r border-b border-neutral-800" />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4 text-xs font-mono text-neutral-500 whitespace-nowrap">
+                              {tx.date}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono font-semibold text-neutral-900 whitespace-nowrap">
+                              - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
+                            </td>
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60">
+                                + Rs{" "}
+                                {(tx.rewardEarned ?? 0).toLocaleString("en-IN")}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
+                              <DeleteButton
+                                className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
+                                onConfirm={() => handleDelete(tx.id)}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="border-t border-neutral-200/70 px-4 py-3 sm:px-6 bg-neutral-50/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500 select-none">
                   <span>
-                    Load more ({filteredTxns.length - visibleCount} remaining)
+                    Showing {displayedTxns.length} of {filteredTxns.length}{" "}
+                    transactions
                   </span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-        </Skeleton>
+                  {filteredTxns.length > visibleCount && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 50)}
+                      className="px-4 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <span>
+                        Load more ({filteredTxns.length - visibleCount}{" "}
+                        remaining)
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </Skeleton>
         </div>
       </div>
     </div>

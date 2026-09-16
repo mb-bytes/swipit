@@ -397,6 +397,34 @@ async def add_transaction(
         "point_value_inr": rd["point_value_inr"],
     }
 
+@card_router.put("/transactions/{transaction_id}")
+async def update_transaction(
+    transaction_id: uuid.UUID,
+    update_details: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_curr_user),
+):
+    try:
+        updated = await card_service.update_transaction(
+            db, transaction_id, current_user.user_id, update_details
+        )
+        return {
+            "transaction_id": str(updated.transaction_id),
+            "card_id": str(updated.card_id),
+            "merchant": title_case(updated.merchant),
+            "amount": float(updated.amount),
+            "category": updated.category,
+            "transaction_date": (
+                updated.transaction_date.strftime("%d %b %Y")
+                if hasattr(updated.transaction_date, "strftime")
+                else str(updated.transaction_date)
+            ),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @card_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user = Depends(get_curr_user)):
     try:

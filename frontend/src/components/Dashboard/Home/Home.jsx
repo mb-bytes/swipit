@@ -66,18 +66,27 @@ export function Home() {
     addCard(newCard);
   };
 
-  const handleDeleteCard = async (cardId) => {
-    deleteCard(cardId);
-    try {
-      await api.delete(`/api/cards/${cardId}`);
-      sileo.success({ title: "Card deleted" });
-    } catch {
-      await fetchAll(displayName);
-      sileo.error({
-        title: "Couldn't delete card",
-        description: "A server error has occurred",
-      });
-    }
+  const handleDeleteCard = (cardId) => {
+    sileo.action({
+      title: "Delete Card?",
+      description:
+        "Deleting this card would delete all its associated transactions",
+      button: {
+        title: "Delete Card",
+        onClick: () => {
+          sileo.promise(
+            api.delete(`/api/cards/${cardId}`).then(() => {
+              deleteCard(cardId);
+            }),
+            {
+              loading: { title: "Deleting Card" },
+              success: { title: "Card deleted successfully" },
+              error: { title: "Failed to delete card" },
+            },
+          );
+        },
+      },
+    });
   };
 
   const handleAddTransaction = (newTxn) => {
@@ -132,7 +141,7 @@ export function Home() {
               loading: { title: "Deleting transactions..." },
               success: { title: "All unmatched transactions deleted" },
               error: { title: "Failed to delete unmatched transactions" },
-            }
+            },
           );
         },
       },
@@ -143,7 +152,7 @@ export function Home() {
 
   return (
     <div className="flex flex-1 h-full overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 paper-grain overflow-y-auto">
+      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
           <div className="flex items-center">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#111215]">
@@ -155,7 +164,7 @@ export function Home() {
             </h1>
           </div>
 
-          <div className="flex flex-col items-start md:items-end text-xs">
+          <div className="flex flex-col items-start md:items-end text-xs max-w-full">
             {googleStatus.loading ? (
               <div className="flex flex-col items-start md:items-end gap-1 py-1">
                 <div className="w-48 h-3.5 bg-neutral-200/80 rounded animate-pulse" />
@@ -163,11 +172,11 @@ export function Home() {
               </div>
             ) : googleStatus.connected ? (
               <>
-                <div className="flex items-center gap-1.5 text-neutral-800 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>
+                <div className="flex items-center gap-1.5 text-neutral-800 font-medium max-w-full flex-wrap">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="break-all">
                     Account connected to{" "}
-                    <strong className="font-mono text-neutral-950 font-semibold">
+                    <strong className="font-mono text-neutral-950 font-semibold break-all">
                       {googleStatus.email}
                     </strong>
                   </span>
@@ -241,4 +250,3 @@ export function Home() {
 }
 
 export default Home;
-

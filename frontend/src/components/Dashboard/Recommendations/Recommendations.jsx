@@ -89,8 +89,8 @@ export function Recommendations() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-6 rounded-tl-2xl border-l border-t border-neutral-300/80 bg-[#f8f9fb] p-5 md:p-8 pt-6 md:pt-8 paper-grain overflow-y-auto min-h-0">
-        <div className="flex items-center justify-between gap-3 shrink-0 pt-1">
+      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pt-1">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
               <Sparkles className="w-4.5 h-4.5 text-[#f2eee5]" />
@@ -106,7 +106,7 @@ export function Recommendations() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-600 shrink-0 select-none">
               <span>Based on OpenAI API</span>
               <img
