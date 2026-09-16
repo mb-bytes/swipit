@@ -116,15 +116,6 @@ export function Footer() {
               </span>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://x.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-9 h-9 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-600 flex items-center justify-center text-neutral-400 hover:text-white transition-all shadow-sm"
-                  aria-label="X Twitter"
-                >
-                  <XLogoIcon weight="bold" className="w-4 h-4" />
-                </a>
-                <a
                   href="https://github.com"
                   target="_blank"
                   rel="noreferrer"
@@ -176,7 +167,8 @@ export function Footer() {
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-neutral-400 border-t border-neutral-800/80">
           <div>
-            © {new Date().getFullYear()} SwipIt Technologies. All rights reserved.
+            © {new Date().getFullYear()} SwipIt Technologies. All rights
+            reserved.
           </div>
           <div className="flex items-center gap-4">
             <span className="hover:text-neutral-300">Privacy Policy</span>

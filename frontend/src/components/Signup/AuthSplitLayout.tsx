@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { PredictiveArc } from "@/components/ui/predective-arc";
 
 type AuthSplitLayoutProps = {
   left: ReactNode;
@@ -41,11 +42,19 @@ export function AuthSplitLayout({
         </div>
         <div
           className={cn(
-            "relative flex w-full flex-col justify-between overflow-y-auto bg-[#f8f9fb] px-6 py-5 sm:px-10 lg:w-[480px] xl:w-[520px] lg:px-12",
+            "relative flex w-full flex-col justify-between overflow-hidden px-6 py-5 sm:px-10 lg:w-[480px] xl:w-[520px] lg:px-12",
             rightClassName,
           )}
         >
-          {right}
+          <div className="absolute bottom-0 left-0 right-0 h-[45%] z-0 overflow-hidden pointer-events-auto [mask-image:linear-gradient(to_bottom,transparent_0%,black_35%)]">
+            <PredictiveArc
+              className="h-full w-full"
+              style={{ minWidth: 0, minHeight: 0, width: "100%", height: "100%" }}
+            />
+          </div>
+          <div className="relative z-10 flex w-full flex-1 flex-col justify-between overflow-y-auto min-h-0">
+            {right}
+          </div>
         </div>
       </div>
     </div>

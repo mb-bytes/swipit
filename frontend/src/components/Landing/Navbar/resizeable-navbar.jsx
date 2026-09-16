@@ -32,7 +32,7 @@ export const Navbar = ({ children, className }) => {
       className={cn(
         "fixed inset-x-0 top-0 z-50 w-full transition-all duration-200",
         scrolled
-          ? "py-3 bg-[#f8f9fb]/90 backdrop-blur-md border-b border-neutral-200/80 shadow-xs"
+          ? "py-3 bg-[#f2ede3]/90 backdrop-blur-md border-b border-[#ded5c4]/80 shadow-xs"
           : "py-5 bg-transparent",
         className
       )}
@@ -181,7 +181,7 @@ export const NavItems = ({ items, className, onItemClick }) => {
     <nav
       onMouseLeave={() => setHoveredIdx(null)}
       className={cn(
-        "hidden md:flex items-center gap-1 p-1 bg-white/70 backdrop-blur-md border border-neutral-300/80 rounded-full shadow-2xs relative",
+        "hidden md:flex items-center gap-1 p-1 bg-[#fcfaf6]/80 backdrop-blur-md border border-[#ded5c4]/90 rounded-full shadow-2xs relative",
         className
       )}
     >
@@ -268,7 +268,7 @@ export const MobileNavMenu = ({ children, className, isOpen }) => {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.18 }}
           className={cn(
-            "fixed inset-x-4 top-18 z-50 flex flex-col gap-4 rounded-2xl bg-[#f5f1e8] p-6 shadow-xl border border-neutral-300/80 backdrop-blur-xl",
+            "fixed inset-x-4 top-18 z-50 flex flex-col gap-4 rounded-2xl bg-[#f5f0e6] p-6 shadow-xl border border-[#ded5c4]/90 backdrop-blur-xl",
             className
           )}
         >

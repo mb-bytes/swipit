@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, ShieldCheck, Zap, BarChart3, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  BarChart3,
+  AlertCircle,
+} from "lucide-react";
 import { sileo } from "sileo";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,10 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  AuthShell,
-  useAuthTypingImpulse,
-} from "./AuthShell";
+import { AuthShell, useAuthTypingImpulse } from "./AuthShell";
 import {
   bumpParticleTypingImpulse,
   pulseParticleSubmitImpulse,
@@ -31,7 +36,8 @@ export function Login() {
           Card Intelligence
         </div>
         <p className="font-heading text-lg sm:text-xl font-medium leading-snug text-[#111215]">
-          Your finances, intelligently tracked. Every swipe categorized with precision.
+          Your finances, intelligently tracked. Every swipe categorized with
+          precision.
         </p>
 
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
@@ -92,7 +98,8 @@ function LoginForm() {
   }, [location.search]);
 
   const handleGoogleAuth = () => {
-    window.location.href = "http://localhost:8000/auth/google/login?action=login";
+    window.location.href =
+      "http://localhost:8000/auth/google/login?action=login";
   };
 
   const validateUsername = (val) => {
@@ -131,7 +138,12 @@ function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const res = await login({ username: username.trim(), password });
+      const res = await login({
+        username: username.trim(),
+        email: username.trim(),
+        identifier: username.trim(),
+        password,
+      });
       if (res && res.success) {
         sileo.success({ title: "Welcome back!" });
         const destination = location.state?.from?.pathname || "/dashboard";
@@ -139,7 +151,7 @@ function LoginForm() {
       } else {
         sileo.error({
           title: "Login failed",
-          description: res?.error || "Invalid username or password.",
+          description: res?.error || "Invalid username, email, or password.",
         });
       }
     } catch {
@@ -184,13 +196,16 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} noValidate className="space-y-3">
         <div className="space-y-1">
-          <Label htmlFor="login-username" className="text-xs font-medium text-neutral-700">
+          <Label
+            htmlFor="login-username"
+            className="text-xs font-medium text-neutral-700"
+          >
             Username or Email
           </Label>
           <Input
             id="login-username"
             type="text"
-            placeholder="Username or email"
+            placeholder="Type your registered username or email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             onBlur={() => handleBlur("username")}
@@ -210,11 +225,15 @@ function LoginForm() {
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="login-password" className="text-xs font-medium text-neutral-700">
+            <Label
+              htmlFor="login-password"
+              className="text-xs font-medium text-neutral-700"
+            >
               Password
             </Label>
             <button
               type="button"
+              onClick={() => navigate("/forgot-password")}
               className="text-[11px] text-neutral-500 hover:text-neutral-800 transition cursor-pointer"
             >
               Forgot password?

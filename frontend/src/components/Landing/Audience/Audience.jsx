@@ -66,10 +66,10 @@ export function Audience() {
   return (
     <section
       id="persona"
-      className="relative py-20 sm:py-28 bg-[#ebe6dc] border-t border-neutral-300/80 paper-grain overflow-hidden"
+      className="relative py-20 sm:py-28 bg-[#f2ede3] border-t border-[#ded5c4]/90 paper-grain overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-neutral-300 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-[#ded5c4] gap-4">
           <div>
             <ScrollReveal y={15}>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.04em] text-[#0d0e11]">
@@ -104,9 +104,9 @@ const Feature = ({ title, description, icon, index }) => {
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature border-neutral-300/80",
-        (index === 0 || index === 4) && "lg:border-l border-neutral-300/80",
-        index < 4 && "lg:border-b border-neutral-300/80"
+        "flex flex-col lg:border-r py-10 relative group/feature border-[#ded5c4]/80",
+        (index === 0 || index === 4) && "lg:border-l border-[#ded5c4]/80",
+        index < 4 && "lg:border-b border-[#ded5c4]/80"
       )}
     >
       {index < 4 && (

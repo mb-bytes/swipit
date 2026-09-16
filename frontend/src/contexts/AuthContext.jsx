@@ -210,6 +210,24 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = Boolean(user && accessToken);
 
+  const updateUser = (updatedFields) => {
+    setUser((prev) => (prev ? { ...prev, ...updatedFields } : updatedFields));
+  };
+
+  const deleteAccount = async () => {
+    setIsLoggingOut(true);
+    try {
+      await api.delete("/api/user/me");
+    } finally {
+      accessTokenRef.current = null;
+      setAccessToken(null);
+      setUser(null);
+      setTimeout(() => {
+        setIsLoggingOut(false);
+      }, 1000);
+    }
+  };
+
   const logout = async () => {
     setIsLoggingOut(true);
     try {
@@ -236,6 +254,8 @@ export function AuthProvider({ children }) {
         loginWithToken,
         isAuthenticated,
         logout,
+        updateUser,
+        deleteAccount,
         loading,
         isLoggingOut,
       }}

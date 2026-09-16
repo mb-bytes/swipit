@@ -28,20 +28,24 @@ class UserCreateSchema(BaseModel):
         return v
 
 class UserLoginSchema(BaseModel):
-    username: str
+    username: str | None = None
+    email: str | None = None
+    identifier: str | None = None
     password: str
     
 class EmailSchema(BaseModel):
     addresses: List[EmailStr]
 
 class PasswordResetEmailSchema(BaseModel):
-    email: EmailStr
+    email: str | None = None
+    username: str | None = None
+    identifier: str | None = None
 
 class PasswordResetSchema(BaseModel):
-    password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8)
     confirm_new_password: str = Field(min_length=8)
 
-    @field_validator("password", "confirm_new_password")
+    @field_validator("new_password", "confirm_new_password")
     @classmethod
     def validate_password(cls, v: str) -> str:
         if not re.search(r"[A-Za-z]", v) or not re.search(r"\d", v):
@@ -51,5 +55,20 @@ class PasswordResetSchema(BaseModel):
 class BankRequestSchema(BaseModel):
     bank_name: str
     email: str | None = None
+
+class UserUpdateSchema(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+
+class ChangePasswordSchema(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+    confirm_new_password: str = Field(min_length=8)
+
+    @field_validator("new_password", "confirm_new_password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if not re.search(r"[A-Za-z]", v) or not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one letter and one number")
+        return v
 
 

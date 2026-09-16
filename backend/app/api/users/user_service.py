@@ -13,6 +13,7 @@ from datetime import timedelta
 import logging
 import secrets
 import re
+import uuid
 
 class UserService:
     async def create_user(self, db: AsyncSession, user_details: UserCreateSchema) -> UserModel:
@@ -122,8 +123,17 @@ class UserService:
 
         return new_user
 
-    async def login_user(self, db: AsyncSession, username: str, password: str):
-        user = await self.get_user_by_username(db, username)
+    async def login_user(self, db: AsyncSession, identifier: str, password: str):
+        target = identifier.strip()
+        user = None
+        if "@" in target:
+            user = await self.get_user_by_email(db, target.lower())
+            if not user:
+                user = await self.get_user_by_username(db, target)
+        else:
+            user = await self.get_user_by_username(db, target)
+            if not user:
+                user = await self.get_user_by_email(db, target.lower())
 
         if user is not None:
             password_valid = verify_pswd(password, user.password_hash)
@@ -160,7 +170,7 @@ class UserService:
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid username or password",
+            detail="Invalid username, email, or password",
         ) 
 
     async def get_user_by_username(self, db: AsyncSession, username: str):
@@ -171,23 +181,69 @@ class UserService:
             user = await db.scalar(select(UserModel).where(UserModel.email == email))
             return user  
 
-    async def reset_password_request(self, db: AsyncSession, user_email: PasswordResetEmailSchema):
-        email = user_email.email
-        user = await self.get_user_by_email(db, email)
+    async def reset_password_request(self, db: AsyncSession, user_input):
+        target = ""
+        if hasattr(user_input, "identifier") and user_input.identifier:
+            target = user_input.identifier.strip()
+        elif hasattr(user_input, "email") and user_input.email:
+            target = user_input.email.strip()
+        elif hasattr(user_input, "username") and user_input.username:
+            target = user_input.username.strip()
+        else:
+            target = str(user_input).strip()
+
+        user = None
+        if "@" in target:
+            user = await self.get_user_by_email(db, target.lower())
+            if not user:
+                user = await self.get_user_by_username(db, target)
+        else:
+            user = await self.get_user_by_username(db, target)
+            if not user:
+                user = await self.get_user_by_email(db, target.lower())
+
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No account found with that email or username",
+            )
+
+        email = user.email
         token = create_url_safe_token({"email": email})
-        link = f"http://localhost:8000/api/user/password-reset-confirm/{token}"
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        link = f"{frontend_url}/reset-password?token={token}"
         html_msg = f""" 
         <h2> Request for password reset </h2>
-        <p> To reset your password <a href={link}>click here </a> 
+        <p> To reset your password <a href="{link}">click here</a></p> 
         """
-        send_mail.delay(email, "SwipIt Password Reset", html_msg)
-        
-        return JSONResponse(content={"message": "Please check your email for password reset instructions"})
+        try:
+            send_mail.delay(email, "SwipIt Password Reset", html_msg)
+        except Exception as e:
+            logging.warning(f"Could not dispatch reset email: {e}")
+
+        masked_email = email
+        if "@" in email:
+            parts = email.split("@")
+            u_part = parts[0]
+            domain = parts[1]
+            masked_email = f"{u_part[:2]}***@{domain}" if len(u_part) > 2 else f"{u_part[:1]}***@{domain}"
+
+        return JSONResponse(
+            content={
+                "message": "Please check your email for password reset instructions",
+                "email": email,
+                "masked_email": masked_email,
+                "username": user.username,
+                "reset_token": token,
+                "reset_link": link,
+            },
+            status_code=status.HTTP_200_OK,
+        )
 
     async def reset_password(self, db:AsyncSession, email: str, new_pswd: str):
         user = await self.get_user_by_email(db, email)
+        if not user:
+            return JSONResponse(content={"message": "User not found or invalid reset token"}, status_code=status.HTTP_404_NOT_FOUND)
         new_pswd_hash = gen_pswd_hash(new_pswd)
         reset_password = await self.update_user(db, {"password_hash": new_pswd_hash}, user.username)
         if reset_password:
@@ -222,6 +278,17 @@ class UserService:
         await db.refresh(user)
         return user
 
+
+    async def delete_user(self, db: AsyncSession, user_id: uuid.UUID | str) -> bool:
+        if isinstance(user_id, str):
+            user_id = uuid.UUID(user_id)
+        result = await db.execute(select(UserModel).where(UserModel.user_id == user_id))
+        user = result.scalar_one_or_none()
+        if user:
+            await db.delete(user)
+            await db.commit()
+            return True
+        return False
 
     async def add_jti_to_blocklist(self, jti: str):
         try:

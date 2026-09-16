@@ -278,10 +278,10 @@ export function Features() {
   return (
     <section
       id="features"
-      className="relative py-20 sm:py-28 bg-[#f2eee5] border-t border-neutral-300/80 paper-grain overflow-hidden"
+      className="relative py-20 sm:py-28 bg-[#f2ede3] border-t border-[#ded5c4]/90 paper-grain overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-neutral-300 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-[#ded5c4] gap-4">
           <div>
             <ScrollReveal y={15}>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.04em] text-[#0d0e11]">
@@ -299,7 +299,7 @@ export function Features() {
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-neutral-300 text-xs font-mono font-semibold text-neutral-800 hover:border-neutral-400 hover:bg-neutral-100 transition-all cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#fcfaf6] border border-[#ded5c4] text-xs font-mono font-semibold text-neutral-800 hover:border-neutral-400 hover:bg-[#eae3d5] transition-all cursor-pointer shadow-2xs"
             >
               <Plus weight="bold" className="w-3.5 h-3.5 text-[#d9480f]" />
               <span>Request a Bank</span>
@@ -308,7 +308,7 @@ export function Features() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
-          <div className="lg:col-span-4 flex flex-col justify-between bg-white rounded-3xl p-6 sm:p-7 border border-neutral-300/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="lg:col-span-4 flex flex-col justify-between bg-[#fcfaf6] rounded-3xl p-6 sm:p-7 border border-[#ded5c4]/90 shadow-xs hover:shadow-md transition-shadow">
             <div className="mb-5 flex-1 flex items-center justify-center">
               <SkeletonOne />
             </div>
@@ -322,7 +322,7 @@ export function Features() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col justify-between bg-white rounded-3xl p-6 sm:p-7 border border-neutral-300/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="lg:col-span-4 flex flex-col justify-between bg-[#fcfaf6] rounded-3xl p-6 sm:p-7 border border-[#ded5c4]/90 shadow-xs hover:shadow-md transition-shadow">
             <div className="mb-5 flex-1 flex items-center justify-center">
               <SkeletonTwo />
             </div>
@@ -336,7 +336,7 @@ export function Features() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 lg:row-span-2 flex flex-col justify-between bg-white rounded-3xl p-6 sm:p-7 border border-neutral-300/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="lg:col-span-4 lg:row-span-2 flex flex-col justify-between bg-[#fcfaf6] rounded-3xl p-6 sm:p-7 border border-[#ded5c4]/90 shadow-xs hover:shadow-md transition-shadow">
             <div className="mb-5 flex-1 flex items-center justify-center">
               <SkeletonThree />
             </div>
@@ -350,7 +350,7 @@ export function Features() {
             </div>
           </div>
 
-          <div className="lg:col-span-8 flex flex-col justify-between bg-white rounded-3xl p-6 sm:p-8 border border-neutral-300/80 shadow-xs hover:shadow-md transition-shadow">
+          <div className="lg:col-span-8 flex flex-col justify-between bg-[#fcfaf6] rounded-3xl p-6 sm:p-8 border border-[#ded5c4]/90 shadow-xs hover:shadow-md transition-shadow">
             <div className="mb-6 flex-1 flex items-center justify-center">
               <SkeletonFour />
             </div>

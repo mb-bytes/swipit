@@ -40,10 +40,10 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="relative py-24 sm:py-32 bg-[#f2eee5] border-t border-neutral-300/80 paper-grain overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[#f2ede3] border-t border-[#ded5c4]/90 paper-grain overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-6 border-b border-neutral-300 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-6 border-b border-[#ded5c4] gap-4">
           <div>
             <ScrollReveal y={15}>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-[-0.04em] text-[#0d0e11]">
@@ -54,7 +54,7 @@ export function Contact() {
 
           <ScrollReveal delay={0.1} y={15}>
             <span className="font-mono text-xs font-semibold text-[#525763] tracking-[0.14em] uppercase">
-              MODULE 03 // DISPATCH & FEEDBACK
+              Contact the developer
             </span>
           </ScrollReveal>
         </div>
@@ -69,14 +69,16 @@ export function Contact() {
 
             <ScrollReveal delay={0.2} y={20}>
               <p className="mt-4 text-base text-neutral-700 leading-relaxed max-w-md">
-                Have requests for specific bank Gmail alerts, algorithm rule suggestions, or custom reward integrations? Dispatch a message directly to the engineering team.
+                Have requests for specific bank Gmail alerts, algorithm rule
+                suggestions, or custom reward integrations? Dispatch a message
+                directly to the engineering team.
               </p>
             </ScrollReveal>
 
             <ScrollReveal delay={0.3} y={20}>
               <div className="mt-8 space-y-4">
                 <div className="flex items-center gap-3 text-sm text-neutral-800">
-                  <div className="w-9 h-9 rounded-xl bg-white border border-neutral-300 flex items-center justify-center text-neutral-900 shadow-xs">
+                  <div className="w-9 h-9 rounded-xl bg-[#fcfaf6] border border-[#ded5c4] flex items-center justify-center text-neutral-900 shadow-xs">
                     <EnvelopeSimple weight="bold" className="w-4 h-4" />
                   </div>
                   <div>
@@ -87,39 +89,30 @@ export function Contact() {
                       href="mailto:developer@swipit.app"
                       className="font-medium hover:text-[#d9480f] transition-colors"
                     >
-                      developer@swipit.app
+                      atique.sh2@gmail.com
                     </a>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-neutral-300">
+                <div className="pt-4 border-t border-[#ded5c4]">
                   <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-500 block mb-3">
                     Connected Networks:
                   </span>
                   <div className="flex items-center gap-2.5">
                     <a
-                      href="https://x.com"
+                      href="https://github.com/mb-bytes"
                       target="_blank"
                       rel="noreferrer"
-                      className="w-9 h-9 rounded-xl bg-white border border-neutral-300 hover:border-neutral-500 flex items-center justify-center text-neutral-800 hover:text-black transition-all shadow-xs"
-                      aria-label="X Twitter"
-                    >
-                      <XLogoIcon weight="bold" className="w-4 h-4" />
-                    </a>
-                    <a
-                      href="https://github.com"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-9 h-9 rounded-xl bg-white border border-neutral-300 hover:border-neutral-500 flex items-center justify-center text-neutral-800 hover:text-black transition-all shadow-xs"
+                      className="w-9 h-9 rounded-xl bg-[#fcfaf6] border border-[#ded5c4] hover:border-neutral-500 flex items-center justify-center text-neutral-800 hover:text-black transition-all shadow-xs"
                       aria-label="GitHub"
                     >
                       <GithubLogoIcon weight="bold" className="w-4 h-4" />
                     </a>
                     <a
-                      href="https://linkedin.com"
+                      href="https://linkedin.com/in/atique-shaikh"
                       target="_blank"
                       rel="noreferrer"
-                      className="w-9 h-9 rounded-xl bg-white border border-neutral-300 hover:border-neutral-500 flex items-center justify-center text-neutral-800 hover:text-black transition-all shadow-xs"
+                      className="w-9 h-9 rounded-xl bg-[#fcfaf6] border border-[#ded5c4] hover:border-neutral-500 flex items-center justify-center text-neutral-800 hover:text-black transition-all shadow-xs"
                       aria-label="LinkedIn"
                     >
                       <LinkedinLogoIcon weight="bold" className="w-4 h-4" />
@@ -146,7 +139,8 @@ export function Contact() {
                       Message Transmitted
                     </h3>
                     <p className="text-sm text-neutral-600 mt-1 max-w-sm">
-                      Your query has been queued for review. We will reach out shortly.
+                      Your query has been queued for review. We will reach out
+                      shortly.
                     </p>
                   </motion.div>
                 ) : (
@@ -163,7 +157,7 @@ export function Contact() {
                           onChange={(e) =>
                             setFormData({ ...formData, name: e.target.value })
                           }
-                          placeholder="Siddharth Rao"
+                          placeholder="Tony Stark"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40 transition-all"
                         />
                       </div>
@@ -179,32 +173,10 @@ export function Contact() {
                           onChange={(e) =>
                             setFormData({ ...formData, email: e.target.value })
                           }
-                          placeholder="siddharth@example.com"
+                          placeholder="tonystark@example.com"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#d9480f]/40 transition-all"
                         />
                       </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-700">
-                        Topic
-                      </label>
-                      <Dropdown
-                        className="w-full"
-                        triggerClassName="w-full px-3.5 py-2.5 rounded-xl bg-white border border-neutral-300 text-sm text-neutral-900 focus:ring-2 focus:ring-[#d9480f]/40 transition-all"
-                        menuClassName="bg-white border border-neutral-200 text-neutral-800 shadow-xl"
-                        value={formData.topic}
-                        onChange={(val) =>
-                          setFormData({ ...formData, topic: val })
-                        }
-                        items={[
-                          { value: "bank_request", label: "Request Bank Alert Parser" },
-                          { value: "feature", label: "Suggest an AI Feature" },
-                          { value: "bug", label: "Report Parsing Issue" },
-                          { value: "collab", label: "Partnership Inquiry" },
-                          { value: "other", label: "General Feedback" },
-                        ]}
-                      />
                     </div>
 
                     <div className="space-y-1">
@@ -232,8 +204,11 @@ export function Contact() {
                         <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       ) : (
                         <>
-                          <PaperPlaneTilt weight="bold" className="w-4 h-4 text-amber-400" />
-                          <span>Dispatch Query</span>
+                          <PaperPlaneTilt
+                            weight="bold"
+                            className="w-4 h-4 text-amber-400"
+                          />
+                          <span>Send</span>
                         </>
                       )}
                     </button>
