@@ -2,7 +2,8 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { AlertTriangle, ArrowRight, X } from "lucide-react";
+import { AlertCircleIcon, ArrowRight01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 
 interface UnmatchedBannerProps {
   count: number;
@@ -22,8 +23,8 @@ export function UnmatchedBanner({ count, onReview, onDismiss, onDeleteAll }: Unm
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className="flex items-center gap-3 rounded-2xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-amber-900 shadow-xs"
     >
-      <div className="shrink-0 rounded-lg bg-amber-400/30 p-1.5">
-        <AlertTriangle className="w-4 h-4 text-amber-700" />
+      <div className="shrink-0 rounded-full bg-amber-400/30 p-2 flex items-center justify-center">
+        <HugeIcon icon={AlertCircleIcon} size={16} className="text-amber-700" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -52,16 +53,16 @@ export function UnmatchedBanner({ count, onReview, onDismiss, onDeleteAll }: Unm
           className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-neutral-950 transition-all active:scale-98 cursor-pointer"
         >
           <span>Review & assign</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <HugeIcon icon={ArrowRight01Icon} size={14} />
         </button>
 
         <button
           type="button"
           onClick={onDismiss}
-          className="text-amber-600 hover:text-amber-900 rounded-md p-1 hover:bg-amber-100 transition-colors cursor-pointer"
+          className="text-amber-600 hover:text-amber-900 rounded-full p-1 hover:bg-amber-100 transition-colors cursor-pointer"
           title="Dismiss banner"
         >
-          <X className="w-4 h-4" />
+          <HugeIcon icon={Cancel01Icon} size={16} />
         </button>
       </div>
     </motion.div>

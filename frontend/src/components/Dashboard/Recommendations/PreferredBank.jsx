@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowLeft, Building2, Sparkles } from "lucide-react";
+import { ArrowLeft01Icon, Building02Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
 import { getBankLogo } from "@/lib/bank-logos";
@@ -89,7 +90,7 @@ export function PreferredBank({
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <Building2 className="w-7 h-7 text-neutral-600" />
+                  <HugeIcon icon={Building02Icon} size={28} className="text-neutral-600" />
                 )}
               </div>
 
@@ -129,7 +130,7 @@ export function PreferredBank({
             onClick={onBack}
             className="h-10 px-4 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 bg-white/80 border-neutral-300 uppercase cursor-pointer flex items-center gap-1.5 rounded-xl shadow-xs"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <HugeIcon icon={ArrowLeft01Icon} size={14} />
             <span>Back</span>
           </Button>
 

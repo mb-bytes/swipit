@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, CreditCard, Sparkles, Loader2 } from "lucide-react";
+import { Cancel01Icon, CreditCardIcon, SparklesIcon, Loading03Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { motion, AnimatePresence } from "motion/react";
 import api from "@/api/axios";
 import { sileo } from "sileo";
@@ -156,12 +157,12 @@ export function AddCardModal({
               onClick={onClose}
               className="absolute top-4 right-4 text-neutral-400 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <HugeIcon icon={Cancel01Icon} size={20} />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="rounded-xl bg-amber-400 p-2.5 text-neutral-950 font-bold">
-                <CreditCard className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+                <HugeIcon icon={CreditCardIcon} size={20} />
               </div>
               <div>
                 <h3 className="text-lg font-bold tracking-tight">Add Credit Card</h3>
@@ -195,7 +196,7 @@ export function AddCardModal({
                 </label>
                 {loadingCatalogue ? (
                   <div className="flex items-center gap-2 text-xs text-neutral-400 py-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <HugeIcon icon={Loading03Icon} size={16} className="animate-spin" />
                     <span>Loading card catalogue...</span>
                   </div>
                 ) : (
@@ -263,12 +264,12 @@ export function AddCardModal({
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <HugeIcon icon={Loading03Icon} size={16} className="animate-spin" />
                     <span>Adding Card...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <HugeIcon icon={SparklesIcon} size={16} />
                     <span>Save Card</span>
                   </>
                 )}

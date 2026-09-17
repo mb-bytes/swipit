@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-  Building2,
-  Clock,
-  ExternalLink,
-  Flame,
-  Info,
-  RotateCcw,
-} from "lucide-react";
+  Building02Icon,
+  Clock01Icon,
+  ExternalLinkIcon,
+  FireIcon,
+  InformationCircleIcon,
+  RotateLeft01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { Button } from "@/components/ui/button";
 import { getBankLogo } from "@/lib/bank-logos";
 import MatrixOrb from "@/components/ui/matrix-orb";
@@ -126,7 +127,7 @@ export function RecommendationScreen({
 
         {isCached && remainingSeconds > 0 ? (
           <div className="h-10 px-4 rounded-xl border border-neutral-300 bg-white/80 shadow-2xs flex items-center gap-2 text-xs font-mono font-bold text-neutral-700 select-none self-start sm:self-auto">
-            <Clock className="w-3.5 h-3.5 text-[#c2571a]" />
+            <HugeIcon icon={Clock01Icon} size={14} className="text-[#c2571a]" />
             <span>Refreshes in {formatCountdown(remainingSeconds)}</span>
           </div>
         ) : (
@@ -135,7 +136,7 @@ export function RecommendationScreen({
             onClick={onReset}
             className="h-10 px-4 rounded-xl border-neutral-300 text-xs font-mono font-bold text-neutral-700 hover:bg-neutral-100 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-neutral-500" />
+            <HugeIcon icon={RotateLeft01Icon} size={14} className="text-neutral-500" />
             <span>Start Over</span>
           </Button>
         )}
@@ -169,14 +170,14 @@ export function RecommendationScreen({
                         className="w-full h-full object-contain"
                       />
                     ) : (
-                      <Building2 className="w-6 h-6 text-neutral-500" />
+                      <HugeIcon icon={Building02Icon} size={24} className="text-neutral-500" />
                     )}
                   </div>
                 </div>
 
                 {card.top_perk && (
                   <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-700 mb-4 flex items-start gap-2.5">
-                    <Flame className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <HugeIcon icon={FireIcon} size={16} className="text-amber-600 shrink-0 mt-0.5" />
                     <span className="font-semibold leading-relaxed">
                       {card.top_perk}
                     </span>
@@ -248,7 +249,7 @@ export function RecommendationScreen({
                   className="w-full h-10 bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 rounded-xl font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                 >
                   <span>Apply Now</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+                  <HugeIcon icon={ExternalLinkIcon} size={14} className="text-neutral-400" />
                 </Button>
               </div>
             </div>
@@ -258,7 +259,7 @@ export function RecommendationScreen({
 
       <div className="pt-4 border-t border-neutral-200/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-500">
         <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-neutral-400 shrink-0" />
+          <HugeIcon icon={InformationCircleIcon} size={16} className="text-neutral-400 shrink-0" />
           <span>
             Quarterly cashback if more than 4 months of transaction are
             available for each recommended card.

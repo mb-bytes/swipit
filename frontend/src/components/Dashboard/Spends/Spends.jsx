@@ -2,25 +2,27 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
-  Receipt,
-  Loader2,
-  Calendar,
-  Filter,
-  ChevronDown,
-  X,
-  CreditCard,
-  Inbox,
-  Check,
-  RotateCcw,
-  Sparkles,
-  BarChart3,
-  RefreshCw,
-} from "lucide-react";
+  Invoice01Icon,
+  Loading03Icon,
+  Calendar03Icon,
+  FilterIcon,
+  ChevronDownIcon,
+  Cancel01Icon,
+  CreditCardIcon,
+  InboxIcon,
+  Tick02Icon,
+  RotateLeft01Icon,
+  SparklesIcon,
+  BarChartIcon,
+  RefreshCwIcon,
+  Edit02Icon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 import { Skeleton } from "boneyard-js/react";
 import { useDashboard } from "@/contexts/DashboardContext";
-import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
 import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import { MonoRoundedLineChart } from "@/components/charts/MonoRoundedLineChart";
@@ -473,8 +475,8 @@ export function Spends() {
       <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
-              <Receipt className="w-5 h-5 text-[#f2eee5]" />
+            <div className="w-11 h-11 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+              <HugeIcon icon={Invoice01Icon} size={20} />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#111215]">
@@ -495,8 +497,10 @@ export function Spends() {
                 disabled={isSyncing}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium text-neutral-700"
               >
-                <RefreshCw
-                  className={`w-3.5 h-3.5 text-neutral-700 ${
+                <HugeIcon
+                  icon={RefreshCwIcon}
+                  size={14}
+                  className={`text-neutral-700 ${
                     isSyncing ? "animate-spin text-amber-600" : ""
                   }`}
                 />
@@ -506,8 +510,10 @@ export function Spends() {
                     : `Sync from Gmail — ${SYNC_PERIOD_OPTIONS.find((o) => o.value === selectedSyncPeriod)?.label ?? "Last 30 Days"}`}
                 </span>
                 {!isSyncing && (
-                  <ChevronDown
-                    className={`w-3 h-3 text-neutral-500 transition-transform duration-150 ${
+                  <HugeIcon
+                    icon={ChevronDownIcon}
+                    size={12}
+                    className={`text-neutral-500 transition-transform duration-150 ${
                       syncPeriodOpen ? "rotate-180" : ""
                     }`}
                   />
@@ -517,7 +523,7 @@ export function Spends() {
               {syncPeriodOpen && (
                 <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[200px] rounded-xl border border-neutral-200 bg-white shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                   <div className="px-3 pt-2.5 pb-1 flex items-center gap-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100">
-                    <Calendar className="w-3 h-3" />
+                    <HugeIcon icon={Calendar03Icon} size={12} />
                     Select sync period
                   </div>
                   {SYNC_PERIOD_OPTIONS.map((opt) => {
@@ -598,8 +604,8 @@ export function Spends() {
         >
           {analyticsData.filteredTxns.length < 5 ? (
             <div className="rounded-3xl border border-neutral-300/80 bg-white/70 p-8 md:p-12 flex flex-col items-center justify-center text-center shadow-2xs backdrop-blur-xs min-h-[280px]">
-              <div className="w-12 h-12 rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
-                <BarChart3 className="w-6 h-6 text-neutral-700" />
+              <div className="w-12 h-12 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
+                <HugeIcon icon={BarChartIcon} size={24} className="text-neutral-700" />
               </div>
               <h3 className="text-base font-bold text-neutral-900 tracking-tight">
                 Not enough transactions yet
@@ -670,8 +676,10 @@ export function Spends() {
                       : "bg-neutral-100/90 text-neutral-600 border border-neutral-200/90"
                   }`}
                 >
-                  <Sparkles
-                    className={`w-3.5 h-3.5 shrink-0 ${
+                  <HugeIcon
+                    icon={SparklesIcon}
+                    size={14}
+                    className={`shrink-0 ${
                       totalCashbackPeriod > 0
                         ? "text-emerald-600"
                         : "text-neutral-400"
@@ -695,13 +703,13 @@ export function Spends() {
                     : "bg-white/90 text-neutral-700 border-neutral-200 hover:bg-neutral-100/80"
                 }`}
               >
-                <Filter className="w-3.5 h-3.5" />
+                <HugeIcon icon={FilterIcon} size={14} />
                 <span>
                   {excludedCardIds.size === 0
                     ? "Exclude a card?"
                     : `${excludedCardIds.size} Card${excludedCardIds.size > 1 ? "s" : ""} Excluded`}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                <HugeIcon icon={ChevronDownIcon} size={14} className="opacity-70" />
               </button>
 
               {excludeDropdownOpen && (
@@ -753,7 +761,7 @@ export function Spends() {
                             }`}
                           >
                             <div className="flex items-center gap-2 truncate">
-                              <CreditCard className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                              <HugeIcon icon={CreditCardIcon} size={14} className="text-neutral-500 shrink-0" />
                               <span className="truncate">{card.cardName}</span>
                               <span className="text-[10px] font-mono text-neutral-400">
                                 ••{card.cardLast4}
@@ -767,7 +775,7 @@ export function Spends() {
                               }`}
                             >
                               {isExcluded && (
-                                <Check className="w-3 h-3 stroke-[3]" />
+                                <HugeIcon icon={Tick02Icon} size={12} strokeWidth={2.5} />
                               )}
                             </div>
                           </label>
@@ -786,9 +794,9 @@ export function Spends() {
               onClick={() => setPeriodDropdownOpen(!periodDropdownOpen)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-neutral-300/80 hover:border-neutral-400 text-neutral-900 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
             >
-              <Calendar className="w-3.5 h-3.5 text-neutral-600" />
+              <HugeIcon icon={Calendar03Icon} size={14} className="text-neutral-600" />
               <span>Change period ({periodLabel})</span>
-              <ChevronDown className="w-3.5 h-3.5 text-neutral-500" />
+              <HugeIcon icon={ChevronDownIcon} size={14} className="text-neutral-500" />
             </button>
 
             {periodDropdownOpen && (
@@ -996,8 +1004,8 @@ export function Spends() {
           >
             {filteredTxns.length === 0 ? (
               <div className="rounded-2xl border border-neutral-300/80 bg-white/60 p-12 flex flex-col items-center justify-center text-center shadow-2xs">
-                <div className="w-12 h-12 rounded-2xl bg-neutral-200 flex items-center justify-center text-neutral-600 mb-3">
-                  <Inbox className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3">
+                  <HugeIcon icon={InboxIcon} size={24} />
                 </div>
                 <p className="text-sm font-semibold text-neutral-800">
                   No Transactions Found
@@ -1014,7 +1022,7 @@ export function Spends() {
                     onClick={clearExcludedCards}
                     className="mt-3 inline-flex items-center gap-1.5 text-xs text-neutral-700 hover:text-black font-semibold underline underline-offset-2 cursor-pointer"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <HugeIcon icon={RotateLeft01Icon} size={12} />
                     <span>Reset card exclusions</span>
                   </button>
                 )}
@@ -1072,21 +1080,18 @@ export function Spends() {
                                   />
                                 ) : (
                                   <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
-                                    <CreditCard className="w-3.5 h-3.5" />
+                                    <HugeIcon icon={CreditCardIcon} size={14} />
                                   </div>
                                 )}
-                                <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/tooltip:flex flex-col items-center z-50 whitespace-nowrap">
-                                  <div className="rounded-lg bg-neutral-900 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl border border-neutral-800">
-                                    {cardName}
-                                  </div>
-                                  <div className="w-2 h-2 -mt-1 rotate-45 bg-neutral-900 border-r border-b border-neutral-800" />
+                                <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/tooltip:block bg-neutral-900 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap z-30 shadow-md">
+                                  {cardName}
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3.5 px-4 text-xs font-mono text-neutral-500 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-neutral-500 whitespace-nowrap text-xs">
                               {tx.date}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-semibold text-neutral-900 whitespace-nowrap">
+                            <td className="py-3.5 px-4 text-right font-medium text-neutral-900 whitespace-nowrap">
                               - Rs {(tx.amount ?? 0).toLocaleString("en-IN")}
                             </td>
                             <td className="py-3.5 px-4 text-right whitespace-nowrap">
@@ -1096,10 +1101,30 @@ export function Spends() {
                               </span>
                             </td>
                             <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
-                              <DeleteButton
-                                className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
-                                onConfirm={() => handleDelete(tx.id)}
-                              />
+                              <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  title="Edit transaction"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    console.log("Edit transaction clicked", tx.id);
+                                  }}
+                                  className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                                >
+                                  <HugeIcon icon={Edit02Icon} size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  title="Delete transaction"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(tx.id);
+                                  }}
+                                  className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-red-400 hover:border-red-900/50 active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                                >
+                                  <HugeIcon icon={Delete02Icon} size={14} />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );

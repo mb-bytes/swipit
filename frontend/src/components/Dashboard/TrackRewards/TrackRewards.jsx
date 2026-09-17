@@ -3,18 +3,19 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Gift,
-  Sparkles,
-  Award,
-  Coins,
-  CreditCard as CreditCardIcon,
-  Store,
-  ShoppingBag,
-  Plus,
-  ArrowRight,
-  CheckCircle2,
-  Zap,
-} from "lucide-react";
+  GiftIcon,
+  SparklesIcon,
+  Award01Icon,
+  Coins01Icon,
+  CreditCardIcon,
+  Store01Icon,
+  ShoppingBag01Icon,
+  Add01Icon,
+  ArrowRight01Icon,
+  CheckmarkCircle02Icon,
+  ZapIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { Skeleton } from "boneyard-js/react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { RollingNumber } from "@/components/ui/animate-number";
@@ -213,8 +214,8 @@ export function TrackRewards() {
       <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto lg:overflow-hidden min-h-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pt-1">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
-              <Gift className="w-4.5 h-4.5 text-[#f2eee5]" />
+            <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+              <HugeIcon icon={GiftIcon} size={20} />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215] leading-tight">
@@ -287,8 +288,8 @@ export function TrackRewards() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 max-w-3xl mx-auto w-full">
                 <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/70 p-5 flex flex-col justify-between gap-4 shadow-2xs hover:border-neutral-300 transition-all">
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-[#111215] text-[#f2eee5] flex items-center justify-center shrink-0 shadow-2xs">
-                      <CreditCardIcon className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+                      <HugeIcon icon={CreditCardIcon} size={20} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -297,7 +298,7 @@ export function TrackRewards() {
                         </h4>
                         {cards.length > 0 && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                            <CheckCircle2 className="w-3 h-3" />
+                            <HugeIcon icon={CheckmarkCircle02Icon} size={12} />
                             {cards.length} Added
                           </span>
                         )}
@@ -315,7 +316,7 @@ export function TrackRewards() {
                     onClick={() => navigate("/dashboard")}
                     className="w-full h-9 text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <HugeIcon icon={Add01Icon} size={14} />
                     <span>
                       {cards.length > 0
                         ? "Manage Wallet Cards"
@@ -326,8 +327,8 @@ export function TrackRewards() {
 
                 <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/70 p-5 flex flex-col justify-between gap-4 shadow-2xs hover:border-neutral-300 transition-all">
                   <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
-                      <Zap className="w-5 h-5 text-amber-600" />
+                    <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+                      <HugeIcon icon={ZapIcon} size={20} className="text-teal-300" />
                     </div>
                     <div>
                       <h4 className="font-bold text-neutral-900 text-sm">
@@ -356,15 +357,15 @@ export function TrackRewards() {
                       className="flex-1 h-9 text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition cursor-pointer shadow-xs flex items-center justify-center gap-1"
                     >
                       <span>Connect Gmail</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <HugeIcon icon={ArrowRight01Icon} size={13} />
                     </Button>
                   </div>
                 </div>
               </div>
 
               <div className="w-full max-w-3xl mx-auto rounded-2xl border border-amber-200/80 bg-amber-50/50 p-3.5 px-4 md:px-5 flex items-center gap-3 shadow-2xs">
-                <div className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0 shadow-2xs">
-                  <Sparkles className="w-4 h-4 text-amber-600" />
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                  <HugeIcon icon={SparklesIcon} size={16} className="text-amber-600" />
                 </div>
                 <p className="text-xs text-neutral-600 leading-relaxed">
                   <span className="font-bold text-neutral-900">Pro tip:</span>{" "}
@@ -404,7 +405,7 @@ export function TrackRewards() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch flex-1 min-h-0">
                 <div className="lg:col-span-6 flex flex-col gap-2 h-full justify-between">
                   <div className="flex items-center gap-1.5 px-1 text-xs sm:text-sm font-semibold text-neutral-700 select-none shrink-0">
-                    <Award className="w-4 h-4 text-amber-500 shrink-0" />
+                    <HugeIcon icon={Award01Icon} size={16} className="text-amber-500 shrink-0" />
                     <span>The undisputed MVP of your wallet</span>
                   </div>
 
@@ -428,13 +429,13 @@ export function TrackRewards() {
                   {stats.biggestMerchant && (
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-1.5 px-1 text-xs sm:text-sm font-semibold text-neutral-700 select-none">
-                        <Store className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <HugeIcon icon={Store01Icon} size={16} className="text-emerald-600 shrink-0" />
                         <span>The merchant that gave back the most love</span>
                       </div>
 
                       <div className="rounded-2xl border border-neutral-200/90 bg-white/95 p-3.5 sm:p-4 flex items-center justify-between shadow-2xs hover:border-neutral-300 transition-all select-none">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-800 font-bold text-sm shadow-2xs">
+                          <div className="w-9 h-9 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-800 font-bold text-sm shadow-2xs">
                             {stats.biggestMerchant.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -462,7 +463,7 @@ export function TrackRewards() {
                   {stats.topCategory && (
                     <div className="flex flex-col gap-1.5">
                       <div className="flex items-center gap-1.5 px-1 text-xs sm:text-sm font-semibold text-neutral-700 select-none">
-                        <ShoppingBag className="w-4 h-4 text-indigo-600 shrink-0" />
+                        <HugeIcon icon={ShoppingBag01Icon} size={16} className="text-indigo-600 shrink-0" />
                         <span>
                           Your certified guilty pleasure (that paid off)
                         </span>
@@ -470,8 +471,8 @@ export function TrackRewards() {
 
                       <div className="rounded-2xl border border-neutral-200/90 bg-white/95 p-3.5 sm:p-4 flex items-center justify-between shadow-2xs hover:border-neutral-300 transition-all select-none">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shadow-2xs">
-                            <ShoppingBag className="w-4.5 h-4.5" />
+                          <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm shadow-2xs">
+                            <HugeIcon icon={ShoppingBag01Icon} size={18} />
                           </div>
                           <div>
                             <h4 className="font-bold text-neutral-900 text-sm sm:text-base leading-snug">
@@ -500,8 +501,8 @@ export function TrackRewards() {
               {stats.hasPointsCard && (
                 <div className="w-full rounded-2xl border border-neutral-200/90 bg-neutral-100/70 p-3 px-4 md:px-5 flex flex-col sm:flex-row items-center justify-between gap-2.5 select-none shadow-2xs shrink-0">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-xl bg-amber-100 border border-amber-200/80 flex items-center justify-center text-amber-700 shrink-0 shadow-2xs">
-                      <Coins className="w-3.5 h-3.5" />
+                    <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-200/80 flex items-center justify-center text-amber-700 shrink-0 shadow-2xs">
+                      <HugeIcon icon={Coins01Icon} size={14} />
                     </div>
                     <div>
                       <h4 className="text-xs sm:text-sm font-bold text-neutral-900 leading-tight">
@@ -516,7 +517,7 @@ export function TrackRewards() {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="px-3 py-1 rounded-xl bg-white border border-neutral-200 text-xs font-semibold text-neutral-800 shadow-2xs flex items-center gap-1.5">
-                      <CreditCardIcon className="w-3.5 h-3.5 text-neutral-500" />
+                      <HugeIcon icon={CreditCardIcon} size={14} className="text-neutral-500" />
                       <span>{stats.pointsCardName}</span>
                     </div>
 

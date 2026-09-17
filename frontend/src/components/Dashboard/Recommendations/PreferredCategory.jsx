@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
 
@@ -122,7 +123,7 @@ export function PreferredCategory({
             onClick={onBack}
             className="h-10 px-4 text-xs font-mono font-bold text-neutral-700 hover:text-neutral-950 bg-white/80 border-neutral-300 uppercase cursor-pointer flex items-center gap-1.5 rounded-xl shadow-xs"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <HugeIcon icon={ArrowLeft01Icon} size={14} />
             <span>Back</span>
           </Button>
 
@@ -140,7 +141,7 @@ export function PreferredCategory({
           className="h-11 px-7 bg-[#c2571a] hover:bg-[#a94813] text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>Confirm Selection</span>
-          <ArrowRight className="w-4 h-4" />
+          <HugeIcon icon={ArrowRight01Icon} size={16} />
         </Button>
       </div>
     </div>

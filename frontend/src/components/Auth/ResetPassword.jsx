@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle, ShieldCheck, KeyRound, RefreshCw, Lock } from "lucide-react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  ArrowRight01Icon,
+  CheckmarkCircle02Icon,
+  AlertCircleIcon,
+  ShieldCheckIcon,
+  KeyRoundIcon,
+  Loading03Icon,
+  LockIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { sileo } from "sileo";
 import api from "@/api/axios";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
@@ -35,10 +46,10 @@ export function ResetPassword() {
 
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <Lock className="h-3 w-3 text-amber-500" /> High-Entropy Passwords
+            <HugeIcon icon={LockIcon} size={12} className="text-amber-500" /> High-Entropy Passwords
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" /> End-to-End Salting
+            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> End-to-End Salting
           </span>
         </div>
 
@@ -231,12 +242,12 @@ function ResetPasswordForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-0.5 cursor-pointer"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <HugeIcon icon={EyeOffIcon} size={16} /> : <HugeIcon icon={EyeIcon} size={16} />}
                 </button>
               </div>
               {passwordError && (
                 <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
                   <span>{passwordError}</span>
                 </p>
               )}
@@ -267,12 +278,12 @@ function ResetPasswordForm() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-0.5 cursor-pointer"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirmPassword ? <HugeIcon icon={EyeOffIcon} size={16} /> : <HugeIcon icon={EyeIcon} size={16} />}
                 </button>
               </div>
               {confirmError && (
                 <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-                  <AlertCircle className="h-3 w-3 shrink-0" />
+                  <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
                   <span>{confirmError}</span>
                 </p>
               )}
@@ -297,13 +308,13 @@ function ResetPasswordForm() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <HugeIcon icon={Loading03Icon} size={14} className="animate-spin" />
                   <span>Resetting Password...</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
                   <span>Reset Password</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <HugeIcon icon={ArrowRight01Icon} size={14} />
                 </span>
               )}
             </Button>
@@ -311,8 +322,8 @@ function ResetPasswordForm() {
         </>
       ) : (
         <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs flex flex-col gap-4 text-center items-center">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 ring-4 ring-emerald-500/10 flex items-center justify-center shadow-2xs">
+            <HugeIcon icon={CheckmarkCircle02Icon} size={24} />
           </div>
 
           <div className="space-y-1">

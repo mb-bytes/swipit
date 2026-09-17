@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, ArrowRight, ShieldCheck, Zap, Check, AlertCircle } from "lucide-react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  ArrowRight01Icon,
+  ShieldCheckIcon,
+  ZapIcon,
+  Tick02Icon,
+  AlertCircleIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { sileo } from "sileo";
 import { CreditCard } from "./credit-card";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
@@ -51,10 +60,10 @@ export function Signup() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <Zap className="h-3 w-3 text-sky-500" /> Instant Sync
+            <HugeIcon icon={ZapIcon} size={12} className="text-sky-500" /> Instant Sync
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" /> Bank Security
+            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> Bank Security
           </span>
         </div>
 
@@ -211,7 +220,7 @@ function SignupForm({ onNameChange }) {
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/90 px-3.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-white hover:border-neutral-400 active:scale-95"
         >
           <span>Log In</span>
-          <ArrowRight className="h-3 w-3" />
+          <HugeIcon icon={ArrowRight01Icon} size={12} />
         </Link>
       </div>
 
@@ -235,7 +244,7 @@ function SignupForm({ onNameChange }) {
             </Label>
             {touched.name && !nameError && name && (
               <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-mono">
-                <Check className="h-3 w-3" /> Valid
+                <HugeIcon icon={Tick02Icon} size={12} /> Valid
               </span>
             )}
           </div>
@@ -254,7 +263,7 @@ function SignupForm({ onNameChange }) {
           />
           {nameError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{nameError}</span>
             </p>
           )}
@@ -267,7 +276,7 @@ function SignupForm({ onNameChange }) {
             </Label>
             {touched.username && !usernameError && username && (
               <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-mono">
-                <Check className="h-3 w-3" /> Valid
+                <HugeIcon icon={Tick02Icon} size={12} /> Valid
               </span>
             )}
           </div>
@@ -286,7 +295,7 @@ function SignupForm({ onNameChange }) {
           />
           {usernameError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{usernameError}</span>
             </p>
           )}
@@ -299,7 +308,7 @@ function SignupForm({ onNameChange }) {
             </Label>
             {touched.email && !emailError && email && (
               <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-mono">
-                <Check className="h-3 w-3" /> Valid
+                <HugeIcon icon={Tick02Icon} size={12} /> Valid
               </span>
             )}
           </div>
@@ -318,7 +327,7 @@ function SignupForm({ onNameChange }) {
           />
           {emailError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{emailError}</span>
             </p>
           )}
@@ -331,7 +340,7 @@ function SignupForm({ onNameChange }) {
             </Label>
             {touched.password && !passwordError && password && (
               <span className="flex items-center gap-1 text-[11px] text-emerald-600 font-mono">
-                <Check className="h-3 w-3" /> Strong
+                <HugeIcon icon={Tick02Icon} size={12} /> Strong
               </span>
             )}
           </div>
@@ -356,15 +365,15 @@ function SignupForm({ onNameChange }) {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <HugeIcon icon={EyeOffIcon} size={16} />
               ) : (
-                <Eye className="h-4 w-4" />
+                <HugeIcon icon={EyeIcon} size={16} />
               )}
             </button>
           </div>
           {passwordError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{passwordError}</span>
             </p>
           )}

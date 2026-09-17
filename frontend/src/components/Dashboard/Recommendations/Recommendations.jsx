@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import { SparklesIcon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import api from "@/api/axios";
 import { sileo } from "sileo";
 import openaiLogo from "@/assets/openai.svg";
@@ -92,8 +93,8 @@ export function Recommendations() {
       <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pt-1">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#111215] flex items-center justify-center shrink-0 shadow-sm">
-              <Sparkles className="w-4.5 h-4.5 text-[#f2eee5]" />
+            <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+              <HugeIcon icon={SparklesIcon} size={20} />
             </div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215] leading-tight">

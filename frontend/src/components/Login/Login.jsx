@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  BarChart3,
-  AlertCircle,
-} from "lucide-react";
+  EyeIcon,
+  EyeOffIcon,
+  ArrowRight01Icon,
+  ShieldCheckIcon,
+  ZapIcon,
+  BarChartIcon,
+  AlertCircleIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { sileo } from "sileo";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,13 +43,13 @@ export function Login() {
 
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <BarChart3 className="h-3 w-3 text-amber-500" /> Instant Insights
+            <HugeIcon icon={BarChartIcon} size={12} className="text-amber-500" /> Instant Insights
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <Zap className="h-3 w-3 text-sky-500" /> Real-time Sync
+            <HugeIcon icon={ZapIcon} size={12} className="text-sky-500" /> Real-time Sync
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" /> Bank Security
+            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> Bank Security
           </span>
         </div>
 
@@ -178,7 +179,7 @@ function LoginForm() {
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/90 px-3.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-white hover:border-neutral-400 active:scale-95"
         >
           <span>Create Account</span>
-          <ArrowRight className="h-3 w-3" />
+          <HugeIcon icon={ArrowRight01Icon} size={12} />
         </Link>
       </div>
 
@@ -217,7 +218,7 @@ function LoginForm() {
           />
           {usernameError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{usernameError}</span>
             </p>
           )}
@@ -260,15 +261,15 @@ function LoginForm() {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <HugeIcon icon={EyeOffIcon} size={16} />
               ) : (
-                <Eye className="h-4 w-4" />
+                <HugeIcon icon={EyeIcon} size={16} />
               )}
             </button>
           </div>
           {passwordError && (
             <p className="flex items-center gap-1 text-[11px] text-red-600 mt-0.5">
-              <AlertCircle className="h-3 w-3 shrink-0" />
+              <HugeIcon icon={AlertCircleIcon} size={12} className="shrink-0" />
               <span>{passwordError}</span>
             </p>
           )}

@@ -100,6 +100,76 @@
   z-index: 99999 !important;
 }
 
+/* Ensure Sileo dark toast description has a softer, lighter tone than the bold white title */
+[data-sileo-viewport] [data-sileo-description],
+[data-sileo-viewport][data-theme="dark"] [data-sileo-description],
+[data-sileo-viewport][data-theme="light"] [data-sileo-description] {
+  color: #a1a1aa !important;
+  font-size: 0.8875rem !important;
+  font-weight: 400 !important;
+  line-height: 1.45 !important;
+}
+
+[data-sileo-viewport] [data-sileo-title] {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+}
+
+/* Custom action buttons inside Sileo toast description */
+.sileo-action-btn-cancel {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.45rem 0.95rem !important;
+  margin-top: 0 !important;
+  border-radius: 0.65rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f3f4f6 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+  user-select: none !important;
+}
+
+.sileo-action-btn-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+.sileo-action-btn-danger {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.45rem 0.95rem !important;
+  margin-top: 0 !important;
+  border-radius: 0.65rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(239, 68, 68, 0.5) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+  user-select: none !important;
+}
+
+.sileo-action-btn-danger:hover {
+  background-color: #ef4444 !important;
+}
+
+[data-sileo-viewport] [data-sileo-button]:not(.sileo-action-btn-cancel):not(.sileo-action-btn-danger) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;

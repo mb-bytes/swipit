@@ -131,12 +131,12 @@ export const SidebarLink = ({ link, className, active = false, ...props }) => {
     }
   };
   return (
-    <div className="relative group/tooltip w-full">
+    <div className="relative group w-full">
       <button
         type="button"
         onClick={handleClick}
         className={cn(
-          "flex items-center w-full group/sidebar py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left",
+          "flex items-center w-full py-2.5 rounded-xl transition-all duration-150 cursor-pointer text-left",
           open ? "gap-3 px-3" : "justify-center px-0",
           active
             ? "bg-[#111215] text-[#f2eee5] shadow-xs"
@@ -147,28 +147,30 @@ export const SidebarLink = ({ link, className, active = false, ...props }) => {
       >
         <span
           className={cn(
-            "shrink-0 transition-transform duration-200 group-hover/sidebar:scale-110",
+            "shrink-0 transition-transform duration-200 group-hover:scale-110",
             active ? "text-[#f2eee5]" : "text-neutral-600",
           )}
         >
           {link.icon}
         </span>
-        <motion.span
-          animate={{
-            display: animate ? (open ? "inline-block" : "none") : "inline-block",
-            opacity: animate ? (open ? 1 : 0) : 1,
-          }}
-          className={cn(
-            "text-sm font-medium tracking-tight whitespace-pre inline-block !p-0 !m-0 transition-colors truncate",
-            active ? "text-[#f2eee5] font-semibold" : "text-neutral-800",
-          )}
-        >
-          {link.label}
-        </motion.span>
+        {open && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, delay: 0.08 }}
+            className={cn(
+              "text-sm font-medium tracking-tight whitespace-pre inline-block !p-0 !m-0 transition-colors truncate",
+              active ? "text-[#f2eee5] font-semibold" : "text-neutral-800",
+            )}
+          >
+            {link.label}
+          </motion.span>
+        )}
         {link.badge && open && (
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, delay: 0.08 }}
             className={cn(
               "ml-auto text-[9px] font-mono px-1.5 py-0.5 rounded-md font-bold shrink-0",
               active
@@ -182,7 +184,7 @@ export const SidebarLink = ({ link, className, active = false, ...props }) => {
       </button>
 
       {!open && (
-        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/tooltip:flex items-center z-50 whitespace-nowrap">
+        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150 hidden md:flex items-center z-50 whitespace-nowrap">
           <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800 flex items-center gap-1.5">
             <span>{link.label}</span>
             {link.badge && (

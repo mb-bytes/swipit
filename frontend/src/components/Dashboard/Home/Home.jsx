@@ -11,7 +11,8 @@ import { CardsSection } from "./ui/cards-section";
 import { TransactionsSection } from "./ui/transactions-section";
 import { UnmatchedBanner } from "./ui/unmatched-banner";
 import { UnmatchedDrawer } from "./ui/unmatched-drawer";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckmarkCircle02Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { AnimatePresence } from "motion/react";
 
 export function Home() {
@@ -67,25 +68,76 @@ export function Home() {
   };
 
   const handleDeleteCard = (cardId) => {
-    sileo.action({
+    let toastId = "";
+    toastId = sileo.action({
       title: "Delete Card?",
-      description:
-        "Deleting this card would delete all its associated transactions",
-      button: {
-        title: "Delete Card",
-        onClick: () => {
-          sileo.promise(
-            api.delete(`/api/cards/${cardId}`).then(() => {
-              deleteCard(cardId);
-            }),
-            {
-              loading: { title: "Deleting Card" },
-              success: { title: "Card deleted successfully" },
-              error: { title: "Failed to delete card" },
-            },
-          );
-        },
-      },
+      description: (
+        <div className="flex flex-col gap-3.5 pt-1">
+          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed">
+            Deleting this card will permanently delete all its associated transactions.
+          </p>
+          <div className="flex items-center justify-end gap-2.5 pt-1">
+            <span
+              role="button"
+              tabIndex={0}
+              data-sileo-button="true"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (toastId) sileo.dismiss(toastId);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (toastId) sileo.dismiss(toastId);
+                }
+              }}
+              className="sileo-action-btn-cancel active:scale-95"
+            >
+              Cancel
+            </span>
+            <span
+              role="button"
+              tabIndex={0}
+              data-sileo-button="true"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (toastId) sileo.dismiss(toastId);
+                sileo.promise(
+                  api.delete(`/api/cards/${cardId}`).then(() => {
+                    deleteCard(cardId);
+                  }),
+                  {
+                    loading: { title: "Deleting Card" },
+                    success: { title: "Card deleted successfully" },
+                    error: { title: "Failed to delete card" },
+                  },
+                );
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (toastId) sileo.dismiss(toastId);
+                  sileo.promise(
+                    api.delete(`/api/cards/${cardId}`).then(() => {
+                      deleteCard(cardId);
+                    }),
+                    {
+                      loading: { title: "Deleting Card" },
+                      success: { title: "Card deleted successfully" },
+                      error: { title: "Failed to delete card" },
+                    },
+                  );
+                }
+              }}
+              className="sileo-action-btn-danger active:scale-95"
+            >
+              Delete Card
+            </span>
+          </div>
+        </div>
+      ),
     });
   };
 
@@ -126,25 +178,55 @@ export function Home() {
 
   const handleDeleteAllUnmatched = () => {
     const count = unmatchedItems.length;
-    sileo.action({
+    let toastId = "";
+    toastId = sileo.action({
       title: "Delete unmatched transactions?",
-      description: `Permanently delete all ${count} unmatched transaction${count !== 1 ? "s" : ""}?`,
-      button: {
-        title: "Delete All",
-        onClick: () => {
-          sileo.promise(
-            api.delete("/api/unmatched/all").then(() => {
-              dismissAllUnmatched();
-              setDrawerOpen(false);
-            }),
-            {
-              loading: { title: "Deleting transactions..." },
-              success: { title: "All unmatched transactions deleted" },
-              error: { title: "Failed to delete unmatched transactions" },
-            },
-          );
-        },
-      },
+      description: (
+        <div className="flex flex-col gap-3.5 pt-1">
+          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed">
+            Permanently delete all {count} unmatched transaction{count !== 1 ? "s" : ""}?
+          </p>
+          <div className="flex items-center justify-end gap-2.5 pt-1">
+            <span
+              role="button"
+              tabIndex={0}
+              data-sileo-button="true"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (toastId) sileo.dismiss(toastId);
+              }}
+              className="sileo-action-btn-cancel active:scale-95"
+            >
+              Cancel
+            </span>
+            <span
+              role="button"
+              tabIndex={0}
+              data-sileo-button="true"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (toastId) sileo.dismiss(toastId);
+                sileo.promise(
+                  api.delete("/api/unmatched/all").then(() => {
+                    dismissAllUnmatched();
+                    setDrawerOpen(false);
+                  }),
+                  {
+                    loading: { title: "Deleting transactions..." },
+                    success: { title: "All unmatched transactions deleted" },
+                    error: { title: "Failed to delete unmatched transactions" },
+                  },
+                );
+              }}
+              className="sileo-action-btn-danger active:scale-95"
+            >
+              Delete All
+            </span>
+          </div>
+        </div>
+      ),
     });
   };
 
@@ -173,7 +255,7 @@ export function Home() {
             ) : googleStatus.connected ? (
               <>
                 <div className="flex items-center gap-1.5 text-neutral-800 font-medium max-w-full flex-wrap">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <HugeIcon icon={CheckmarkCircle02Icon} size={14} className="text-emerald-600 shrink-0" />
                   <span className="break-all">
                     Account connected to{" "}
                     <strong className="font-mono text-neutral-950 font-semibold break-all">
@@ -196,7 +278,7 @@ export function Home() {
                 className="inline-flex items-center gap-1.5 text-neutral-600 hover:text-neutral-950 font-medium transition-colors cursor-pointer group"
               >
                 <span>Connect your Gmail account</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <HugeIcon icon={ArrowRight01Icon} size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             )}
           </div>

@@ -281,7 +281,7 @@ export function SidebarDemo({ children }) {
       {/* Desktop Collapsible Sidebar */}
       <Sidebar open={open} setOpen={setOpen}>
         <DesktopSidebar className="justify-between gap-10">
-          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          <div className="flex flex-1 flex-col">
             {/* Top Brand Logo & Toggle Button */}
             <div
               className={cn(
@@ -290,12 +290,15 @@ export function SidebarDemo({ children }) {
               )}
             >
               {open && (
-                <div
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.15, delay: 0.08 }}
                   className="cursor-pointer overflow-hidden flex items-center"
                   onClick={() => navigate("/dashboard")}
                 >
                   <BrandLogo size="sm" />
-                </div>
+                </motion.div>
               )}
 
               <div className="relative group/toggle shrink-0">
@@ -312,7 +315,7 @@ export function SidebarDemo({ children }) {
                   )}
                 </button>
                 {!open && (
-                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/toggle:flex items-center z-50 whitespace-nowrap">
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 opacity-0 group-hover/toggle:opacity-100 transition-opacity duration-150 hidden md:flex items-center z-50 whitespace-nowrap">
                     <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800">
                       Expand sidebar
                     </div>
@@ -354,6 +357,7 @@ function UserProfileDropdown({ user, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const { open: sidebarOpen } = useSidebar();
 
   useEffect(() => {
@@ -375,16 +379,23 @@ function UserProfileDropdown({ user, onLogout }) {
     };
   }, [menuOpen]);
 
-  const displayName = user?.name || user?.username || "User";
-  const userInitials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const currentUser = user || authUser;
+  const displayName =
+    currentUser?.name ||
+    currentUser?.username ||
+    (currentUser?.email ? currentUser.email.split("@")[0] : "Card Member");
+
+  const userInitials =
+    displayName
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
 
   return (
-    <div ref={menuRef} className="relative w-full group/profile">
+    <div ref={menuRef} className="relative w-full group">
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -405,9 +416,9 @@ function UserProfileDropdown({ user, onLogout }) {
                 setMenuOpen(false);
                 navigate("/profile");
               }}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group text-left"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group/item text-left"
             >
-              <IconUser className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors shrink-0" />
+              <IconUser className="w-4 h-4 text-neutral-400 group-hover/item:text-white transition-colors shrink-0" />
               <span>Profile</span>
             </button>
             <button
@@ -416,9 +427,9 @@ function UserProfileDropdown({ user, onLogout }) {
                 setMenuOpen(false);
                 navigate("/settings");
               }}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group text-left"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group/item text-left"
             >
-              <IconSettings className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors shrink-0" />
+              <IconSettings className="w-4 h-4 text-neutral-400 group-hover/item:text-white transition-colors shrink-0" />
               <span>Settings</span>
             </button>
             <button
@@ -427,9 +438,9 @@ function UserProfileDropdown({ user, onLogout }) {
                 setMenuOpen(false);
                 onLogout();
               }}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group text-left"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer group/item text-left"
             >
-              <IconArrowLeft className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors shrink-0" />
+              <IconArrowLeft className="w-4 h-4 text-neutral-400 group-hover/item:text-white transition-colors shrink-0" />
               <span>Log out</span>
             </button>
           </motion.div>
@@ -440,7 +451,7 @@ function UserProfileDropdown({ user, onLogout }) {
         type="button"
         onClick={() => setMenuOpen((prev) => !prev)}
         className={cn(
-          "flex items-center w-full rounded-xl transition-all duration-150 cursor-pointer text-left group",
+          "flex items-center w-full rounded-xl transition-all duration-150 cursor-pointer text-left",
           sidebarOpen ? "gap-3 px-3 py-2.5" : "justify-center py-2.5 px-0",
           menuOpen
             ? "bg-[#111215] text-[#f2eee5] shadow-xs"
@@ -455,9 +466,9 @@ function UserProfileDropdown({ user, onLogout }) {
               : "bg-[#111215] text-[#f2eee5]",
           )}
         >
-          {user?.picture || user?.avatar ? (
+          {currentUser?.picture || currentUser?.avatar ? (
             <img
-              src={user.picture || user.avatar}
+              src={currentUser.picture || currentUser.avatar}
               alt={displayName}
               className="w-full h-full object-cover"
             />
@@ -467,13 +478,36 @@ function UserProfileDropdown({ user, onLogout }) {
         </div>
 
         {sidebarOpen && (
-          <span className="text-sm tracking-tight whitespace-nowrap truncate flex-1 font-medium text-neutral-800 transition-colors">
-            {displayName}
-          </span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, delay: 0.08 }}
+            className="flex flex-col min-w-0 flex-1 overflow-hidden"
+          >
+            <span
+              className={cn(
+                "text-sm font-semibold tracking-tight whitespace-nowrap truncate transition-colors",
+                menuOpen ? "text-[#f2eee5]" : "text-neutral-900",
+              )}
+            >
+              {displayName}
+            </span>
+            <span
+              className={cn(
+                "text-[11px] font-mono whitespace-nowrap truncate transition-colors",
+                menuOpen ? "text-neutral-400" : "text-neutral-500",
+              )}
+            >
+              {currentUser?.email || (currentUser?.username ? `@${currentUser.username}` : "Member")}
+            </span>
+          </motion.div>
         )}
 
         {sidebarOpen && (
-          <span
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, delay: 0.08 }}
             className={cn(
               "shrink-0 transition-colors",
               menuOpen
@@ -482,14 +516,17 @@ function UserProfileDropdown({ user, onLogout }) {
             )}
           >
             <IconSelector className="w-4 h-4" />
-          </span>
+          </motion.span>
         )}
       </button>
 
       {!sidebarOpen && !menuOpen && (
-        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden md:group-hover/profile:flex items-center z-50 whitespace-nowrap">
-          <div className="rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800">
-            {displayName}
+        <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150 hidden md:flex items-center z-50 whitespace-nowrap">
+          <div className="rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white shadow-xl border border-neutral-800 flex flex-col gap-0.5">
+            <span className="font-semibold text-white">{displayName}</span>
+            {currentUser?.email && (
+              <span className="text-[10px] text-neutral-400 font-mono">{currentUser.email}</span>
+            )}
           </div>
         </div>
       )}

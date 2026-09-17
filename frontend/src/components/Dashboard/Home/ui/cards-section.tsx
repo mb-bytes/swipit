@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
+import { CreditCardIcon, Edit02Icon, Delete02Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { AddCardSquare } from "./add-card-square";
 import { CreditCard } from "@/components/Signup/credit-card";
 import { AddCardModal } from "./add-card-modal";
-import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
 
 export interface CardItem {
@@ -39,17 +40,22 @@ export function CardsSection({
   return (
     <section className="flex flex-col gap-4 w-full">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
-            Your cards
-          </h2>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            {loading ? (
-              <span className="inline-block w-40 h-3 bg-neutral-200/80 rounded animate-pulse align-middle" />
-            ) : (
-              `${cards.length} card${cards.length === 1 ? "" : "s"} tracked for cashback & rewards`
-            )}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+            <HugeIcon icon={CreditCardIcon} size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
+              Your cards
+            </h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              {loading ? (
+                <span className="inline-block w-40 h-3 bg-neutral-200/80 rounded animate-pulse align-middle" />
+              ) : (
+                `${cards.length} card${cards.length === 1 ? "" : "s"} tracked for cashback & rewards`
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -113,11 +119,29 @@ export function CardsSection({
                       type={cardType}
                       width={316}
                     />
-                    <div className="absolute top-2.5 right-2.5 z-20">
-                      <DeleteButton
-                        className="scale-75 origin-top-right shadow-md"
-                        onConfirm={() => onDeleteCard?.(card.id)}
-                      />
+                    <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button
+                        type="button"
+                        title="Edit card"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Edit card clicked", card.id);
+                        }}
+                        className="w-8 h-8 rounded-xl bg-black/85 hover:bg-black border border-neutral-800/80 shadow-md text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                      >
+                        <HugeIcon icon={Edit02Icon} size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete card"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteCard?.(card.id);
+                        }}
+                        className="w-8 h-8 rounded-xl bg-black/85 hover:bg-black border border-neutral-800/80 shadow-md text-[#868593] hover:text-red-400 hover:border-red-900/50 active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                      >
+                        <HugeIcon icon={Delete02Icon} size={15} />
+                      </button>
                     </div>
                   </div>
                 );

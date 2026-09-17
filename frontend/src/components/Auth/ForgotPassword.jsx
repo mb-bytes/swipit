@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, User, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, ShieldCheck, KeyRound, RefreshCw } from "lucide-react";
+import {
+  Mail01Icon,
+  UserIcon,
+  ArrowRight01Icon,
+  ArrowLeft01Icon,
+  CheckmarkCircle02Icon,
+  AlertCircleIcon,
+  ShieldCheckIcon,
+  KeyRoundIcon,
+  Loading03Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { sileo } from "sileo";
 import api from "@/api/axios";
 import { BrandLogo } from "@/components/Landing/Navbar/BrandLogo";
@@ -48,10 +59,10 @@ export function ForgotPassword() {
 
         <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <KeyRound className="h-3 w-3 text-amber-500" /> Instant Reset Link
+            <HugeIcon icon={KeyRoundIcon} size={12} className="text-amber-500" /> Instant Reset Link
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <ShieldCheck className="h-3 w-3 text-emerald-500" /> Encrypted Tokens
+            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> Encrypted Tokens
           </span>
         </div>
 
@@ -191,7 +202,7 @@ function ForgotPasswordForm() {
           to="/login"
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/90 px-3.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-white hover:border-neutral-400 active:scale-95"
         >
-          <ArrowLeft className="h-3 w-3" />
+          <HugeIcon icon={ArrowLeft01Icon} size={12} />
           <span>Back to Sign In</span>
         </Link>
       </div>
@@ -220,7 +231,7 @@ function ForgotPasswordForm() {
                   : "text-neutral-600 hover:text-neutral-900"
               }`}
             >
-              <Mail className="h-3.5 w-3.5" />
+              <HugeIcon icon={Mail01Icon} size={14} />
               <span>By Email</span>
             </button>
             <button
@@ -232,7 +243,7 @@ function ForgotPasswordForm() {
                   : "text-neutral-600 hover:text-neutral-900"
               }`}
             >
-              <User className="h-3.5 w-3.5" />
+              <HugeIcon icon={UserIcon} size={14} />
               <span>By Username</span>
             </button>
           </div>
@@ -260,14 +271,14 @@ function ForgotPasswordForm() {
                   className="h-9 pl-8 border-neutral-300/80 bg-white text-xs shadow-2xs focus-visible:border-neutral-900"
                 />
                 {mode === "email" ? (
-                  <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+                  <HugeIcon icon={Mail01Icon} size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
                 ) : (
-                  <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+                  <HugeIcon icon={UserIcon} size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
                 )}
               </div>
               {inputError && (
                 <div className="flex items-start gap-1.5 text-[11px] text-red-600 mt-1">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  <HugeIcon icon={AlertCircleIcon} size={14} className="shrink-0 mt-0.5" />
                   <div className="flex flex-col">
                     <span>{inputError}</span>
                     {inputError.includes("No SwipIt account found") && (
@@ -290,13 +301,13 @@ function ForgotPasswordForm() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <HugeIcon icon={Loading03Icon} size={14} className="animate-spin" />
                   <span>Verifying & Sending Link...</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
                   <span>Send Reset Instructions</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <HugeIcon icon={ArrowRight01Icon} size={14} />
                 </span>
               )}
             </Button>
@@ -304,8 +315,8 @@ function ForgotPasswordForm() {
         </>
       ) : (
         <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs flex flex-col gap-4 text-center items-center">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 ring-4 ring-emerald-500/10 flex items-center justify-center shadow-2xs">
+            <HugeIcon icon={CheckmarkCircle02Icon} size={24} />
           </div>
 
           <div className="space-y-1">

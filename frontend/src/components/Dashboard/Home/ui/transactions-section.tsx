@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { RefreshCw, Plus, Inbox, Loader2, ChevronRight, CreditCard as CardIcon } from "lucide-react";
+import {
+  RefreshCwIcon,
+  Add01Icon,
+  InboxIcon,
+  Loading03Icon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  Invoice01Icon,
+  Edit02Icon,
+  Delete02Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "boneyard-js/react";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
-import DeleteButton from "@/components/ui/delete-button";
 import { getBankLogo } from "@/lib/bank-logos.js";
 import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import api from "@/api/axios";
@@ -158,16 +168,21 @@ export function TransactionsSection({
   return (
     <section className="flex flex-col gap-4 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
-            Recent Transactions
-          </h2>
-          {isSyncing && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-medium bg-amber-100/90 border border-amber-300/80 px-2.5 py-0.5 rounded-full">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Syncing transactions...
-            </span>
-          )}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+            <HugeIcon icon={Invoice01Icon} size={20} />
+          </div>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#111215]">
+              Recent Transactions
+            </h2>
+            {isSyncing && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-medium bg-amber-100/90 border border-amber-300/80 px-2.5 py-0.5 rounded-full">
+                <HugeIcon icon={Loading03Icon} size={12} className="animate-spin" />
+                Syncing transactions...
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center flex-wrap gap-2 text-xs font-medium text-neutral-600">
@@ -178,8 +193,10 @@ export function TransactionsSection({
             disabled={isSyncing}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 border border-neutral-300/90 hover:bg-neutral-100 hover:text-neutral-900 transition-all shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 text-neutral-700 ${
+            <HugeIcon
+              icon={RefreshCwIcon}
+              size={14}
+              className={`text-neutral-700 ${
                 isSyncing ? "animate-spin text-amber-600" : ""
               }`}
             />
@@ -196,7 +213,7 @@ export function TransactionsSection({
             onClick={() => handleOpenAddModal()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111215] text-[#f8f9fb] hover:bg-neutral-800 transition-all shadow-2xs font-semibold cursor-pointer active:scale-98"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <HugeIcon icon={Add01Icon} size={14} />
             <span>Add Manually</span>
           </button>
         </div>
@@ -254,8 +271,8 @@ export function TransactionsSection({
         >
           {transactions.length === 0 ? (
             <div className="rounded-2xl border border-neutral-200/90 bg-white/70 backdrop-blur-xs p-8 flex flex-col items-center justify-center text-center shadow-2xs">
-              <div className="w-10 h-10 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
-                <Inbox className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-2">
+                <HugeIcon icon={InboxIcon} size={20} />
               </div>
               <p className="text-sm font-semibold text-neutral-800">
                 No Transactions Yet
@@ -314,7 +331,7 @@ export function TransactionsSection({
                                 />
                               ) : (
                                 <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/90 flex items-center justify-center text-neutral-500 shadow-2xs cursor-pointer">
-                                  <CardIcon className="w-3.5 h-3.5" />
+                                  <HugeIcon icon={CreditCardIcon} size={14} />
                                 </div>
                               )}
                               <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/tooltip:block bg-neutral-900 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap z-30 shadow-md">
@@ -332,10 +349,30 @@ export function TransactionsSection({
                             +₹{tx.rewardEarned?.toLocaleString("en-IN") || 0}
                           </td>
                           <td className="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
-                            <DeleteButton
-                              className="scale-75 origin-right opacity-0 group-hover:opacity-100 transition-opacity"
-                              onConfirm={() => handleDelete(tx.id)}
-                            />
+                            <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                title="Edit transaction"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  console.log("Edit transaction clicked", tx.id);
+                                }}
+                                className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                              >
+                                <HugeIcon icon={Edit02Icon} size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                title="Delete transaction"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(tx.id);
+                                }}
+                                className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-red-400 hover:border-red-900/50 active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                              >
+                                <HugeIcon icon={Delete02Icon} size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -354,7 +391,7 @@ export function TransactionsSection({
                     className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black transition-colors cursor-pointer group"
                   >
                     View all spends
-                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    <HugeIcon icon={ChevronRightIcon} size={14} className="group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </div>
               )}

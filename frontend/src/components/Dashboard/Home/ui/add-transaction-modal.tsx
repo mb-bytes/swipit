@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Receipt, Sparkles, Loader2 } from "lucide-react";
+import { Cancel01Icon, Invoice01Icon, SparklesIcon, Loading03Icon } from "@hugeicons/core-free-icons";
+import { HugeIcon } from "@/components/ui/huge-icon";
 import { motion, AnimatePresence } from "motion/react";
 import { CardItem } from "./cards-section";
 import { sileo } from "sileo";
@@ -109,12 +110,12 @@ export function AddTransactionModal({
               onClick={onClose}
               className="absolute top-4 right-4 text-neutral-400 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <HugeIcon icon={Cancel01Icon} size={20} />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="rounded-xl bg-amber-400 p-2.5 text-neutral-950 font-bold">
-                <Receipt className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
+                <HugeIcon icon={Invoice01Icon} size={20} />
               </div>
               <div>
                 <h3 className="text-lg font-bold tracking-tight">Add Transaction</h3>
@@ -183,12 +184,12 @@ export function AddTransactionModal({
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <HugeIcon icon={Loading03Icon} size={16} className="animate-spin" />
                     <span>Saving...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <HugeIcon icon={SparklesIcon} size={16} />
                     <span>Add Transaction</span>
                   </>
                 )}
