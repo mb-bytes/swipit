@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
-import { CreditCardIcon, Edit02Icon, Delete02Icon } from "@hugeicons/core-free-icons";
+import { CreditCardIcon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { HugeIcon } from "@/components/ui/huge-icon";
 import { AddCardSquare } from "./add-card-square";
 import { CreditCard } from "@/components/Signup/credit-card";
@@ -120,17 +120,6 @@ export function CardsSection({
                       width={316}
                     />
                     <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <button
-                        type="button"
-                        title="Edit card"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("Edit card clicked", card.id);
-                        }}
-                        className="w-8 h-8 rounded-xl bg-black/85 hover:bg-black border border-neutral-800/80 shadow-md text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
-                      >
-                        <HugeIcon icon={Edit02Icon} size={15} />
-                      </button>
                       <button
                         type="button"
                         title="Delete card"

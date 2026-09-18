@@ -41,6 +41,17 @@
   html {
     @apply font-sans;
   }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 .paper-grain {
@@ -100,7 +111,6 @@
   z-index: 99999 !important;
 }
 
-/* Ensure Sileo dark toast description has a softer, lighter tone than the bold white title */
 [data-sileo-viewport] [data-sileo-description],
 [data-sileo-viewport][data-theme="dark"] [data-sileo-description],
 [data-sileo-viewport][data-theme="light"] [data-sileo-description] {
@@ -108,6 +118,7 @@
   font-size: 0.8875rem !important;
   font-weight: 400 !important;
   line-height: 1.45 !important;
+  text-align: center !important;
 }
 
 [data-sileo-viewport] [data-sileo-title] {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Navbar,
   NavBody,
@@ -37,11 +38,17 @@ export function NavbarDemo() {
         <NavbarLogo />
         <NavItems items={NAV_ITEMS} />
         <div className="flex items-center gap-3">
+          <Link
+            to="/login"
+            className="hidden sm:inline-flex items-center justify-center text-sm font-semibold text-[#0b0f19] px-4 py-2 rounded-full hover:bg-black/5 transition-colors duration-200"
+          >
+            Log in
+          </Link>
           <div className="hidden sm:flex items-center">
             <MetalButton
               text="Unlock the Edge"
-              height={38}
-              width={154}
+              height={44}
+              width={174}
               showIcon={true}
             />
           </div>
@@ -73,12 +80,19 @@ export function NavbarDemo() {
               </a>
             ))}
           </div>
-          <div className="pt-3 border-t border-neutral-300/80 flex flex-col gap-3">
+          <div className="pt-3 border-t border-neutral-300/80 flex flex-col gap-2.5">
+            <Link
+              to="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full py-2.5 text-center text-sm font-semibold text-[#0b0f19] rounded-xl hover:bg-black/5 transition-colors"
+            >
+              Log in
+            </Link>
             <div className="flex justify-center w-full">
               <MetalButton
                 text="Unlock the Edge"
-                height={42}
-                width={170}
+                height={46}
+                width={180}
                 className="w-full"
               />
             </div>

@@ -183,7 +183,6 @@ async def get_user_cards(db: AsyncSession = Depends(get_db), current_user=Depend
         })
     return cards
 
-
 @card_router.get("/transactions/recent", summary="List the N most recent transactions (home dashboard)")
 async def get_recent_transactions(
     limit: int = Query(default=5, ge=1, le=50),
@@ -417,6 +416,11 @@ async def update_transaction(
             "transaction_date": (
                 updated.transaction_date.strftime("%d %b %Y")
                 if hasattr(updated.transaction_date, "strftime")
+                else str(updated.transaction_date)
+            ),
+            "raw_date": (
+                updated.transaction_date.isoformat()
+                if hasattr(updated.transaction_date, "isoformat")
                 else str(updated.transaction_date)
             ),
         }

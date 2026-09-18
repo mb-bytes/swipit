@@ -17,6 +17,8 @@ export const OTHER_BANK_OPTIONS = [
   { value: "AU Small Finance Bank", label: "AU Small Finance Bank" },
 ];
 
+export const OTHER_BANKS_DROPDOWN = OTHER_BANK_OPTIONS;
+
 export const DEFAULT_POPULAR_CARDS = [
   { bank: "Axis Bank", name: "Axis Bank Flipkart Credit Card", network: "Visa" },
   { bank: "Federal Bank", name: "Federal Scapia Card", network: "Visa" },

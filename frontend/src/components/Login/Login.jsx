@@ -41,18 +41,6 @@ export function Login() {
           precision.
         </p>
 
-        <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <HugeIcon icon={BarChartIcon} size={12} className="text-amber-500" /> Instant Insights
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <HugeIcon icon={ZapIcon} size={12} className="text-sky-500" /> Real-time Sync
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> Bank Security
-          </span>
-        </div>
-
         <div className="mt-4 text-xs text-neutral-500">
           By signing in, you agree to our{" "}
           <span className="underline underline-offset-2 text-neutral-700 hover:text-black cursor-pointer transition-colors">

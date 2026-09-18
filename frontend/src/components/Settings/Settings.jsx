@@ -60,7 +60,6 @@ export function Settings() {
   const username = user?.username ? `@${user.username}` : "@member";
   const rawUsername = user?.username || "";
   const email = user?.email || "No email linked";
-  const userId = user?.user_id || user?.id || "usr_swipit_active";
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("en-US", {
@@ -121,15 +120,27 @@ export function Settings() {
       return;
     }
     if (passwordForm.newPassword.length < 8) {
-      sileo.error({ title: "Password too short", description: "Must be at least 8 characters" });
+      sileo.error({
+        title: "Password too short",
+        description: "Must be at least 8 characters",
+      });
       return;
     }
-    if (!/[A-Za-z]/.test(passwordForm.newPassword) || !/\d/.test(passwordForm.newPassword)) {
-      sileo.error({ title: "Weak password", description: "Must contain at least one letter and one number" });
+    if (
+      !/[A-Za-z]/.test(passwordForm.newPassword) ||
+      !/\d/.test(passwordForm.newPassword)
+    ) {
+      sileo.error({
+        title: "Weak password",
+        description: "Must contain at least one letter and one number",
+      });
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      sileo.error({ title: "Passwords mismatch", description: "New passwords do not match" });
+      sileo.error({
+        title: "Passwords mismatch",
+        description: "New passwords do not match",
+      });
       return;
     }
     setIsChangingPassword(true);
@@ -140,7 +151,11 @@ export function Settings() {
         confirm_new_password: passwordForm.confirmPassword,
       });
       setShowPasswordModal(false);
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       sileo.success({ title: "Password changed successfully" });
     } catch (err) {
       const msg = err.response?.data?.detail || "Failed to change password";
@@ -191,7 +206,8 @@ export function Settings() {
       setShowDeleteModal(false);
       sileo.success({
         title: "Account deleted",
-        description: "Your account and all associated data have been permanently removed",
+        description:
+          "Your account and all associated data have been permanently removed",
       });
       navigate("/login");
     } catch {
@@ -216,7 +232,8 @@ export function Settings() {
               Account Settings
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-neutral-500 max-w-xl">
-              Personal identity, connected data integrations, and account lifecycle controls.
+              Personal identity, connected data integrations, and account
+              lifecycle controls.
             </p>
           </div>
         </div>
@@ -253,14 +270,21 @@ export function Settings() {
                         }}
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer"
                       >
-                        <HugeIcon icon={Edit02Icon} size={14} className="text-neutral-500" />
+                        <HugeIcon
+                          icon={Edit02Icon}
+                          size={14}
+                          className="text-neutral-500"
+                        />
                         <span>Edit Name</span>
                       </button>
                     )}
                   </div>
 
                   {isEditingName ? (
-                    <form onSubmit={handleSaveName} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <form
+                      onSubmit={handleSaveName}
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1"
+                    >
                       <input
                         type="text"
                         value={nameInput}
@@ -276,7 +300,11 @@ export function Settings() {
                           disabled={isSavingName}
                           className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-50 flex-1 sm:flex-none"
                         >
-                          <HugeIcon icon={Tick02Icon} size={14} className="text-emerald-400" />
+                          <HugeIcon
+                            icon={Tick02Icon}
+                            size={14}
+                            className="text-emerald-400"
+                          />
                           <span>{isSavingName ? "Saving..." : "Save"}</span>
                         </button>
                         <button
@@ -285,7 +313,11 @@ export function Settings() {
                           disabled={isSavingName}
                           className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-neutral-200/70 text-neutral-700 hover:bg-neutral-300 transition-colors cursor-pointer disabled:opacity-50 flex-1 sm:flex-none"
                         >
-                          <HugeIcon icon={Cancel01Icon} size={14} className="text-neutral-500" />
+                          <HugeIcon
+                            icon={Cancel01Icon}
+                            size={14}
+                            className="text-neutral-500"
+                          />
                           <span>Cancel</span>
                         </button>
                       </div>
@@ -300,12 +332,19 @@ export function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                      <HugeIcon icon={Mail01Icon} size={16} className="text-neutral-400 shrink-0" />
+                      <HugeIcon
+                        icon={Mail01Icon}
+                        size={16}
+                        className="text-neutral-400 shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Primary Email
                         </div>
-                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5" title={email}>
+                        <div
+                          className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5"
+                          title={email}
+                        >
                           {email}
                         </div>
                       </div>
@@ -317,7 +356,11 @@ export function Settings() {
                       title="Copy Email"
                     >
                       {copiedField === "Email" ? (
-                        <HugeIcon icon={Tick02Icon} size={14} className="text-emerald-600" />
+                        <HugeIcon
+                          icon={Tick02Icon}
+                          size={14}
+                          className="text-emerald-600"
+                        />
                       ) : (
                         <HugeIcon icon={Copy01Icon} size={14} />
                       )}
@@ -326,12 +369,19 @@ export function Settings() {
 
                   <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                      <HugeIcon icon={UserIcon} size={16} className="text-neutral-400 shrink-0" />
+                      <HugeIcon
+                        icon={UserIcon}
+                        size={16}
+                        className="text-neutral-400 shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Member Handle
                         </div>
-                        <div className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5" title={username}>
+                        <div
+                          className="text-xs font-semibold text-neutral-900 truncate font-mono pt-0.5"
+                          title={username}
+                        >
                           {username}
                         </div>
                       </div>
@@ -343,7 +393,11 @@ export function Settings() {
                       title="Copy Username"
                     >
                       {copiedField === "Username" ? (
-                        <HugeIcon icon={Tick02Icon} size={14} className="text-emerald-600" />
+                        <HugeIcon
+                          icon={Tick02Icon}
+                          size={14}
+                          className="text-emerald-600"
+                        />
                       ) : (
                         <HugeIcon icon={Copy01Icon} size={14} />
                       )}
@@ -354,7 +408,11 @@ export function Settings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                      <HugeIcon icon={LockIcon} size={16} className="text-neutral-400 shrink-0" />
+                      <HugeIcon
+                        icon={LockIcon}
+                        size={16}
+                        className="text-neutral-400 shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Account Password
@@ -367,19 +425,31 @@ export function Settings() {
                     <button
                       type="button"
                       onClick={() => {
-                        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                        setPasswordForm({
+                          currentPassword: "",
+                          newPassword: "",
+                          confirmPassword: "",
+                        });
                         setShowPasswordModal(true);
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shrink-0 shadow-2xs"
                     >
-                      <HugeIcon icon={KeyRoundIcon} size={12} className="text-amber-400" />
+                      <HugeIcon
+                        icon={KeyRoundIcon}
+                        size={12}
+                        className="text-amber-400"
+                      />
                       <span>Change</span>
                     </button>
                   </div>
 
                   <div className="p-3.5 sm:p-4 rounded-xl bg-neutral-50 border border-neutral-200/70 flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                      <HugeIcon icon={Calendar03Icon} size={16} className="text-neutral-400 shrink-0" />
+                      <HugeIcon
+                        icon={Calendar03Icon}
+                        size={16}
+                        className="text-neutral-400 shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-[11px] font-medium text-neutral-500">
                           Member Since
@@ -422,7 +492,11 @@ export function Settings() {
 
                 {googleStatus.connected ? (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 w-fit shrink-0">
-                    <HugeIcon icon={CheckmarkCircle02Icon} size={14} className="text-emerald-600" />
+                    <HugeIcon
+                      icon={CheckmarkCircle02Icon}
+                      size={14}
+                      className="text-emerald-600"
+                    />
                     <span>Connected</span>
                   </div>
                 ) : (
@@ -440,7 +514,10 @@ export function Settings() {
                       <span className="text-[11px] font-medium text-neutral-400">
                         Connected Account
                       </span>
-                      <strong className="font-mono text-neutral-900 font-semibold truncate pt-0.5" title={googleStatus.email}>
+                      <strong
+                        className="font-mono text-neutral-900 font-semibold truncate pt-0.5"
+                        title={googleStatus.email}
+                      >
                         {googleStatus.email}
                       </strong>
                     </div>
@@ -470,7 +547,11 @@ export function Settings() {
                       className="inline-flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-medium"
                     >
                       <span>Google Permissions</span>
-                      <HugeIcon icon={ExternalLinkIcon} size={14} className="text-neutral-400" />
+                      <HugeIcon
+                        icon={ExternalLinkIcon}
+                        size={14}
+                        className="text-neutral-400"
+                      />
                     </a>
 
                     <button
@@ -478,7 +559,11 @@ export function Settings() {
                       onClick={() => setShowRevokeModal(true)}
                       className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/80 transition-colors cursor-pointer shadow-xs w-full sm:w-auto"
                     >
-                      <HugeIcon icon={Unlink01Icon} size={14} className="text-red-600" />
+                      <HugeIcon
+                        icon={Unlink01Icon}
+                        size={14}
+                        className="text-red-600"
+                      />
                       <span>Revoke Access</span>
                     </button>
                   </div>
@@ -486,7 +571,8 @@ export function Settings() {
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-neutral-50 border border-neutral-200/70">
                   <p className="text-xs text-neutral-600 leading-relaxed max-w-sm">
-                    Link your Gmail to enable automatic credit card statement ingestion and instant transaction alerts.
+                    Link your Gmail to enable automatic credit card statement
+                    ingestion and instant transaction alerts.
                   </p>
 
                   <button
@@ -497,7 +583,11 @@ export function Settings() {
                     }}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs w-full sm:w-auto"
                   >
-                    <HugeIcon icon={ArrowUpRight01Icon} size={16} className="text-amber-400" />
+                    <HugeIcon
+                      icon={ArrowUpRight01Icon}
+                      size={16}
+                      className="text-amber-400"
+                    />
                     <span>Connect Gmail</span>
                   </button>
                 </div>
@@ -508,7 +598,11 @@ export function Settings() {
               <div className="flex items-center justify-between pb-3 border-b border-red-100 flex-wrap gap-2">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-11 h-11 rounded-full bg-red-50 border border-red-200/80 flex items-center justify-center shrink-0 shadow-xs ring-4 ring-red-500/10">
-                    <HugeIcon icon={ShieldAlertIcon} size={20} className="text-red-600" />
+                    <HugeIcon
+                      icon={ShieldAlertIcon}
+                      size={20}
+                      className="text-red-600"
+                    />
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-base font-bold text-red-950 truncate">
@@ -531,7 +625,8 @@ export function Settings() {
                     Delete Account & Purge Telemetry
                   </div>
                   <div className="text-[11px] text-red-700/80 leading-relaxed">
-                    Permanently delete your profile, cards, transactions, and integrations. This cannot be recovered.
+                    Permanently delete your profile, cards, transactions, and
+                    integrations. This cannot be recovered.
                   </div>
                 </div>
 
@@ -565,7 +660,11 @@ export function Settings() {
               <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center shrink-0 shadow-2xs">
-                    <HugeIcon icon={KeyRoundIcon} size={20} className="text-neutral-800" />
+                    <HugeIcon
+                      icon={KeyRoundIcon}
+                      size={20}
+                      className="text-neutral-800"
+                    />
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-neutral-900">
@@ -585,7 +684,10 @@ export function Settings() {
                 </button>
               </div>
 
-              <form onSubmit={handleChangePassword} className="flex flex-col gap-3.5 pt-1">
+              <form
+                onSubmit={handleChangePassword}
+                className="flex flex-col gap-3.5 pt-1"
+              >
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-neutral-700">
                     Current Password
@@ -595,7 +697,10 @@ export function Settings() {
                       type={showCurrentPassword ? "text" : "password"}
                       value={passwordForm.currentPassword}
                       onChange={(e) =>
-                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                        setPasswordForm({
+                          ...passwordForm,
+                          currentPassword: e.target.value,
+                        })
                       }
                       placeholder="Enter current password"
                       required
@@ -603,7 +708,9 @@ export function Settings() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-0.5 cursor-pointer"
                     >
                       {showCurrentPassword ? (
@@ -624,7 +731,10 @@ export function Settings() {
                       type={showNewPassword ? "text" : "password"}
                       value={passwordForm.newPassword}
                       onChange={(e) =>
-                        setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                        setPasswordForm({
+                          ...passwordForm,
+                          newPassword: e.target.value,
+                        })
                       }
                       placeholder="At least 8 chars, letters & numbers"
                       required
@@ -653,7 +763,10 @@ export function Settings() {
                     type="password"
                     value={passwordForm.confirmPassword}
                     onChange={(e) =>
-                      setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      setPasswordForm({
+                        ...passwordForm,
+                        confirmPassword: e.target.value,
+                      })
                     }
                     placeholder="Re-enter new password"
                     required
@@ -676,7 +789,9 @@ export function Settings() {
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
                   >
                     <HugeIcon icon={KeyRoundIcon} size={14} />
-                    <span>{isChangingPassword ? "Updating..." : "Update Password"}</span>
+                    <span>
+                      {isChangingPassword ? "Updating..." : "Update Password"}
+                    </span>
                   </button>
                 </div>
               </form>
@@ -697,7 +812,11 @@ export function Settings() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs ring-4 ring-amber-500/10">
-                  <HugeIcon icon={AlertCircleIcon} size={20} className="text-amber-600" />
+                  <HugeIcon
+                    icon={AlertCircleIcon}
+                    size={20}
+                    className="text-amber-600"
+                  />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-neutral-900">
@@ -711,10 +830,12 @@ export function Settings() {
 
               <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200/70 text-xs text-neutral-600 leading-relaxed flex flex-col gap-2">
                 <p>
-                  Disconnecting Gmail will prevent SwipIt from automatically parsing new credit card statements and transaction alerts.
+                  Disconnecting Gmail will prevent SwipIt from automatically
+                  parsing new credit card statements and transaction alerts.
                 </p>
                 <p className="text-neutral-500 font-medium">
-                  Your existing cards and saved transactions will remain in your portfolio. You can reconnect at any time.
+                  Your existing cards and saved transactions will remain in your
+                  portfolio. You can reconnect at any time.
                 </p>
               </div>
 
@@ -754,7 +875,11 @@ export function Settings() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-red-50 border border-red-200 flex items-center justify-center shrink-0 shadow-2xs ring-4 ring-red-500/10">
-                  <HugeIcon icon={ShieldAlertIcon} size={20} className="text-red-600" />
+                  <HugeIcon
+                    icon={ShieldAlertIcon}
+                    size={20}
+                    className="text-red-600"
+                  />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-neutral-900">
@@ -780,7 +905,11 @@ export function Settings() {
 
               <div className="flex flex-col gap-1.5 pt-1">
                 <label className="text-xs font-semibold text-neutral-700">
-                  To confirm, type <span className="font-mono text-neutral-950 bg-neutral-100 px-1.5 py-0.5 rounded-md font-bold">{rawUsername || "DELETE"}</span> below:
+                  To confirm, type{" "}
+                  <span className="font-mono text-neutral-950 bg-neutral-100 px-1.5 py-0.5 rounded-md font-bold">
+                    {rawUsername || "DELETE"}
+                  </span>{" "}
+                  below:
                 </label>
                 <input
                   type="text"
@@ -809,7 +938,9 @@ export function Settings() {
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <HugeIcon icon={Delete02Icon} size={14} />
-                  <span>{isDeleting ? "Deleting..." : "Permanently Delete"}</span>
+                  <span>
+                    {isDeleting ? "Deleting..." : "Permanently Delete"}
+                  </span>
                 </button>
               </div>
             </motion.div>

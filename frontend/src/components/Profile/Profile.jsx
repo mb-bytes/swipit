@@ -178,7 +178,6 @@ export function Profile() {
             </motion.div>
           </div>
 
-          {/* Row 1 - Right: Gmail Ingestion */}
           <div className="lg:col-span-7 flex flex-col">
             <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col justify-between h-full gap-3.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

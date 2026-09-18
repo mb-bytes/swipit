@@ -209,6 +209,11 @@ class CardService:
         protected_fields = {"transaction_id", "card_id", "raw_email_id"}
         for key, value in update_details.items():
             if key not in protected_fields and hasattr(transaction, key):
+                if key == "transaction_date" and isinstance(value, str):
+                    try:
+                        value = date_type.fromisoformat(value)
+                    except ValueError:
+                        pass
                 setattr(transaction, key, value)
         await db.commit()
         await db.refresh(transaction)

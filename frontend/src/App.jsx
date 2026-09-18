@@ -10,7 +10,7 @@ export function App() {
           fill: "#111215",
           styles: {
             title: "font-bold text-white text-[15px]",
-            description: "text-neutral-300 text-[14px] font-normal leading-relaxed",
+            description: "text-neutral-300 text-[14px] font-normal leading-relaxed text-center",
           },
         }}
       />

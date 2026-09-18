@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   RefreshCwIcon,
   Add01Icon,
@@ -13,20 +13,22 @@ import {
   Delete02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeIcon } from "@/components/ui/huge-icon";
-import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "boneyard-js/react";
 import { CardItem } from "./cards-section";
 import { AddTransactionModal, TransactionItem } from "./add-transaction-modal";
+import { EditTransactionModal } from "./edit-transaction-modal";
 import { getBankLogo } from "@/lib/bank-logos.js";
 import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import api from "@/api/axios";
 import { sileo } from "sileo";
+import { useDashboard } from "@/contexts/DashboardContext";
 
 interface TransactionsSectionProps {
   transactions: TransactionItem[];
   loading?: boolean;
   onAddTransaction: (txn: TransactionItem) => void;
+  onUpdateTransaction?: (txn: TransactionItem) => void;
   onDeleteTransaction?: (transactionId: string) => void | Promise<void>;
   onRefreshTransactions?: () => void | Promise<void>;
   cards: CardItem[];
@@ -38,6 +40,7 @@ export function TransactionsSection({
   transactions,
   loading = false,
   onAddTransaction,
+  onUpdateTransaction,
   onDeleteTransaction,
   onRefreshTransactions,
   cards,
@@ -45,97 +48,11 @@ export function TransactionsSection({
   showViewAll = true,
 }: TransactionsSectionProps) {
   const navigate = useNavigate();
+  const dashboard = useDashboard() as any;
+  const isSyncing = dashboard?.isSyncing ?? false;
+  const startSyncLast5Days = dashboard?.startSyncLast5Days;
   const [modalOpen, setModalOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, []);
-
-  const pollTaskStatus = (taskId: string) => {
-    let attempts = 0;
-    const maxAttempts = 60;
-
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-    }
-
-    pollIntervalRef.current = setInterval(async () => {
-      attempts += 1;
-      try {
-        const res = await api.get(`/api/gmail/task/${taskId}`);
-        const status = res.data?.status;
-
-        if (status === "SUCCESS") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          await onRefreshTransactions?.();
-          sileo.success({
-            title: "Transactions Synced",
-            description: "Last 5 days of transactions have been synced successfully.",
-          });
-        } else if (status === "FAILURE") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          sileo.error({
-            title: "Sync Failed",
-            description: res.data?.error || "Failed to sync transactions from Gmail.",
-          });
-        } else if (attempts >= maxAttempts) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          await onRefreshTransactions?.();
-        }
-      } catch {
-        if (attempts >= maxAttempts) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-        }
-      }
-    }, 2000);
-  };
-
-  const startSyncLast5Days = async () => {
-    if (cards.length === 0) {
-      sileo.info({
-        title: "No Cards Found",
-        description: "Add at least one card before syncing transactions.",
-      });
-      return;
-    }
-
-    if (!googleConnected) {
-      sileo.info({
-        title: "Gmail Not Connected",
-        description: "Connect your Gmail account to sync bank alerts automatically.",
-      });
-      window.location.href = "http://localhost:8000/auth/google/login?action=connect";
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      const res = await api.post("/api/gmail/sync-last-5-days");
-      const taskId = res.data?.task_id;
-      if (taskId) {
-        pollTaskStatus(taskId);
-      } else {
-        setTimeout(() => setIsSyncing(false), 2000);
-      }
-    } catch (err: any) {
-      setIsSyncing(false);
-      const detail = err?.response?.data?.detail;
-      sileo.error({
-        title: "Sync Error",
-        description: detail || "Could not initiate Gmail sync. Please try again.",
-      });
-    }
-  };
+  const [editingTransaction, setEditingTransaction] = useState<string | null>(null);
 
   const handleOpenAddModal = () => {
     if (cards.length === 0) {
@@ -355,7 +272,7 @@ export function TransactionsSection({
                                 title="Edit transaction"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  console.log("Edit transaction clicked", tx.id);
+                                  setEditingTransaction(tx.id);
                                 }}
                                 className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
                               >
@@ -405,6 +322,18 @@ export function TransactionsSection({
         onClose={() => setModalOpen(false)}
         cards={cards}
         onTransactionAdded={onAddTransaction}
+      />
+
+      <EditTransactionModal
+        isOpen={Boolean(editingTransaction)}
+        onClose={() => setEditingTransaction(null)}
+        transaction={transactions.find((t) => t.id === editingTransaction) || null}
+        transactionId={editingTransaction}
+        cards={cards}
+        onTransactionUpdated={async (updatedTxn) => {
+          onUpdateTransaction?.(updatedTxn);
+          await onRefreshTransactions?.();
+        }}
       />
     </section>
   );

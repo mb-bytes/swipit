@@ -73,7 +73,7 @@ export function Home() {
       title: "Delete Card?",
       description: (
         <div className="flex flex-col gap-3.5 pt-1">
-          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed">
+          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed text-center">
             Deleting this card will permanently delete all its associated transactions.
           </p>
           <div className="flex items-center justify-end gap-2.5 pt-1">
@@ -145,6 +145,10 @@ export function Home() {
     addTransaction(newTxn);
   };
 
+  const handleUpdateTransaction = () => {
+    fetchAll(displayName);
+  };
+
   const handleDeleteTransaction = async (transactionId) => {
     deleteTransaction(transactionId);
     try {
@@ -183,7 +187,7 @@ export function Home() {
       title: "Delete unmatched transactions?",
       description: (
         <div className="flex flex-col gap-3.5 pt-1">
-          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed">
+          <p className="text-[14px] font-normal text-neutral-300 leading-relaxed text-center">
             Permanently delete all {count} unmatched transaction{count !== 1 ? "s" : ""}?
           </p>
           <div className="flex items-center justify-end gap-2.5 pt-1">
@@ -311,6 +315,7 @@ export function Home() {
           transactions={transactions.slice(0, 5)}
           loading={loading}
           onAddTransaction={handleAddTransaction}
+          onUpdateTransaction={handleUpdateTransaction}
           onDeleteTransaction={handleDeleteTransaction}
           onRefreshTransactions={() => fetchAll(displayName)}
           cards={cards}

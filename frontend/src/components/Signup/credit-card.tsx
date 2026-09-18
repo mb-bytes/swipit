@@ -82,9 +82,21 @@ const styles = sortCx({
         footerText: "text-white",
         paypassIcon: "text-white",
     },
+    terracotta: {
+        root: "bg-linear-to-tr from-[#2d0f14] via-[#4d1620] to-[#1f090d] text-white before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-rose-400/25 before:ring-inset shadow-2xl",
+        company: "text-amber-100",
+        footerText: "text-rose-100",
+        paypassIcon: "text-amber-200",
+    },
+    cobalt: {
+        root: "bg-linear-to-tr from-[#051524] via-[#0a2540] to-[#020b12] text-white before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-sky-400/25 before:ring-inset shadow-2xl",
+        company: "text-sky-100",
+        footerText: "text-sky-100",
+        paypassIcon: "text-sky-200",
+    },
 });
 
-const _NORMAL_TYPES = ["transparent", "transparent-gradient", "brand-dark", "brand-light", "gray-dark", "gray-light"] as const;
+const _NORMAL_TYPES = ["transparent", "transparent-gradient", "brand-dark", "brand-light", "gray-dark", "gray-light", "terracotta", "cobalt"] as const;
 const STRIP_TYPES = ["transparent-strip", "gray-strip", "gradient-strip", "salmon-strip"] as const;
 const VERTICAL_STRIP_TYPES = ["gray-strip-vertical", "gradient-strip-vertical", "salmon-strip-vertical"] as const;
 
@@ -103,6 +115,7 @@ interface CreditCardProps {
     fullWidth?: boolean;
     className?: string;
     showIcons?: boolean;
+    noShadow?: boolean;
 }
 
 const ORIGINAL_WIDTH = 300;
@@ -130,6 +143,7 @@ export const CreditCard = ({
     fullWidth = false,
     className,
     showIcons = false,
+    noShadow = false,
 }: CreditCardProps) => {
     const originalWidth = ORIGINAL_WIDTH;
     const originalHeight = ORIGINAL_HEIGHT;
@@ -145,15 +159,16 @@ export const CreditCard = ({
         return calculateScale(width, originalWidth, originalHeight);
     }, [width]);
 
-    const isDarkType = type === "gray-dark" || type === "brand-dark" || type === "transparent" || type === "transparent-gradient";
+    const isDarkType = type === "gray-dark" || type === "brand-dark" || type === "terracotta" || type === "cobalt" || type === "transparent" || type === "transparent-gradient";
     const resolvedLogo = logo || getBankLogo(company);
 
     if (fullWidth) {
         return (
             <div
                 className={cx(
-                    "relative flex flex-col justify-between w-full h-full min-h-[210px] overflow-hidden rounded-2xl p-5 shadow-2xl transition-all duration-300 select-none",
-                    styles[type].root,
+                    "relative flex flex-col justify-between w-full h-full min-h-[210px] overflow-hidden rounded-2xl p-5 transition-all duration-300 select-none",
+                    !noShadow && "shadow-2xl",
+                    noShadow ? styles[type].root.replace(/shadow-(2xl|xl)/g, "") : styles[type].root,
                     className
                 )}
             >
@@ -267,7 +282,7 @@ export const CreditCard = ({
                     width: `${originalWidth}px`,
                     height: `${originalHeight}px`,
                 }}
-                className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4.5 shadow-2xl transition-all duration-300", styles[type].root)}
+                className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4.5 transition-all duration-300", !noShadow && "shadow-2xl", noShadow ? styles[type].root.replace(/shadow-(2xl|xl)/g, "") : styles[type].root)}
             >
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2 bg-neutral-800"></div>

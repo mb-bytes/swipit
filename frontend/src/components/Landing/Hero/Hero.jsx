@@ -1,6 +1,7 @@
 import { MetalButton } from "@/components/Landing/Navbar/MetalButton";
-import { HeroPocketCard } from "./HeroPocketCard";
+import { HeroCardPlateStack } from "./HeroCardPlateStack";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import { FlickerText } from "@/components/ui/flicker-text";
 
 export function Hero() {
   return (
@@ -12,9 +13,47 @@ export function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           <div className="lg:col-span-6 flex flex-col items-start text-left">
             <ScrollReveal delay={0.1} y={20}>
-              <h1 className="text-5xl sm:text-7xl lg:text-[5.2rem] font-bold tracking-[-0.04em] text-[#0b0f19] leading-[1.03]">
-                Systematize <br />
-                Every Swipe.
+              <h1 className="text-5xl sm:text-7xl lg:text-[5.2rem] font-bold tracking-[-0.04em] text-[#0b0f19] leading-[1.03] flex flex-col">
+                <FlickerText
+                  text="Systematize"
+                  tag="span"
+                  fontColor="#0b0f19"
+                  textEnterFlickerEnabled={true}
+                  textHoverFlickerEnabled={false}
+                  flicker={{
+                    position: "above",
+                    replay: "no",
+                    restState: "filled",
+                    delay: 0.1,
+                    ease: { type: "tween", duration: 1.2, ease: "easeInOut" },
+                    flickerCount: 6,
+                    showStroke: false,
+                    wordFlickerEnabled: true,
+                    letterFlickerEnabled: false,
+                    strokeColor: "#0b0f19",
+                  }}
+                  className="text-5xl sm:text-7xl lg:text-[5.2rem] font-bold tracking-[-0.04em] text-[#0b0f19] leading-[1.03]"
+                />
+                <FlickerText
+                  text="Every Swipe."
+                  tag="span"
+                  fontColor="#0b0f19"
+                  textEnterFlickerEnabled={true}
+                  textHoverFlickerEnabled={false}
+                  flicker={{
+                    position: "above",
+                    replay: "no",
+                    restState: "filled",
+                    delay: 0.28,
+                    ease: { type: "tween", duration: 1.4, ease: "easeInOut" },
+                    flickerCount: 7,
+                    showStroke: false,
+                    wordFlickerEnabled: true,
+                    letterFlickerEnabled: false,
+                    strokeColor: "#0b0f19",
+                  }}
+                  className="text-5xl sm:text-7xl lg:text-[5.2rem] font-bold tracking-[-0.04em] text-[#0b0f19] leading-[1.03]"
+                />
               </h1>
             </ScrollReveal>
 
@@ -39,7 +78,7 @@ export function Hero() {
           <div className="lg:col-span-6 w-full flex items-center justify-center">
             <div className="w-full relative">
               <ScrollReveal delay={0.2} y={20}>
-                <HeroPocketCard />
+                <HeroCardPlateStack />
               </ScrollReveal>
             </div>
           </div>
@@ -50,3 +89,4 @@ export function Hero() {
 }
 
 export default Hero;
+

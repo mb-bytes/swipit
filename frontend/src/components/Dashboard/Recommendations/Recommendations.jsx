@@ -90,7 +90,7 @@ export function Recommendations() {
 
   return (
     <div className="flex flex-1 h-full min-h-0 min-w-0 overflow-hidden">
-      <div className="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3.5 sm:p-5 md:p-8 paper-grain overflow-y-auto min-h-0">
+      <div className="flex h-full w-full flex-1 flex-col gap-3 sm:gap-5 rounded-tl-none md:rounded-tl-2xl border-l-0 md:border-l border-t-0 md:border-t border-neutral-300/80 bg-[#f8f9fb] p-3 sm:p-5 md:p-6 paper-grain overflow-y-auto min-h-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 pt-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">

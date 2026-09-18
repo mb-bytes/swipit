@@ -18,10 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  AuthShell,
-  useAuthTypingImpulse,
-} from "./AuthShell";
+import { AuthShell, useAuthTypingImpulse } from "./AuthShell";
 import {
   bumpParticleTypingImpulse,
   pulseParticleSubmitImpulse,
@@ -56,16 +53,9 @@ export function Signup() {
 
       <div className="max-w-md">
         <p className="font-heading text-base sm:text-lg font-medium leading-snug text-[#111215]">
-          Every swipe, maximized. Real-time rewards intelligence and instant clarity across your finances.
+          Every swipe, maximized. Real-time rewards intelligence and instant
+          clarity across your finances.
         </p>
-        <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono text-neutral-600">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <HugeIcon icon={ZapIcon} size={12} className="text-sky-500" /> Instant Sync
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-300/80 bg-white/80 shadow-2xs">
-            <HugeIcon icon={ShieldCheckIcon} size={12} className="text-emerald-500" /> Bank Security
-          </span>
-        </div>
 
         <div className="mt-4 text-xs text-neutral-500">
           By signing up, you agree to our{" "}
@@ -151,7 +141,8 @@ function SignupForm({ onNameChange }) {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href = "http://localhost:8000/auth/google/login?action=login";
+    window.location.href =
+      "http://localhost:8000/auth/google/login?action=login";
   };
 
   const handleSubmit = async (e) => {
@@ -181,11 +172,17 @@ function SignupForm({ onNameChange }) {
     setIsSubmitting(true);
 
     try {
-      const res = await signup(name.trim(), username.trim(), email.trim(), password);
+      const res = await signup(
+        name.trim(),
+        username.trim(),
+        email.trim(),
+        password,
+      );
       if (res && res.success) {
         sileo.success({
           title: "Account created!",
-          description: res.message || "Your account has been created successfully.",
+          description:
+            res.message || "Your account has been created successfully.",
         });
         setTimeout(() => {
           navigate("/dashboard");
@@ -239,7 +236,10 @@ function SignupForm({ onNameChange }) {
       <form onSubmit={handleSubmit} noValidate className="space-y-2.5">
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="signup-name" className="text-xs font-medium text-neutral-700">
+            <Label
+              htmlFor="signup-name"
+              className="text-xs font-medium text-neutral-700"
+            >
               Full Name
             </Label>
             {touched.name && !nameError && name && (
@@ -271,7 +271,10 @@ function SignupForm({ onNameChange }) {
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="signup-username" className="text-xs font-medium text-neutral-700">
+            <Label
+              htmlFor="signup-username"
+              className="text-xs font-medium text-neutral-700"
+            >
               Username
             </Label>
             {touched.username && !usernameError && username && (
@@ -303,7 +306,10 @@ function SignupForm({ onNameChange }) {
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="signup-email" className="text-xs font-medium text-neutral-700">
+            <Label
+              htmlFor="signup-email"
+              className="text-xs font-medium text-neutral-700"
+            >
               Email Address
             </Label>
             {touched.email && !emailError && email && (
@@ -335,7 +341,10 @@ function SignupForm({ onNameChange }) {
 
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="signup-password" className="text-xs font-medium text-neutral-700">
+            <Label
+              htmlFor="signup-password"
+              className="text-xs font-medium text-neutral-700"
+            >
               Password
             </Label>
             {touched.password && !passwordError && password && (

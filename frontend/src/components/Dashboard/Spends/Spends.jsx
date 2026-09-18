@@ -3,11 +3,9 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   Invoice01Icon,
-  Loading03Icon,
   Calendar03Icon,
   FilterIcon,
   ChevronDownIcon,
-  Cancel01Icon,
   CreditCardIcon,
   InboxIcon,
   Tick02Icon,
@@ -28,6 +26,7 @@ import { beautifyMerchantName, beautifyCategory } from "@/lib/merchant-utils";
 import { MonoRoundedLineChart } from "@/components/charts/MonoRoundedLineChart";
 import { MonoRoundedDonutChart } from "@/components/charts/MonoRoundedDonutChart";
 import { MonoRoundedFunnelChart } from "@/components/charts/MonoRoundedFunnelChart";
+import { EditTransactionModal } from "@/components/Dashboard/Home/ui/edit-transaction-modal";
 
 import {
   MONTH_NAMES,
@@ -89,6 +88,8 @@ export function Spends() {
     deleteTransaction,
     fetchAll,
     googleStatus,
+    isSyncing,
+    startSync,
   } = useDashboard();
 
   useEffect(() => {
@@ -115,8 +116,15 @@ export function Spends() {
   const [selectedMonth, setSelectedMonth] = useState(initialDate.month);
   const [selectedQuarter, setSelectedQuarter] = useState(initialDate.quarter);
 
+  const hasInitializedDateRef = useRef(false);
+
   useEffect(() => {
-    if (transactions && transactions.length > 0) {
+    if (
+      !hasInitializedDateRef.current &&
+      transactions &&
+      transactions.length > 0
+    ) {
+      hasInitializedDateRef.current = true;
       const p = parseDateComponents(transactions[0]);
       setSelectedYear(p.year);
       setSelectedMonth(p.month);
@@ -124,31 +132,22 @@ export function Spends() {
     }
   }, [transactions]);
 
+  const [editingTransaction, setEditingTransaction] = useState(null);
+
   const [excludedCardIds, setExcludedCardIds] = useState(new Set());
   const [visibleCount, setVisibleCount] = useState(50);
   const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false);
   const [excludeDropdownOpen, setExcludeDropdownOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [syncPeriodOpen, setSyncPeriodOpen] = useState(false);
   const [selectedSyncPeriod, setSelectedSyncPeriod] = useState("last-30-days");
-  const googleConnected = Boolean(googleStatus?.connected);
 
   const periodRef = useRef(null);
   const excludeRef = useRef(null);
   const syncDropdownRef = useRef(null);
-  const pollIntervalRef = useRef(null);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const currentQuarter = Math.floor(currentMonth / 3) + 1;
-
-  useEffect(() => {
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -168,102 +167,6 @@ export function Spends() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const pollTaskStatus = (taskId) => {
-    let attempts = 0;
-    const maxAttempts = 60;
-
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-    }
-
-    pollIntervalRef.current = setInterval(async () => {
-      attempts += 1;
-      try {
-        const res = await api.get(`/api/gmail/task/${taskId}`);
-        const status = res.data?.status;
-
-        if (status === "SUCCESS") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          await fetchAll();
-          sileo.success({
-            title: "Transactions Synced",
-            description: "Your transactions have been synced successfully.",
-          });
-        } else if (status === "FAILURE") {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          sileo.error({
-            title: "Sync Failed",
-            description:
-              res.data?.error || "Failed to sync transactions from Gmail.",
-          });
-        } else if (attempts >= maxAttempts) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-          await fetchAll();
-        }
-      } catch {
-        if (attempts >= maxAttempts) {
-          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-          setIsSyncing(false);
-        }
-      }
-    }, 2000);
-  };
-
-  const startSync = async (period) => {
-    if (cards.length === 0) {
-      sileo.info({
-        title: "No Cards Found",
-        description: "Add at least one card before syncing transactions.",
-      });
-      return;
-    }
-
-    if (!googleConnected) {
-      sileo.info({
-        title: "Gmail Not Connected",
-        description:
-          "Connect your Gmail account to sync bank alerts automatically.",
-      });
-      window.location.href =
-        "http://localhost:8000/auth/google/login?action=connect";
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      let afterDate = "";
-      if (period === "last-30-days") {
-        const d = new Date();
-        d.setDate(d.getDate() - 30);
-        afterDate = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-      } else {
-        const startMonths = { Q1: "01", Q2: "04", Q3: "07", Q4: "10" };
-        afterDate = `${currentYear}/${startMonths[period]}/01`;
-      }
-
-      const res = await api.post("/api/gmail/ingest", null, {
-        params: { after_date: afterDate },
-      });
-      const taskId = res.data?.task_id;
-      if (taskId) {
-        pollTaskStatus(taskId);
-      } else {
-        setTimeout(() => setIsSyncing(false), 2000);
-      }
-    } catch (err) {
-      setIsSyncing(false);
-      const detail = err?.response?.data?.detail;
-      sileo.error({
-        title: "Sync Error",
-        description:
-          detail || "Could not initiate Gmail sync. Please try again.",
-      });
-    }
-  };
 
   const availableYears = useMemo(() => {
     const years = new Set();
@@ -605,7 +508,11 @@ export function Spends() {
           {analyticsData.filteredTxns.length < 5 ? (
             <div className="rounded-3xl border border-neutral-300/80 bg-white/70 p-8 md:p-12 flex flex-col items-center justify-center text-center shadow-2xs backdrop-blur-xs min-h-[280px]">
               <div className="w-12 h-12 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-600 mb-3 shadow-2xs">
-                <HugeIcon icon={BarChartIcon} size={24} className="text-neutral-700" />
+                <HugeIcon
+                  icon={BarChartIcon}
+                  size={24}
+                  className="text-neutral-700"
+                />
               </div>
               <h3 className="text-base font-bold text-neutral-900 tracking-tight">
                 Not enough transactions yet
@@ -709,7 +616,11 @@ export function Spends() {
                     ? "Exclude a card?"
                     : `${excludedCardIds.size} Card${excludedCardIds.size > 1 ? "s" : ""} Excluded`}
                 </span>
-                <HugeIcon icon={ChevronDownIcon} size={14} className="opacity-70" />
+                <HugeIcon
+                  icon={ChevronDownIcon}
+                  size={14}
+                  className="opacity-70"
+                />
               </button>
 
               {excludeDropdownOpen && (
@@ -761,7 +672,11 @@ export function Spends() {
                             }`}
                           >
                             <div className="flex items-center gap-2 truncate">
-                              <HugeIcon icon={CreditCardIcon} size={14} className="text-neutral-500 shrink-0" />
+                              <HugeIcon
+                                icon={CreditCardIcon}
+                                size={14}
+                                className="text-neutral-500 shrink-0"
+                              />
                               <span className="truncate">{card.cardName}</span>
                               <span className="text-[10px] font-mono text-neutral-400">
                                 ••{card.cardLast4}
@@ -775,7 +690,11 @@ export function Spends() {
                               }`}
                             >
                               {isExcluded && (
-                                <HugeIcon icon={Tick02Icon} size={12} strokeWidth={2.5} />
+                                <HugeIcon
+                                  icon={Tick02Icon}
+                                  size={12}
+                                  strokeWidth={2.5}
+                                />
                               )}
                             </div>
                           </label>
@@ -794,9 +713,17 @@ export function Spends() {
               onClick={() => setPeriodDropdownOpen(!periodDropdownOpen)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-neutral-300/80 hover:border-neutral-400 text-neutral-900 text-xs font-semibold transition-all shadow-2xs hover:shadow-xs cursor-pointer"
             >
-              <HugeIcon icon={Calendar03Icon} size={14} className="text-neutral-600" />
+              <HugeIcon
+                icon={Calendar03Icon}
+                size={14}
+                className="text-neutral-600"
+              />
               <span>Change period ({periodLabel})</span>
-              <HugeIcon icon={ChevronDownIcon} size={14} className="text-neutral-500" />
+              <HugeIcon
+                icon={ChevronDownIcon}
+                size={14}
+                className="text-neutral-500"
+              />
             </button>
 
             {periodDropdownOpen && (
@@ -1107,7 +1034,7 @@ export function Spends() {
                                   title="Edit transaction"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    console.log("Edit transaction clicked", tx.id);
+                                    setEditingTransaction(tx.id);
                                   }}
                                   className="w-7 h-7 rounded-lg bg-black/85 hover:bg-black border border-neutral-800/80 shadow-xs text-[#868593] hover:text-white active:scale-95 flex items-center justify-center transition-all cursor-pointer shrink-0"
                                 >
@@ -1156,6 +1083,19 @@ export function Spends() {
           </Skeleton>
         </div>
       </div>
+
+      <EditTransactionModal
+        isOpen={Boolean(editingTransaction)}
+        onClose={() => setEditingTransaction(null)}
+        transaction={
+          transactions?.find((t) => t.id === editingTransaction) || null
+        }
+        transactionId={editingTransaction}
+        cards={cards}
+        onTransactionUpdated={async () => {
+          await fetchAll();
+        }}
+      />
     </div>
   );
 }

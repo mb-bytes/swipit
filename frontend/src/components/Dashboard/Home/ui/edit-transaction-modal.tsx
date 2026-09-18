@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Cancel01Icon,
-  Invoice01Icon,
-  SparklesIcon,
+  Edit02Icon,
+  CheckmarkCircle02Icon,
   Loading03Icon,
   Calendar03Icon,
   ArrowLeft01Icon,
@@ -14,28 +14,34 @@ import {
 import { HugeIcon } from "@/components/ui/huge-icon";
 import { motion, AnimatePresence } from "motion/react";
 import { CardItem } from "./cards-section";
-import { sileo } from "sileo";
+import { TransactionItem } from "./add-transaction-modal";
 import { Dropdown } from "@/components/ui/dropdown";
+import { sileo } from "sileo";
 import api from "@/api/axios";
 
-export interface TransactionItem {
-  id: string;
-  merchant: string;
-  date: string;
-  amount: number;
-  cardName: string;
-  rewardEarned: number;
-  category?: string;
-  cardId?: string;
-  rawDate?: string;
-}
-
-interface AddTransactionModalProps {
+export interface EditTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  cards: CardItem[];
-  onTransactionAdded: (txn: TransactionItem) => void;
+  transaction?: TransactionItem | null;
+  transactionId?: string | null;
+  cards?: CardItem[];
+  onTransactionUpdated?: (txn: TransactionItem) => void;
 }
+
+const CATEGORY_OPTIONS = [
+  { value: "shopping", label: "Shopping" },
+  { value: "online_shopping", label: "Online Shopping" },
+  { value: "food_dining", label: "Food & Dining" },
+  { value: "groceries", label: "Groceries" },
+  { value: "travel", label: "Travel" },
+  { value: "bills", label: "Bills & Utilities" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "fuel", label: "Fuel" },
+  { value: "health_wellness", label: "Health & Wellness" },
+  { value: "electronics", label: "Electronics" },
+  { value: "personal_care", label: "Personal Care" },
+  { value: "other", label: "Other" },
+];
 
 const MONTH_NAMES = [
   "January",
@@ -54,6 +60,19 @@ const MONTH_NAMES = [
 
 const WEEKDAY_NAMES = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
+function parseDateToIso(str?: string): string {
+  if (!str) return new Date().toISOString().split("T")[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  return new Date().toISOString().split("T")[0];
+}
+
 function formatDisplayDate(isoString: string): string {
   if (!isoString) return "";
   const parts = isoString.split("-").map(Number);
@@ -69,18 +88,18 @@ function formatDisplayDate(isoString: string): string {
   return isoString;
 }
 
-export function AddTransactionModal({
+export function EditTransactionModal({
   isOpen,
   onClose,
-  cards,
-  onTransactionAdded,
-}: AddTransactionModalProps) {
+  transaction,
+  transactionId,
+  cards = [],
+  onTransactionUpdated,
+}: EditTransactionModalProps) {
   const [merchant, setMerchant] = useState("");
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("shopping");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [selectedCard, setSelectedCard] = useState(
-    cards[0]?.cardName || "Axis Flipkart",
-  );
   const [submitting, setSubmitting] = useState(false);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -89,14 +108,34 @@ export function AddTransactionModal({
   const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (transaction) {
+      setMerchant(transaction.merchant || "");
+      setAmount(transaction.amount !== undefined ? String(transaction.amount) : "");
+
+      const rawCat = (transaction.category || "shopping").toLowerCase();
+      const matched = CATEGORY_OPTIONS.find(
+        (c) => c.value === rawCat || c.label.toLowerCase() === rawCat
+      );
+      setCategory(matched ? matched.value : rawCat || "shopping");
+
+      const iso = parseDateToIso(transaction.rawDate || transaction.date);
+      setDate(iso);
+      const [y, m] = iso.split("-").map(Number);
+      if (y && m) {
+        setViewYear(y);
+        setViewMonth(m - 1);
+      }
+    } else {
+      setMerchant("");
+      setAmount("");
+      setCategory("shopping");
       const todayIso = new Date().toISOString().split("T")[0];
       setDate(todayIso);
       setViewYear(new Date().getFullYear());
       setViewMonth(new Date().getMonth());
-      setIsCalendarOpen(false);
     }
-  }, [isOpen]);
+    setIsCalendarOpen(false);
+  }, [transaction, isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -167,55 +206,58 @@ export function AddTransactionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const numAmount = parseFloat(amount);
-    if (!merchant.trim() || isNaN(numAmount) || numAmount <= 0) {
+
+    const targetId = transaction?.id || transactionId;
+    if (!targetId) {
       sileo.error({
-        title: "Invalid Input",
-        description: "Please enter a valid merchant name and spend amount.",
+        title: "Missing Transaction",
+        description: "No transaction was selected to edit.",
       });
       return;
     }
 
-    const card = cards.find((c) => c.cardName === selectedCard) ?? cards[0];
-    if (!card) {
-      sileo.error({ title: "No card selected", description: "Please add a card first." });
+    const numAmount = parseFloat(amount);
+    if (!merchant.trim() || isNaN(numAmount) || numAmount <= 0) {
+      sileo.error({
+        title: "Invalid Input",
+        description: "Please enter a valid merchant name and amount greater than 0.",
+      });
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await api.post("/api/cards/transactions", {
-        card_id: card.id,
+      const res = await api.put(`/api/cards/transactions/${targetId}`, {
         merchant: merchant.trim(),
         amount: numAmount,
+        category: category,
         transaction_date: date,
       });
 
       const data = res.data;
-      const newTxn: TransactionItem = {
-        id: data.transaction_id,
-        merchant: data.merchant,
-        date: data.transaction_date,
-        amount: data.amount,
-        cardName: card.cardName,
-        rewardEarned: data.reward_earned,
-        category: data.category ?? "Shopping",
+      const updatedTxn: TransactionItem = {
+        id: String(data.transaction_id || targetId),
+        merchant: data.merchant || merchant.trim(),
+        date: data.transaction_date || formatDisplayDate(date),
+        amount: typeof data.amount === "number" ? data.amount : numAmount,
+        cardName: transaction?.cardName || cards[0]?.cardName || "Card",
+        rewardEarned: transaction?.rewardEarned ?? 0,
+        category: data.category || category,
+        cardId: data.card_id || transaction?.cardId,
         rawDate: data.raw_date || date,
       };
 
-      onTransactionAdded(newTxn);
+      onTransactionUpdated?.(updatedTxn);
       sileo.success({
-        title: "Transaction Logged",
-        description: `₹${numAmount} at ${merchant.trim()} recorded. Earned +₹${data.reward_earned}!`,
+        title: "Transaction Updated",
+        description: `Successfully updated ${merchant.trim()}.`,
       });
-      setMerchant("");
-      setAmount("");
-      setDate(new Date().toISOString().split("T")[0]);
       onClose();
-    } catch {
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
       sileo.error({
-        title: "Couldn't Save Transaction",
-        description: "A server error occurred. Please try again.",
+        title: "Update Failed",
+        description: detail || "A server error occurred while updating the transaction.",
       });
     } finally {
       setSubmitting(false);
@@ -242,16 +284,27 @@ export function AddTransactionModal({
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-[#121c18] border border-teal-800/40 text-teal-300 flex items-center justify-center shrink-0">
-                <HugeIcon icon={Invoice01Icon} size={20} />
+              <div className="w-10 h-10 rounded-full bg-[#1c1a24] border border-indigo-800/40 text-indigo-300 flex items-center justify-center shrink-0">
+                <HugeIcon icon={Edit02Icon} size={20} />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-tight">Add Transaction</h3>
+                <h3 className="text-lg font-bold tracking-tight">Edit Transaction</h3>
                 <p className="text-xs text-neutral-400">
-                  Record a card spend to calculate cashbacks and points
+                  Update merchant, amount, category, or date
                 </p>
               </div>
             </div>
+
+            {transaction?.cardName && (
+              <div className="mb-4 px-3.5 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between text-xs text-neutral-400">
+                <span className="font-medium text-neutral-300 truncate">
+                  {transaction.cardName}
+                </span>
+                <span className="text-neutral-500 font-mono text-[11px]">
+                  ID: {String(transaction.id).slice(0, 8)}...
+                </span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
@@ -279,7 +332,7 @@ export function AddTransactionModal({
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    min={1}
+                    min={0.01}
                     step="any"
                     className="w-full rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 text-sm font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -405,23 +458,16 @@ export function AddTransactionModal({
 
               <div>
                 <label className="text-xs font-semibold text-neutral-300 block mb-1.5">
-                  Card Used
+                  Category
                 </label>
                 <Dropdown
                   className="w-full"
                   side="top"
                   triggerClassName="w-full rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 text-sm text-white focus:ring-2 focus:ring-amber-400/50"
                   menuClassName="bg-[#1e1f23] border border-white/10 text-white"
-                  value={selectedCard}
-                  onChange={(val) => setSelectedCard(val)}
-                  items={
-                    cards.length > 0
-                      ? cards.map((c) => ({
-                          value: c.cardName,
-                          label: `${c.cardName} (•••• ${c.cardLast4})`,
-                        }))
-                      : [{ value: "Axis Flipkart", label: "Axis Flipkart" }]
-                  }
+                  value={category}
+                  onChange={(val) => setCategory(val)}
+                  items={CATEGORY_OPTIONS}
                 />
               </div>
 
@@ -433,12 +479,12 @@ export function AddTransactionModal({
                 {submitting ? (
                   <>
                     <HugeIcon icon={Loading03Icon} size={16} className="animate-spin" />
-                    <span>Saving...</span>
+                    <span>Saving Changes...</span>
                   </>
                 ) : (
                   <>
-                    <HugeIcon icon={SparklesIcon} size={16} />
-                    <span>Add Transaction</span>
+                    <HugeIcon icon={CheckmarkCircle02Icon} size={16} />
+                    <span>Save Changes</span>
                   </>
                 )}
               </button>
@@ -450,4 +496,4 @@ export function AddTransactionModal({
   );
 }
 
-export default AddTransactionModal;
+export default EditTransactionModal;
