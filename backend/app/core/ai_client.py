@@ -1,6 +1,7 @@
 from openai import AsyncOpenAI
 from .categories import TransactionCategory
 from .config import settings
+import logging
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -21,6 +22,6 @@ async def classify_merchant_with_ai(merchant_key: str) -> str:
     )
 
     raw = response.choices[0].message.content.strip().lower()
-    print(f"AI call for: {merchant_key}")
-    
+    logging.info(f"AI classification for '{merchant_key}': {raw}")
+
     return raw if raw in VALID_CATEGORIES else TransactionCategory.OTHER.value

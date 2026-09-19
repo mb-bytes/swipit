@@ -8,7 +8,8 @@ from .api.recommendations.recommendation_routes import recommendations_router
 from .api.unmatched.unmatched_routes import unmatched_router
 from .api.merchants.merchant_service import merchant_service, merchant_cache_service
 from .db.session import AsyncSessionLocal
-from .db.models import card_rewards 
+from .db.models import card_rewards
+from .core.config import settings
 from contextlib import asynccontextmanager
 
 
@@ -28,8 +29,8 @@ app.include_router(card_router, prefix="/api/cards")
 app.include_router(recommendations_router, prefix="/api/recommendations")
 app.include_router(unmatched_router, prefix="/api/unmatched")
 
-app.add_middleware(CORSMiddleware, 
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],  
+app.add_middleware(CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

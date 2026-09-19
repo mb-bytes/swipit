@@ -1,5 +1,5 @@
 import asyncio
-import app.db.models  # ensures all SQLAlchemy mappers are registered
+import app.db.models  
 from app.db.session import AsyncSessionLocal
 from app.db.models.merchants import MerchantCategoryModel
 from app.db.models.cards import CardProduct

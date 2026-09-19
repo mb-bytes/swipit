@@ -11,8 +11,8 @@ import asyncio
 import os
 import uuid
 
-#This will allow http requests
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+if os.getenv("ENVIRONMENT") != "production":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 SCOPES = [
     "openid",

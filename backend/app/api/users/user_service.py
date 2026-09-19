@@ -14,6 +14,7 @@ import logging
 import secrets
 import re
 import uuid
+import os
 
 class UserService:
     async def create_user(self, db: AsyncSession, user_details: UserCreateSchema) -> UserModel:
@@ -60,12 +61,13 @@ class UserService:
                     },
                     status_code=status.HTTP_201_CREATED
                 )
+                is_production = os.getenv("ENVIRONMENT") == "production"
                 response.set_cookie(
                     key="refresh_token",
                     value=refresh_token,
                     httponly=True,
-                    secure=False,
-                    samesite="lax",
+                    secure=is_production,
+                    samesite="none" if is_production else "lax",
                     max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
                     path="/",
                 )
@@ -156,14 +158,15 @@ class UserService:
                         "user": {"username": user.username, "user_uid": str(user.user_id), "name": user.name},
                     }
                 )
+                is_production = os.getenv("ENVIRONMENT") == "production"
                 response.set_cookie(
                     key="refresh_token",
                     value=refresh_token,
                     httponly=True,
-                    secure=False,        
-                    samesite="lax",     
+                    secure=is_production,
+                    samesite="none" if is_production else "lax",
                     max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
-                    path="/",   
+                    path="/",
                 )
 
                 return response

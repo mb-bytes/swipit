@@ -3,14 +3,13 @@ from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .gmail_service import gmail_service
-from app.api.dependencies import get_curr_user, get_curr_user_flexible
+from app.api.dependencies import get_curr_user
 from .parsers.parse_axis import parse_axis
-from .parsers.parse_federal import parse_federal, strip_html_tags
+from .parsers.parse_federal import parse_federal
 from app.celery_task import ingest_gmail_for_user, c_app
-from fastapi.responses import JSONResponse
 from celery.result import AsyncResult
 from app.db.models.cards import CardModel
-import uuid
+from datetime import date, timedelta
 
 gmail_router = APIRouter(tags=["gmail-routes"])
 
@@ -19,7 +18,6 @@ PARSERS = {
     "fedmail@federal.bank.in": parse_federal,
 }
 
-from datetime import date, timedelta
 
 @gmail_router.post("/ingest", summary="Ingest Gmail transactions into registered cards")
 async def ingest_gmail(
@@ -80,61 +78,3 @@ async def get_task_status(task_id: str):
     elif result.failed():
         response["error"] = str(result.result)
     return response
-
-
-@gmail_router.get("/debug-parse", summary="Debug: fetch and parse recent bank emails without saving")
-async def debug_parse(
-    sender: str = "fedmail@federal.bank.in",
-    after_date: str = "2026/01/01",
-    limit: int = 20,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_curr_user_flexible),
-):
-    import asyncio
-    import traceback as tb
-
-    parser = PARSERS.get(sender)
-    if not parser:
-        raise HTTPException(status_code=400, detail=f"No parser registered for sender: {sender}")
-
-    gmail_client = await gmail_service.get_gmail_client(db, user_id=str(current_user.user_id))
-    messages = await asyncio.to_thread(gmail_service.search_bank_emails, gmail_client, sender, after_date)
-    messages = messages[:limit]
-
-    results = []
-    for msg in messages:
-        entry: dict = {"message_id": msg["id"]}
-        try:
-            raw_bytes = await gmail_service.fetch_raw_message_with_retry(gmail_client, msg["id"])
-            body, body_type = gmail_service.extract_best_body(raw_bytes)
-            entry["body_type"] = body_type
-
-            if body is None:
-                entry["outcome"] = "no_body"
-                entry["clean_preview"] = None
-                entry["parse_result"] = None
-            else:
-                entry["clean_preview"] = strip_html_tags(body)[:400]
-                try:
-                    parsed = parser(body)
-                    entry["outcome"] = "parsed" if parsed else "skipped_not_transaction"
-                    entry["parse_result"] = parsed
-                except ValueError as e:
-                    entry["outcome"] = "parse_error"
-                    entry["parse_result"] = str(e)
-                except Exception as e:
-                    entry["outcome"] = "exception"
-                    entry["parse_result"] = tb.format_exc()
-        except Exception as e:
-            entry["outcome"] = "fetch_error"
-            entry["parse_result"] = str(e)
-
-        results.append(entry)
-
-    import json
-    from fastapi import Response
-    payload = {"sender": sender, "fetched": len(messages), "results": results}
-    return Response(
-        content=json.dumps(payload, indent=2, default=str),
-        media_type="application/json"
-    )

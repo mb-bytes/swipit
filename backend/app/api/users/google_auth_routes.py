@@ -9,8 +9,8 @@ from app.api.users.user_service import user_service
 from app.core.config import settings
 from app.core.security import encrypt_token, create_url_safe_token, decode_url_safe_token
 from datetime import datetime, timezone
-from googleapiclient.discovery import build
 import urllib.parse
+import os
 
 google_router = APIRouter(tags=['google-oauth'])
 
@@ -119,13 +119,14 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
     access_token, refresh_token = user_service.create_session_tokens(user)
 
+    is_production = os.environ.get("ENVIRONMENT") == "production"
     response = RedirectResponse(f"{settings.FRONTEND_URL}/auth/callback?token={access_token}")
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.REFRESH_TOKEN_EXPIRY * 86400,
         path="/",
     )
@@ -142,25 +143,3 @@ async def google_status(current_user = Depends(get_curr_user), db: AsyncSession 
 async def google_disconnect(current_user = Depends(get_curr_user), db: AsyncSession = Depends(get_db)):
     deleted = await google_service.delete_connected_account(db, current_user.user_id)
     return {"success": deleted, "message": "Google account disconnected" if deleted else "No account connected"}
-
-@google_router.get("/test-fetch")
-async def test_fetch(current_user = Depends(get_curr_user), db: AsyncSession = Depends(get_db)):
-    creds = await google_service.get_valid_credentials(db, current_user.user_id)
-    gmail = build("gmail", "v1", credentials=creds)
-
-    results = gmail.users().messages().list(
-        userId="me", maxResults=5
-    ).execute()
-
-    messages = results.get("messages", [])
-    subjects = []
-    for msg in messages:
-        detail = gmail.users().messages().get(
-            userId="me", id=msg["id"],
-            format="metadata", metadataHeaders=["Subject"]
-        ).execute()
-        headers = detail.get("payload", {}).get("headers", [])
-        subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(no subject)")
-        subjects.append(subject)
-
-    return {"count": len(subjects), "subjects": subjects}

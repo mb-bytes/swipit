@@ -1,11 +1,14 @@
 from celery import Celery
+from app.core.config import settings
 from app.core.mail import mail, create_message
 from asgiref.sync import async_to_sync
 import asyncio
 
-c_app = Celery()
-
-c_app.config_from_object('app.core.config')
+c_app = Celery(
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
+)
+c_app.conf.broker_connection_retry_on_startup = True
 
 
 @c_app.task()

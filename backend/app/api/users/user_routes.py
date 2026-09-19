@@ -178,6 +178,8 @@ async def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match"
         )
     token_data = decode_url_safe_token(token)
+    if not token_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset token")
     user_email = token_data.get("email")
 
     reset_pswd = await user_service.reset_password(db, user_email, new_pswd)
