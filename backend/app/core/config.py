@@ -52,6 +52,21 @@ class Settings(BaseSettings):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
+    @field_validator("DB_URL", mode="after")
+    @classmethod
+    def normalize_db_url(cls, v: str) -> str:
+        if not v:
+            return v
+        if v.startswith("postgres://"):
+            v = "postgresql+asyncpg://" + v[len("postgres://"):]
+        elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        v = v.replace("sslmode=require", "ssl=require")
+        v = v.replace("&channel_binding=require", "")
+        v = v.replace("channel_binding=require&", "")
+        v = v.replace("?channel_binding=require", "")
+        return v
+
     @field_validator("GOOGLE_CLIENT_SECRETS_FILE", mode="after")
     @classmethod
     def resolve_secrets_path(cls, v: str) -> str:
