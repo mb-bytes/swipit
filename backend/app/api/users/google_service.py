@@ -11,6 +11,9 @@ import asyncio
 import os
 import uuid
 
+import json
+import base64
+
 if os.getenv("ENVIRONMENT") != "production":
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -23,11 +26,23 @@ SCOPES = [
 
 class GoogleService:
     def build_flow(self, state: str | None = None, scopes: list[str] | None = None) -> Flow:
-        flow = Flow.from_client_secrets_file(
-            settings.GOOGLE_CLIENT_SECRETS_FILE,
-            scopes=scopes or SCOPES,
-            state=state,
-        )
+        if os.path.exists(settings.GOOGLE_CLIENT_SECRETS_FILE):
+            flow = Flow.from_client_secrets_file(
+                settings.GOOGLE_CLIENT_SECRETS_FILE,
+                scopes=scopes or SCOPES,
+                state=state,
+            )
+        elif os.getenv("GOOGLE_CLIENT_SECRETS_B64"):
+            raw = base64.b64decode(os.getenv("GOOGLE_CLIENT_SECRETS_B64")).decode("utf-8")
+            flow = Flow.from_client_config(json.loads(raw), scopes=scopes or SCOPES, state=state)
+        elif os.getenv("GOOGLE_CLIENT_SECRETS_JSON"):
+            flow = Flow.from_client_config(json.loads(os.getenv("GOOGLE_CLIENT_SECRETS_JSON")), scopes=scopes or SCOPES, state=state)
+        else:
+            flow = Flow.from_client_secrets_file(
+                settings.GOOGLE_CLIENT_SECRETS_FILE,
+                scopes=scopes or SCOPES,
+                state=state,
+            )
         flow.redirect_uri = settings.GOOGLE_REDIRECT_URI
         return flow
 

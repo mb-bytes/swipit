@@ -4,11 +4,16 @@ from app.core.mail import mail, create_message
 from asgiref.sync import async_to_sync
 import asyncio
 
+import ssl
+
 c_app = Celery(
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
 )
 c_app.conf.broker_connection_retry_on_startup = True
+if settings.REDIS_URL.startswith("rediss://"):
+    c_app.conf.broker_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
+    c_app.conf.redis_backend_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
 
 
 @c_app.task()
