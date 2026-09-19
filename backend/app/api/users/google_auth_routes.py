@@ -3,7 +3,7 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.api.dependencies import get_curr_user, OptionalTokenBearer
+from app.api.dependencies import get_curr_user, OptionalTokenBearer, rate_limit
 from app.api.users.google_service import google_service
 from app.api.users.user_service import user_service
 from app.core.config import settings
@@ -14,7 +14,7 @@ import os
 
 google_router = APIRouter(tags=['google-oauth'])
 
-@google_router.get("/login")
+@google_router.get("/login", dependencies=[Depends(rate_limit(10, 60))])
 async def google_login(
     request: Request,
     action: str = "login",

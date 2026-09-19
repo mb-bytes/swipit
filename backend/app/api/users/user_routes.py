@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer, OptionalAccessTokenBearer, get_curr_user
+from app.api.dependencies import AccessTokenBearer, RefreshTokenBearer, OptionalAccessTokenBearer, get_curr_user, rate_limit
 from app.core.config import settings
 from app.core.security import decode_url_safe_token, generate_jwt_token, verify_pswd, gen_pswd_hash
 from app.db.session import get_db
@@ -26,13 +26,13 @@ access_token = AccessTokenBearer()
 refresh_token = RefreshTokenBearer()
 
 
-@user_router.post("/signup")
+@user_router.post("/signup", dependencies=[Depends(rate_limit(3, 60))])
 async def new_user(user_details: UserCreateSchema, db: AsyncSession = Depends(get_db)):
     new_user = await user_service.create_user(db, user_details)
     return new_user
 
 
-@user_router.post("/login")
+@user_router.post("/login", dependencies=[Depends(rate_limit(5, 60))])
 async def login(user_data: UserLoginSchema, db: AsyncSession = Depends(get_db)):
     identifier = user_data.identifier or user_data.username or user_data.email
     if not identifier or not identifier.strip():
@@ -77,7 +77,7 @@ async def delete_me(
     response.delete_cookie(key="refresh_token", path="/")
     return response
 
-@user_router.post("/change-password")
+@user_router.post("/change-password", dependencies=[Depends(rate_limit(5, 60))])
 async def change_password(
     data: ChangePasswordSchema,
     curr_user = Depends(get_curr_user),
@@ -102,7 +102,7 @@ async def logout(token_data = Depends(OptionalAccessTokenBearer())):
     response.delete_cookie(key="refresh_token", path="/")
     return response
     
-@user_router.get("/refresh-token")
+@user_router.get("/refresh-token", dependencies=[Depends(rate_limit(10, 60))])
 def get_new_access_token(token_data: dict = Depends(refresh_token)):
     expiry_timestamp = token_data["exp"]
 
@@ -151,7 +151,7 @@ async def check_account(identifier: str, db: AsyncSession = Depends(get_db)):
         "masked_email": masked,
     }
 
-@user_router.post("/password-reset-request")
+@user_router.post("/password-reset-request", dependencies=[Depends(rate_limit(3, 60))])
 async def send_reset_email(
     reset_email: PasswordResetEmailSchema, db: AsyncSession = Depends(get_db)
 ):
@@ -165,7 +165,7 @@ async def send_reset_email(
 
     return request_reset
 
-@user_router.post("/password-reset-confirm/{token}")
+@user_router.post("/password-reset-confirm/{token}", dependencies=[Depends(rate_limit(5, 60))])
 async def reset_password(
     token: str, password_fiels: PasswordResetSchema, db: AsyncSession = Depends(get_db)
 ):

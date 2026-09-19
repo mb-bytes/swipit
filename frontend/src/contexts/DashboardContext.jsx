@@ -211,8 +211,9 @@ export function DashboardProvider({ children }) {
           description:
             "Connect your Gmail account to sync bank alerts automatically.",
         });
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
         window.location.href =
-          "http://localhost:8000/auth/google/login?action=connect";
+          `${baseUrl}/auth/google/login?action=connect`;
         return;
       }
 
@@ -269,8 +270,9 @@ export function DashboardProvider({ children }) {
         description:
           "Connect your Gmail account to sync bank alerts automatically.",
       });
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
       window.location.href =
-        "http://localhost:8000/auth/google/login?action=connect";
+        `${baseUrl}/auth/google/login?action=connect`;
       return;
     }
 

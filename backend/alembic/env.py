@@ -21,6 +21,18 @@ from app.db.models.unmatched import UnmatchedTransaction
 # access to the values within the .ini file in use.
 config = context.config
 
+db_url = os.getenv("DB_URL")
+if db_url:
+    sync_url = db_url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
+    if sync_url.startswith("postgres://"):
+        sync_url = "postgresql+psycopg://" + sync_url[len("postgres://"):]
+    elif sync_url.startswith("postgresql://") and not sync_url.startswith("postgresql+psycopg://"):
+        sync_url = "postgresql+psycopg://" + sync_url[len("postgresql://"):]
+    sync_url = sync_url.replace("ssl=require", "sslmode=require")
+    sync_url = sync_url.replace("&channel_binding=require", "").replace("?channel_binding=require", "")
+    config.set_main_option("sqlalchemy.url", sync_url)
+
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

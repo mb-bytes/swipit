@@ -3,7 +3,7 @@ from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .gmail_service import gmail_service
-from app.api.dependencies import get_curr_user
+from app.api.dependencies import get_curr_user, rate_limit
 from .parsers.parse_axis import parse_axis
 from .parsers.parse_federal import parse_federal
 from app.celery_task import ingest_gmail_for_user, c_app
@@ -19,7 +19,7 @@ PARSERS = {
 }
 
 
-@gmail_router.post("/ingest", summary="Ingest Gmail transactions into registered cards")
+@gmail_router.post("/ingest", summary="Ingest Gmail transactions into registered cards", dependencies=[Depends(rate_limit(10, 60))])
 async def ingest_gmail(
     after_date: str = "2026/07/25",
     db: AsyncSession = Depends(get_db),
@@ -43,8 +43,8 @@ async def ingest_gmail(
     }
 
 
-@gmail_router.post("/sync-last-5-days", summary="Ingest last 5 days of Gmail transactions")
-@gmail_router.post("/sync-recent", summary="Ingest last 5 days of Gmail transactions")
+@gmail_router.post("/sync-last-5-days", summary="Ingest last 5 days of Gmail transactions", dependencies=[Depends(rate_limit(10, 60))])
+@gmail_router.post("/sync-recent", summary="Ingest last 5 days of Gmail transactions", dependencies=[Depends(rate_limit(10, 60))])
 async def sync_last_5_days(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),

@@ -1,4 +1,5 @@
 import { Toaster } from "sileo";
+import { Analytics } from "@vercel/analytics/react";
 import AppRoutes from "./routes/routes";
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
         }}
       />
       <AppRoutes />
+      <Analytics />
     </>
   );
 }

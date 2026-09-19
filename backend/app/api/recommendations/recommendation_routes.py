@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.api.dependencies import get_curr_user
+from app.api.dependencies import get_curr_user, rate_limit
 from .recommendation_service import get_recommendations, invalidate_cache
 
 recommendations_router = APIRouter(tags=["recommendations"])
@@ -11,6 +11,7 @@ recommendations_router = APIRouter(tags=["recommendations"])
 @recommendations_router.get(
     "/",
     summary="Get AI-powered credit card recommendations based on your real spending and preferences",
+    dependencies=[Depends(rate_limit(60, 60))],
 )
 async def get_card_recommendations(
     preferred_category: str | None = None,

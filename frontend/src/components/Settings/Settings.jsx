@@ -578,8 +578,9 @@ export function Settings() {
                   <button
                     type="button"
                     onClick={() => {
+                      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
                       window.location.href =
-                        "http://localhost:8000/auth/google/login?action=connect";
+                        `${baseUrl}/auth/google/login?action=connect`;
                     }}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 transition-colors cursor-pointer shadow-xs w-full sm:w-auto"
                   >

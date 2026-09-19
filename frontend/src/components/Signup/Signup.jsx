@@ -147,8 +147,8 @@ function SignupForm({ onNameChange }) {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href =
-      "http://localhost:8000/auth/google/login?action=login";
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+    window.location.href = `${baseUrl}/auth/google/login?action=login`;
   };
 
   const handleSubmit = async (e) => {

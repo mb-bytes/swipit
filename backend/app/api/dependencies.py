@@ -6,6 +6,7 @@ from app.core.security import decode_jwt_token
 from app.api.users.user_service import user_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from app.redis.redis import redis
 
 
 class TokenBearer(HTTPBearer):
@@ -110,4 +111,35 @@ async def get_curr_user_flexible(db: AsyncSession = Depends(get_db), token_data:
     return current_user
 
 
-        
+RATE_LIMIT_LUA = """
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+    redis.call('EXPIRE', KEYS[1], tonumber(ARGV[1]))
+end
+return current
+"""
+
+
+def get_client_ip(request: Request) -> str:
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return cf_ip.strip()
+    x_forwarded_for = request.headers.get("x-forwarded-for")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "127.0.0.1"
+
+
+def rate_limit(limit: int, window: int = 60):
+    async def dependency(request: Request) -> None:
+        ip = get_client_ip(request)
+        key = f"rate_limit:{ip}:{request.url.path}"
+        current = await redis.eval(RATE_LIMIT_LUA, 1, key, window)
+        if current > limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests. Please try again later.",
+            )
+    return dependency

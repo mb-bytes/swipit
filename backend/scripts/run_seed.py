@@ -46,13 +46,14 @@ async def seed():
         reward_count = 0
         for c in CARDS:
             # Fetch matching CardProduct
+            clean_name = c["product_name"].replace(" Credit Card", "").strip()
             result = await db.execute(
                 select(CardProduct).where(
-                    CardProduct.product_name == c["product_name"],
+                    CardProduct.product_name.in_([c["product_name"], clean_name]),
                     CardProduct.bank_name == c["bank_name"],
                 )
             )
-            product = result.scalar_one_or_none()
+            product = result.scalars().first()
             if not product:
                 print(f"  Skipping: CardProduct not found for {c['product_name']}")
                 continue
