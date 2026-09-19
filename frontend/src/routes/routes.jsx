@@ -8,6 +8,8 @@ import SignupContainer from "@/components/Signup/Signup.jsx";
 import LoginContainer from "@/components/Login/Login.jsx";
 import AuthCallback from "@/components/Auth/AuthCallback.jsx";
 import NotFoundPage from "@/components/NotFound/NotFoundPage.jsx";
+import PrivacyPolicy from "@/components/Legal/PrivacyPolicy.jsx";
+import TermsOfService from "@/components/Legal/TermsOfService.jsx";
 
 const ForgotPassword = lazy(
   () => import("@/components/Auth/ForgotPassword.jsx"),
@@ -76,6 +78,8 @@ export function AppRoutes() {
           }
         />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         <Route
           element={
             <ProtectedRoute>

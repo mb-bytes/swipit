@@ -71,4 +71,9 @@ class ChangePasswordSchema(BaseModel):
             raise ValueError("Password must contain at least one letter and one number")
         return v
 
+class ContactSchema(BaseModel):
+    name: str
+    requestor_email: EmailStr
+    content: str
+
 

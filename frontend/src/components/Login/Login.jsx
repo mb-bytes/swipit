@@ -32,7 +32,7 @@ export function Login() {
         <div className="h-4" />
       </div>
 
-      <div className="max-w-md">
+      <div className="max-w-md pointer-events-auto">
         <div className="font-mono text-[10px] text-neutral-500 uppercase tracking-[0.25em] mb-1">
           Card Intelligence
         </div>
@@ -43,13 +43,19 @@ export function Login() {
 
         <div className="mt-4 text-xs text-neutral-500">
           By signing in, you agree to our{" "}
-          <span className="underline underline-offset-2 text-neutral-700 hover:text-black cursor-pointer transition-colors">
+          <Link
+            to="/terms"
+            className="underline underline-offset-2 text-neutral-700 hover:text-black transition-colors"
+          >
             Terms of Service
-          </span>{" "}
+          </Link>{" "}
           and{" "}
-          <span className="underline underline-offset-2 text-neutral-700 hover:text-black cursor-pointer transition-colors">
+          <Link
+            to="/privacy"
+            className="underline underline-offset-2 text-neutral-700 hover:text-black transition-colors"
+          >
             Privacy Policy
-          </span>
+          </Link>
           .
         </div>
       </div>

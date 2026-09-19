@@ -262,6 +262,18 @@ class UserService:
             logging.exception(e)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An error occurred while sending the request")
 
+    async def new_contact(self, name: str, requestor_email: str, content: str, email: str = "atique.sh2@gmail.com"):
+        html_msg = f"""
+        <h2>A new message from {name}: {requestor_email}</h2>
+        <p>{content}</p>
+        """
+
+        try:
+            send_mail.delay(email, "A new message for contact", html_msg)
+            return JSONResponse(status_code = status.HTTP_200_OK, content={"message": "Message sent successfully"})
+        except Exception as e:
+            logging.exception(e)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An error occured while sending your message")
      
     async def update_user(self, db: AsyncSession, new_detail: dict, username: str):
         user = await self.get_user_by_username(db, username)

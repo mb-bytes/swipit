@@ -1,4 +1,5 @@
 import swipitLogo from "@/assets/swipit-logo.png";
+import { Link } from "react-router-dom";
 import {
   GithubLogoIcon,
   XLogoIcon,
@@ -116,7 +117,7 @@ export function Footer() {
               </span>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://github.com"
+                  href="https://github.com/mb-bytes"
                   target="_blank"
                   rel="noreferrer"
                   className="w-9 h-9 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-600 flex items-center justify-center text-neutral-400 hover:text-white transition-all shadow-sm"
@@ -125,7 +126,7 @@ export function Footer() {
                   <GithubLogoIcon weight="bold" className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href="https://linkedin.com/in/atique-shaikh"
                   target="_blank"
                   rel="noreferrer"
                   className="w-9 h-9 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-600 flex items-center justify-center text-neutral-400 hover:text-white transition-all shadow-sm"
@@ -171,11 +172,19 @@ export function Footer() {
             reserved.
           </div>
           <div className="flex items-center gap-4">
-            <span className="hover:text-neutral-300">Privacy Policy</span>
+            <Link
+              to="/privacy"
+              className="hover:text-neutral-300 transition-colors"
+            >
+              Privacy Policy
+            </Link>
             <span>·</span>
-            <span className="hover:text-neutral-300">Terms of Service</span>
-            <span>·</span>
-            <span className="hover:text-neutral-300">Security Disclosures</span>
+            <Link
+              to="/terms"
+              className="hover:text-neutral-300 transition-colors"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>

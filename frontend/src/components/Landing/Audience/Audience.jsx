@@ -40,7 +40,7 @@ export function Audience() {
     {
       title: "Personalized Card Advisor",
       description:
-        "Analyzes your 90-day spending history and top categories to recommend cards with the highest annual net benefit.",
+        "Analyzes your 120-day spending history and top categories to recommend cards with the highest annual net benefit.",
       icon: <TrendUp weight="bold" className="w-6 h-6 text-purple-700" />,
     },
     {

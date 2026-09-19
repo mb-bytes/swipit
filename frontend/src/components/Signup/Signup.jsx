@@ -51,7 +51,7 @@ export function Signup() {
         </div>
       </div>
 
-      <div className="max-w-md">
+      <div className="max-w-md pointer-events-auto">
         <p className="font-heading text-base sm:text-lg font-medium leading-snug text-[#111215]">
           Every swipe, maximized. Real-time rewards intelligence and instant
           clarity across your finances.
@@ -59,13 +59,19 @@ export function Signup() {
 
         <div className="mt-4 text-xs text-neutral-500">
           By signing up, you agree to our{" "}
-          <span className="underline underline-offset-2 text-neutral-700 hover:text-black cursor-pointer transition-colors">
+          <Link
+            to="/terms"
+            className="underline underline-offset-2 text-neutral-700 hover:text-black transition-colors"
+          >
             Terms of Service
-          </span>{" "}
+          </Link>{" "}
           and{" "}
-          <span className="underline underline-offset-2 text-neutral-700 hover:text-black cursor-pointer transition-colors">
+          <Link
+            to="/privacy"
+            className="underline underline-offset-2 text-neutral-700 hover:text-black transition-colors"
+          >
             Privacy Policy
-          </span>
+          </Link>
           .
         </div>
       </div>

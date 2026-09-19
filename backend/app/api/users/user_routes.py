@@ -17,6 +17,7 @@ from .user_schemas import (
     UserSchema,
     UserUpdateSchema,
     ChangePasswordSchema,
+    ContactSchema
 )
 from .user_service import user_service
 
@@ -190,4 +191,9 @@ async def new_bank_request(request_data: BankRequestSchema):
         requestor=request_data.email or "Anonymous"
     )
     return new_request
+
+@user_router.post("/contact")
+async def contact_developer(contact_details: ContactSchema):
+    new_contact = await user_service.new_contact(contact_details.name, contact_details.email, contact_details.content)
+    return new_contact
 
