@@ -1,7 +1,8 @@
 import os
+import json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
-from typing import List
+from typing import List, Union
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.dirname(os.path.dirname(current_dir))
@@ -29,15 +30,25 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRY: int
     OPENAI_API_KEY: str
     FRONTEND_URL: str = "http://localhost:5173"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:5174"]
+    ALLOWED_ORIGINS: Union[List[str], str] = ["http://localhost:5173", "http://localhost:5174"]
     model_config = SettingsConfigDict(
         env_file=env_path, extra="ignore"
     )
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @field_validator("ALLOWED_ORIGINS", mode="after")
     @classmethod
     def parse_origins(cls, v):
         if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    decoded = json.loads(v)
+                    if isinstance(decoded, list):
+                        return [str(item).strip() for item in decoded if str(item).strip()]
+                except Exception:
+                    pass
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
