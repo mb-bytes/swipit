@@ -1,5 +1,6 @@
 import os
 import json
+import ssl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from typing import List, Union
@@ -67,6 +68,18 @@ class Settings(BaseSettings):
         v = v.replace("?channel_binding=require", "")
         return v
 
+    @field_validator("REDIS_URL", mode="after")
+    @classmethod
+    def normalize_redis_url(cls, v: str) -> str:
+        if not v:
+            return v
+        v = v.strip().strip("'").strip('"')
+        if v.startswith("rediss://"):
+            if "ssl_cert_reqs" not in v:
+                separator = "&" if "?" in v else "?"
+                v = f"{v}{separator}ssl_cert_reqs=none"
+        return v
+
     @field_validator("GOOGLE_CLIENT_SECRETS_FILE", mode="after")
     @classmethod
     def resolve_secrets_path(cls, v: str) -> str:
@@ -85,3 +98,6 @@ settings = Settings()
 broker_url = settings.REDIS_URL
 result_backend = settings.REDIS_URL
 broker_connection_retry_on_startup = True
+if "rediss://" in settings.REDIS_URL:
+    broker_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
+    redis_backend_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}

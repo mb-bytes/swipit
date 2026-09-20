@@ -25,26 +25,64 @@ SCOPES = [
 ]
 
 class GoogleService:
+    def _get_client_config(self) -> dict:
+        config = self._parse_client_secrets(settings.GOOGLE_CLIENT_SECRETS_FILE)
+        if config:
+            return config
+
+        config = self._parse_client_secrets(os.getenv("GOOGLE_CLIENT_SECRETS_B64"))
+        if config:
+            return config
+
+        config = self._parse_client_secrets(os.getenv("GOOGLE_CLIENT_SECRETS_JSON"))
+        if config:
+            return config
+
+        raise ValueError(
+            "Google client secrets could not be loaded. Please ensure GOOGLE_CLIENT_SECRETS_FILE, "
+            "GOOGLE_CLIENT_SECRETS_B64, or GOOGLE_CLIENT_SECRETS_JSON is set to a valid file path, "
+            "base64 string, or JSON string."
+        )
+
+    @staticmethod
+    def _parse_client_secrets(val: str | None) -> dict | None:
+        if not val or not isinstance(val, str) or not val.strip():
+            return None
+        val = val.strip()
+
+        if os.path.exists(val) and os.path.isfile(val) and os.path.getsize(val) > 0:
+            try:
+                with open(val, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+                    if content:
+                        return json.loads(content)
+            except Exception:
+                pass
+
+        if val.startswith("{") and val.endswith("}"):
+            try:
+                return json.loads(val)
+            except Exception:
+                pass
+
+        try:
+            decoded = base64.b64decode(val).decode("utf-8")
+            if decoded.strip().startswith("{") and decoded.strip().endswith("}"):
+                return json.loads(decoded)
+        except Exception:
+            pass
+
+        return None
+
+
+
     def build_flow(self, state: str | None = None, scopes: list[str] | None = None) -> Flow:
-        if os.path.exists(settings.GOOGLE_CLIENT_SECRETS_FILE):
-            flow = Flow.from_client_secrets_file(
-                settings.GOOGLE_CLIENT_SECRETS_FILE,
-                scopes=scopes or SCOPES,
-                state=state,
-            )
-        elif os.getenv("GOOGLE_CLIENT_SECRETS_B64"):
-            raw = base64.b64decode(os.getenv("GOOGLE_CLIENT_SECRETS_B64")).decode("utf-8")
-            flow = Flow.from_client_config(json.loads(raw), scopes=scopes or SCOPES, state=state)
-        elif os.getenv("GOOGLE_CLIENT_SECRETS_JSON"):
-            flow = Flow.from_client_config(json.loads(os.getenv("GOOGLE_CLIENT_SECRETS_JSON")), scopes=scopes or SCOPES, state=state)
-        else:
-            flow = Flow.from_client_secrets_file(
-                settings.GOOGLE_CLIENT_SECRETS_FILE,
-                scopes=scopes or SCOPES,
-                state=state,
-            )
+        config = self._get_client_config()
+        flow = Flow.from_client_config(config, scopes=scopes or SCOPES, state=state)
         flow.redirect_uri = settings.GOOGLE_REDIRECT_URI
         return flow
+
+
 
     async def upsert_connected_account(self, db: AsyncSession, *, user_id: uuid.UUID | str, email: str,
                                     encrypted_access_token: str, encrypted_refresh_token: str,
@@ -131,15 +169,16 @@ class GoogleService:
  
  
     def _client_id(self) -> str:
-        import json
-        with open(settings.GOOGLE_CLIENT_SECRETS_FILE) as f:
-            return json.load(f)["web"]["client_id"]
+        config = self._get_client_config()
+        section = config.get("web") or config.get("installed") or {}
+        return section["client_id"]
     
     
     def _client_secret(self) -> str:
-        import json
-        with open(settings.GOOGLE_CLIENT_SECRETS_FILE) as f:
-            return json.load(f)["web"]["client_secret"]
+        config = self._get_client_config()
+        section = config.get("web") or config.get("installed") or {}
+        return section["client_secret"]
+
 
 
 google_service = GoogleService()

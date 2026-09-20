@@ -44,7 +44,6 @@ async def ingest_gmail(
 
 
 @gmail_router.post("/sync-last-5-days", summary="Ingest last 5 days of Gmail transactions", dependencies=[Depends(rate_limit(10, 60))])
-@gmail_router.post("/sync-recent", summary="Ingest last 5 days of Gmail transactions", dependencies=[Depends(rate_limit(10, 60))])
 async def sync_last_5_days(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),
@@ -69,7 +68,6 @@ async def sync_last_5_days(
 
 
 @gmail_router.get("/task/{task_id}", summary="Check background ingestion task status")
-@gmail_router.get("/status/{task_id}", summary="Check status of a background Gmail ingest task")
 async def get_task_status(task_id: str):
     result = AsyncResult(task_id, app=c_app)
     response = {"task_id": task_id, "status": result.state}

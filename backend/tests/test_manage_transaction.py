@@ -9,4 +9,6 @@ async def test():
         )
         print(result)
 
-asyncio.run(test())
+if __name__ == "__main__":
+    asyncio.run(test())
+

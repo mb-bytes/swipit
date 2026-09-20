@@ -11,9 +11,14 @@ c_app = Celery(
     backend=settings.REDIS_URL,
 )
 c_app.conf.broker_connection_retry_on_startup = True
-if settings.REDIS_URL.startswith("rediss://"):
-    c_app.conf.broker_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
-    c_app.conf.redis_backend_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
+if "rediss://" in settings.REDIS_URL:
+    ssl_conf = {"ssl_cert_reqs": ssl.CERT_NONE}
+    c_app.conf.update(
+        broker_use_ssl=ssl_conf,
+        redis_backend_use_ssl=ssl_conf,
+        result_backend_transport_options={"ssl": ssl_conf},
+    )
+
 
 
 @c_app.task()

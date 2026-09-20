@@ -9,9 +9,13 @@ from sqlalchemy import select
 from app.api.merchants.categorize_service import categorize_service
 from decimal import Decimal
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class RewardService:
+
     def process_reward(self, config: dict, transaction: TransactionInput) -> RewardResult:
         exclusions = config.get('exclusions', {})
         excluded_merchants = exclusions['merchants']
@@ -104,10 +108,13 @@ class RewardService:
     async def manage_transaction(self, db: AsyncSession, transaction_id: uuid.UUID):
         tx = (await db.execute(select(Transaction).where(Transaction.transaction_id==transaction_id))).scalar_one_or_none()
         if not tx:
-            raise ValueError("Transaction not found")
+            logger.warning(f"Transaction {transaction_id} not found, skipping reward management")
+            return
         card = (await db.execute(select(CardModel).where(CardModel.card_id==tx.card_id))).scalar_one_or_none()
         if not card:
-            raise ValueError(f"Card not found for transaction {transaction_id}")
+            logger.warning(f"Card not found for transaction {transaction_id}")
+            return
+
         if not card.product_id:
             return
         reward_card = (await db.execute(select(RewardCard).where(RewardCard.product_id==card.product_id))).scalar_one_or_none()
