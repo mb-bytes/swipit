@@ -29,7 +29,7 @@ export function Recommendations() {
         });
         if (isMounted && res.data && res.data.recommendations?.length > 0) {
           setRecommendationsData(res.data);
-          setIsCached(Boolean(res.data.cached));
+          setIsCached(Boolean(res.data.cached && res.data.ttl_seconds > 0));
           if (res.data.preferences) {
             setPreferredCategory(res.data.preferences.preferred_category || "");
             setPreferredMerchant(res.data.preferences.preferred_merchant || "");
@@ -63,7 +63,7 @@ export function Recommendations() {
 
       const res = await api.get("/api/recommendations/", { params });
       setRecommendationsData(res.data);
-      setIsCached(Boolean(res.data?.cached));
+      setIsCached(Boolean(res.data?.cached && res.data?.ttl_seconds > 0));
       setStep(5);
     } catch (err) {
       sileo.error({

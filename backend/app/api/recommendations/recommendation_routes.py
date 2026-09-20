@@ -3,9 +3,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.api.dependencies import get_curr_user, rate_limit
-from .recommendation_service import get_recommendations, invalidate_cache
+from .recommendation_service import get_recommendations, invalidate_cache, get_cache_ttl
 
 recommendations_router = APIRouter(tags=["recommendations"])
+
+
+@recommendations_router.get(
+    "/ttl",
+    summary="Get remaining TTL for recommendations cache",
+)
+async def get_recommendations_ttl(
+    current_user=Depends(get_curr_user),
+):
+    return await get_cache_ttl(user_id=current_user.user_id)
 
 
 @recommendations_router.get(

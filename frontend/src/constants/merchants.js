@@ -2,6 +2,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Flipkart",
     code: "MERCH 01",
+    label: "FLIPKART",
     name: "FLIPKART",
     hint: "E-Commerce & Fashion",
     unselectedBg: "bg-[#2874f0]/6 hover:bg-[#2874f0]/14",
@@ -14,6 +15,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Swiggy",
     code: "MERCH 02",
+    label: "SWIGGY",
     name: "SWIGGY",
     hint: "Food & Instamart",
     unselectedBg: "bg-[#fc8019]/6 hover:bg-[#fc8019]/14",
@@ -26,6 +28,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Myntra",
     code: "MERCH 03",
+    label: "MYNTRA",
     name: "MYNTRA",
     hint: "Fashion & Lifestyle",
     unselectedBg: "bg-[#ff3f6c]/6 hover:bg-[#ff3f6c]/14",
@@ -38,6 +41,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Zomato",
     code: "MERCH 04",
+    label: "ZOMATO",
     name: "ZOMATO",
     hint: "Food & Dining",
     unselectedBg: "bg-[#e23744]/6 hover:bg-[#e23744]/14",
@@ -50,6 +54,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Amazon",
     code: "MERCH 05",
+    label: "AMAZON",
     name: "AMAZON",
     hint: "All-in-one Shopping",
     unselectedBg: "bg-[#ff9900]/8 hover:bg-[#ff9900]/16",
@@ -62,6 +67,7 @@ export const TOP_MERCHANTS = [
   {
     id: "Blinkit",
     code: "MERCH 06",
+    label: "BLINKIT",
     name: "BLINKIT",
     hint: "Quick Commerce & Instant",
     unselectedBg: "bg-[#f7ce00]/15 hover:bg-[#f7ce00]/25",

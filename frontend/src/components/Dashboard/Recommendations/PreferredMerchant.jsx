@@ -81,7 +81,7 @@ export function PreferredMerchant({
 
                 <div className="mt-1.5 sm:mt-2">
                   <h4 className="font-black text-xs sm:text-sm tracking-tight leading-tight uppercase">
-                    {m.label}
+                    {m.label || m.name}
                   </h4>
                   <span
                     className={`text-[10px] sm:text-[11px] block mt-0.5 font-mono ${

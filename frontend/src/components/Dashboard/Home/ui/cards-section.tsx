@@ -119,7 +119,7 @@ export function CardsSection({
                       type={cardType}
                       width={316}
                     />
-                    <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                       <button
                         type="button"
                         title="Delete card"

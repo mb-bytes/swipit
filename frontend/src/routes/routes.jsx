@@ -10,6 +10,7 @@ import AuthCallback from "@/components/Auth/AuthCallback.jsx";
 import NotFoundPage from "@/components/NotFound/NotFoundPage.jsx";
 import PrivacyPolicy from "@/components/Legal/PrivacyPolicy.jsx";
 import TermsOfService from "@/components/Legal/TermsOfService.jsx";
+import PageTitleManager from "./PageTitleManager";
 
 const ForgotPassword = lazy(
   () => import("@/components/Auth/ForgotPassword.jsx"),
@@ -43,6 +44,7 @@ function PageFallback() {
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageFallback />}>
+      <PageTitleManager />
       <Routes>
         <Route path="/" element={<LandingContainer />} />
         <Route

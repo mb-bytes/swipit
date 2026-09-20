@@ -7,6 +7,7 @@ import {
   InformationCircleIcon,
   RotateLeft01Icon,
 } from "@hugeicons/core-free-icons";
+import api from "@/api/axios";
 import { HugeIcon } from "@/components/ui/huge-icon";
 import { Button } from "@/components/ui/button";
 import { getBankLogo } from "@/lib/bank-logos";
@@ -21,21 +22,44 @@ export function RecommendationScreen({
 }) {
   const [analysisStep, setAnalysisStep] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(() => {
-    if (typeof recommendationsData?.ttl_seconds === "number") {
-      return recommendationsData.ttl_seconds;
-    }
-    return isCached ? 86400 : 0;
+    return Math.max(0, Number(recommendationsData?.ttl_seconds) || 0);
   });
 
   useEffect(() => {
-    if (typeof recommendationsData?.ttl_seconds === "number") {
-      setRemainingSeconds(recommendationsData.ttl_seconds);
-    } else if (isCached) {
-      setRemainingSeconds(86400);
-    } else {
-      setRemainingSeconds(0);
-    }
-  }, [recommendationsData, isCached]);
+    setRemainingSeconds(
+      Math.max(0, Number(recommendationsData?.ttl_seconds) || 0),
+    );
+  }, [recommendationsData?.ttl_seconds]);
+
+  useEffect(() => {
+    if (!recommendationsData) return;
+
+    let isSubscribed = true;
+    const syncRedisTtl = async () => {
+      try {
+        const res = await api.get("/api/recommendations/ttl");
+        if (isSubscribed && res.data) {
+          const ttl = Math.max(0, Number(res.data.ttl_seconds) || 0);
+          setRemainingSeconds(ttl);
+        }
+      } catch {}
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        syncRedisTtl();
+      }
+    };
+
+    const syncInterval = setInterval(syncRedisTtl, 60000);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(syncInterval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [recommendationsData]);
 
   useEffect(() => {
     if (remainingSeconds <= 0) return;
@@ -125,7 +149,7 @@ export function RecommendationScreen({
           </p>
         </div>
 
-        {isCached && remainingSeconds > 0 ? (
+        {remainingSeconds > 0 ? (
           <div className="h-10 px-4 rounded-xl border border-neutral-300 bg-white/80 shadow-2xs flex items-center gap-2 text-xs font-mono font-bold text-neutral-700 select-none self-start sm:self-auto">
             <HugeIcon icon={Clock01Icon} size={14} className="text-[#c2571a]" />
             <span>Refreshes in {formatCountdown(remainingSeconds)}</span>
@@ -136,7 +160,11 @@ export function RecommendationScreen({
             onClick={onReset}
             className="h-10 px-4 rounded-xl border-neutral-300 text-xs font-mono font-bold text-neutral-700 hover:bg-neutral-100 flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
           >
-            <HugeIcon icon={RotateLeft01Icon} size={14} className="text-neutral-500" />
+            <HugeIcon
+              icon={RotateLeft01Icon}
+              size={14}
+              className="text-neutral-500"
+            />
             <span>Start Over</span>
           </Button>
         )}
@@ -170,14 +198,22 @@ export function RecommendationScreen({
                         className="w-full h-full object-contain"
                       />
                     ) : (
-                      <HugeIcon icon={Building02Icon} size={24} className="text-neutral-500" />
+                      <HugeIcon
+                        icon={Building02Icon}
+                        size={24}
+                        className="text-neutral-500"
+                      />
                     )}
                   </div>
                 </div>
 
                 {card.top_perk && (
                   <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-200/80 text-xs text-neutral-700 mb-4 flex items-start gap-2.5">
-                    <HugeIcon icon={FireIcon} size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                    <HugeIcon
+                      icon={FireIcon}
+                      size={16}
+                      className="text-amber-600 shrink-0 mt-0.5"
+                    />
                     <span className="font-semibold leading-relaxed">
                       {card.top_perk}
                     </span>
@@ -249,7 +285,11 @@ export function RecommendationScreen({
                   className="w-full h-10 bg-[#111215] text-[#f2eee5] hover:bg-neutral-800 rounded-xl font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                 >
                   <span>Apply Now</span>
-                  <HugeIcon icon={ExternalLinkIcon} size={14} className="text-neutral-400" />
+                  <HugeIcon
+                    icon={ExternalLinkIcon}
+                    size={14}
+                    className="text-neutral-400"
+                  />
                 </Button>
               </div>
             </div>
@@ -259,7 +299,11 @@ export function RecommendationScreen({
 
       <div className="pt-4 border-t border-neutral-200/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-neutral-500">
         <div className="flex items-center gap-2">
-          <HugeIcon icon={InformationCircleIcon} size={16} className="text-neutral-400 shrink-0" />
+          <HugeIcon
+            icon={InformationCircleIcon}
+            size={16}
+            className="text-neutral-400 shrink-0"
+          />
           <span>
             Quarterly cashback if more than 4 months of transaction are
             available for each recommended card.

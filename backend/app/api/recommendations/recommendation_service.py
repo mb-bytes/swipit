@@ -310,17 +310,33 @@ async def get_recommendations(
             "preferred_merchant": preferred_merchant,
             "preferred_bank": preferred_bank,
         },
-        "cached": False,
+        "cached": True,
         "evaluated_at": now_iso,
         "ttl_seconds": CACHE_TTL_SECONDS,
     }
 
     try:
         await redis_client.setex(cache_key, CACHE_TTL_SECONDS, json.dumps(result))
+        ttl = await redis_client.ttl(cache_key)
+        result["cached"] = True
+        result["ttl_seconds"] = max(0, ttl) if (ttl is not None and ttl > 0) else CACHE_TTL_SECONDS
     except Exception as e:
         print(f"[recommendations] Redis set error: {e}")
+        result["cached"] = False
+        result["ttl_seconds"] = 0
 
     return result
+
+async def get_cache_ttl(user_id: uuid.UUID) -> dict[str, Any]:
+    cache_key = f"{CACHE_KEY_PREFIX}:{user_id}"
+    try:
+        ttl = await redis_client.ttl(cache_key)
+        if ttl is not None and ttl > 0:
+            return {"cached": True, "ttl_seconds": ttl}
+        return {"cached": False, "ttl_seconds": 0}
+    except Exception as e:
+        print(f"[recommendations] Redis ttl error: {e}")
+        return {"cached": False, "ttl_seconds": 0}
 
 async def invalidate_cache(user_id: uuid.UUID) -> None:
     cache_key = f"{CACHE_KEY_PREFIX}:{user_id}"

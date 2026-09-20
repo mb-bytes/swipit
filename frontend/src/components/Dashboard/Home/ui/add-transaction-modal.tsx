@@ -138,27 +138,6 @@ export function AddTransactionModal({
     setIsCalendarOpen(false);
   };
 
-  const handleSetToday = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const today = new Date();
-    const formatted = today.toISOString().split("T")[0];
-    setDate(formatted);
-    setViewYear(today.getFullYear());
-    setViewMonth(today.getMonth());
-    setIsCalendarOpen(false);
-  };
-
-  const handleSetYesterday = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const yest = new Date();
-    yest.setDate(yest.getDate() - 1);
-    const formatted = yest.toISOString().split("T")[0];
-    setDate(formatted);
-    setViewYear(yest.getFullYear());
-    setViewMonth(yest.getMonth());
-    setIsCalendarOpen(false);
-  };
-
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstDayIndex = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
   const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
@@ -312,13 +291,13 @@ export function AddTransactionModal({
                   <AnimatePresence>
                     {isCalendarOpen && (
                       <motion.div
-                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="absolute right-0 bottom-[calc(100%+8px)] z-50 w-72 rounded-2xl bg-[#1a1c22] border border-white/15 p-3 shadow-2xl backdrop-blur-md"
+                        className="absolute right-0 top-[calc(100%+6px)] z-50 w-[260px] rounded-2xl bg-[#1a1c22] border border-white/15 p-2.5 shadow-2xl backdrop-blur-md"
                       >
-                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+                        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-white/10">
                           <button
                             type="button"
                             onClick={handlePrevMonth}
@@ -350,7 +329,7 @@ export function AddTransactionModal({
                           {Array.from({ length: firstDayIndex }).map((_, i) => (
                             <span
                               key={`prev-${i}`}
-                              className="text-[11px] text-neutral-700 py-1.5 cursor-default select-none"
+                              className="text-[11px] text-neutral-700 py-1 cursor-default select-none"
                             >
                               {daysInPrevMonth - firstDayIndex + i + 1}
                             </span>
@@ -367,7 +346,7 @@ export function AddTransactionModal({
                                 key={`day-${dayNum}`}
                                 type="button"
                                 onClick={() => handleSelectDate(dayNum)}
-                                className={`text-[11px] py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center relative ${
+                                className={`text-[11px] py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center justify-center relative ${
                                   isSelected
                                     ? "bg-amber-400 text-neutral-950 font-bold shadow-xs scale-105"
                                     : isToday
@@ -379,23 +358,6 @@ export function AddTransactionModal({
                               </button>
                             );
                           })}
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/10 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={handleSetToday}
-                            className="px-2 py-1 rounded-md text-amber-400 hover:bg-amber-400/10 transition-colors cursor-pointer font-medium"
-                          >
-                            Today
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleSetYesterday}
-                            className="px-2 py-1 rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                          >
-                            Yesterday
-                          </button>
                         </div>
                       </motion.div>
                     )}

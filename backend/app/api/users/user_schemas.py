@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator
 from datetime import datetime
-from typing import List
+from typing import List, Any
 import uuid
 import re
 
@@ -73,7 +73,15 @@ class ChangePasswordSchema(BaseModel):
 
 class ContactSchema(BaseModel):
     name: str
-    requestor_email: EmailStr
+    email: EmailStr
     content: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def handle_requestor_email(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "requestor_email" in data and "email" not in data:
+                data["email"] = data["requestor_email"]
+        return data
 
 
