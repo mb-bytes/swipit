@@ -50,8 +50,20 @@ class Settings(BaseSettings):
                         return [str(item).strip() for item in decoded if str(item).strip()]
                 except Exception:
                     pass
-            return [o.strip() for o in v.split(",") if o.strip()]
-        return v
+            origins = [o.strip() for o in v.split(",") if o.strip()]
+        elif isinstance(v, list):
+            origins = [str(o).strip() for o in v if str(o).strip()]
+        else:
+            origins = []
+
+        expanded = set(origins)
+        for orig in list(expanded):
+            if "swipit.tech" in orig:
+                if "://swipit.tech" in orig:
+                    expanded.add(orig.replace("://swipit.tech", "://www.swipit.tech"))
+                elif "://www.swipit.tech" in orig:
+                    expanded.add(orig.replace("://www.swipit.tech", "://swipit.tech"))
+        return list(expanded)
 
     @field_validator("DB_URL", mode="after")
     @classmethod

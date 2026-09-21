@@ -69,9 +69,18 @@ async def delete_me(
     if token_data and isinstance(token_data, dict) and "jti" in token_data:
         await user_service.add_jti_to_blocklist(token_data['jti'])
 
-    deleted = await user_service.delete_user(db, curr_user.user_id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    try:
+        deleted = await user_service.delete_user(db, curr_user.user_id)
+        if not deleted:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete account: {str(e)}"
+        )
 
     response = JSONResponse(content={"message": "Account deleted successfully"})
     response.delete_cookie(key="refresh_token", path="/")

@@ -1,6 +1,6 @@
 from .user_schemas import UserCreateSchema, PasswordResetEmailSchema
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select, delete
 from app.redis.redis import redis
 from app.db.models.user import UserModel
 from fastapi.exceptions import HTTPException
@@ -297,13 +297,16 @@ class UserService:
     async def delete_user(self, db: AsyncSession, user_id: uuid.UUID | str) -> bool:
         if isinstance(user_id, str):
             user_id = uuid.UUID(user_id)
-        result = await db.execute(select(UserModel).where(UserModel.user_id == user_id))
-        user = result.scalar_one_or_none()
-        if user:
-            await db.delete(user)
-            await db.commit()
-            return True
-        return False
+
+        try:
+            from app.api.recommendations.recommendation_service import invalidate_cache
+            await invalidate_cache(user_id)
+        except Exception as e:
+            logging.warning(f"Could not invalidate recommendations cache on delete: {e}")
+
+        result = await db.execute(delete(UserModel).where(UserModel.user_id == user_id))
+        await db.commit()
+        return (result.rowcount or 0) > 0
 
     async def add_jti_to_blocklist(self, jti: str):
         try:

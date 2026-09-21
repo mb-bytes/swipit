@@ -14,7 +14,11 @@ class UserModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     password_hash: Mapped[str] = mapped_column(String, nullable = False)
     
-    connected_accounts: Mapped[List["ConnectedAccount"] | None] = relationship(back_populates="user", lazy="raise")
+    connected_accounts: Mapped[List["ConnectedAccount"] | None] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 class ConnectedAccount(Base):
     __tablename__ = "connected_accounts"
@@ -33,6 +37,6 @@ class ConnectedAccount(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    user: Mapped["UserModel"] = relationship(back_populates="connected_accounts", lazy="raise")
+    user: Mapped["UserModel"] = relationship(back_populates="connected_accounts", passive_deletes=True)
 
 

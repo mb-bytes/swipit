@@ -218,10 +218,10 @@ export function AuthProvider({ children }) {
     setIsLoggingOut(true);
     try {
       await api.delete("/api/user/me");
-    } finally {
       accessTokenRef.current = null;
       setAccessToken(null);
       setUser(null);
+    } finally {
       setTimeout(() => {
         setIsLoggingOut(false);
       }, 1000);
