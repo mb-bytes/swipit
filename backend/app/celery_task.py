@@ -3,23 +3,26 @@ from app.core.config import settings
 from app.core.mail import mail, create_message
 from asgiref.sync import async_to_sync
 import asyncio
-
 import ssl
 
+broker_url = settings.RABBITMQ_URL if settings.RABBITMQ_URL else settings.REDIS_URL
+
 c_app = Celery(
-    broker=settings.REDIS_URL,
+    broker=broker_url,
     backend=settings.REDIS_URL,
 )
 c_app.conf.broker_connection_retry_on_startup = True
+
 if "rediss://" in settings.REDIS_URL:
     ssl_conf = {"ssl_cert_reqs": ssl.CERT_NONE}
     c_app.conf.update(
-        broker_use_ssl=ssl_conf,
         redis_backend_use_ssl=ssl_conf,
         result_backend_transport_options={"ssl": ssl_conf},
     )
 
-
+if "rediss://" in broker_url:
+    ssl_conf = {"ssl_cert_reqs": ssl.CERT_NONE}
+    c_app.conf.update(broker_use_ssl=ssl_conf)
 
 @c_app.task()
 def send_mail(recipient: str, subject: str, body: str):

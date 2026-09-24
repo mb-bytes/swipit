@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DB_URL: str
     REDIS_URL: str
+    RABBITMQ_URL: str = ""
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: str
@@ -107,9 +108,12 @@ class Settings(BaseSettings):
     
 settings = Settings()
 
-broker_url = settings.REDIS_URL
+broker_url = settings.RABBITMQ_URL or settings.REDIS_URL
 result_backend = settings.REDIS_URL
 broker_connection_retry_on_startup = True
+
 if "rediss://" in settings.REDIS_URL:
-    broker_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
     redis_backend_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}
+
+if "rediss://" in broker_url:
+    broker_use_ssl = {"ssl_cert_reqs": ssl.CERT_NONE}

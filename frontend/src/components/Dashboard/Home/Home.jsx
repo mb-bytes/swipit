@@ -30,6 +30,7 @@ export function Home() {
     addCard,
     deleteCard,
     assignUnmatched,
+    assignAllUnmatched,
     dismissUnmatched,
     dismissAllUnmatched,
     googleStatus,
@@ -331,6 +332,7 @@ export function Home() {
         onAssigned={handleTransactionAssigned}
         onDismissed={handleTransactionDismissed}
         onDismissAll={dismissAllUnmatched}
+        onAssignedAll={(newTxns) => assignAllUnmatched(newTxns)}
       />
     </div>
   );

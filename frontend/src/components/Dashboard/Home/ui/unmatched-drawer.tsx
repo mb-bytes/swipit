@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   AlertCircleIcon,
@@ -40,6 +40,7 @@ interface UnmatchedDrawerProps {
   onAssigned: (unmatchedId: string, txn: { id: string; merchant: string; amount: number; date: string; cardName: string; rewardEarned: number; category: string | null; cardId: string }) => void;
   onDismissed: (unmatchedId: string) => void;
   onDismissAll?: () => void;
+  onAssignedAll?: (transactions?: any[]) => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -52,12 +53,23 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onDismissed, onDismissAll }: UnmatchedDrawerProps) {
+export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onDismissed, onDismissAll, onAssignedAll }: UnmatchedDrawerProps) {
   const [selectedCards, setSelectedCards] = useState<Record<string, string>>({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [showAssignAll, setShowAssignAll] = useState(false);
   const [assignAllCard, setAssignAllCard] = useState<string>(cards[0]?.cardName ?? "");
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   const [isAssigningAll, setIsAssigningAll] = useState(false);
 
   const cardOptions = cards.map((c) => ({
@@ -147,10 +159,15 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
         description: `${data.assigned} transaction${data.assigned !== 1 ? "s" : ""} assigned to ${data.card_name}.`,
       });
       setShowAssignAll(false);
-      onDismissAll?.();
+      if (onAssignedAll) {
+        onAssignedAll(data.transactions || []);
+      } else {
+        onDismissAll?.();
+      }
       onClose();
-    } catch {
-      sileo.error({ title: "Failed to assign all", description: "A server error occurred." });
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || (err?.code === "ECONNABORTED" ? "Request timed out. Please refresh to check status." : "A server error occurred.");
+      sileo.error({ title: "Failed to assign all", description: msg });
     } finally {
       setIsAssigningAll(false);
     }
@@ -166,15 +183,15 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs"
+            className="fixed inset-0 z-40 bg-black/60 sm:backdrop-blur-xs will-change-opacity"
           />
 
           <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 380, damping: 40 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#141518] border-l border-white/10 shadow-2xl flex flex-col"
+            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#141518] sm:border-l border-white/10 shadow-2xl flex flex-col will-change-transform transform-gpu"
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-3">
@@ -267,7 +284,7 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
               )}
             </AnimatePresence>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 flex flex-col gap-3">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
                   <HugeIcon icon={CheckmarkCircle02Icon} size={40} className="text-emerald-400" />
@@ -277,16 +294,11 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
               ) : (
                 items.map((item) => {
                   const isBusy = loadingId === item.id;
-                  const itemCardOptions = cards.map((c) => ({
-                    value: c.cardName,
-                    label: `${c.cardName} (\u2022\u2022\u2022\u2022 ${c.cardLast4})`
-                  }));
                   const formattedDate = formatDate(item.transaction_date);
 
                   return (
                     <motion.div
                       key={item.id}
-                      layout
                       exit={{ opacity: 0, x: 40, transition: { duration: 0.2 } }}
                       className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 flex flex-col gap-3"
                     >
@@ -322,7 +334,7 @@ export function UnmatchedDrawer({ isOpen, onClose, items, cards, onAssigned, onD
                           menuClassName="bg-[#1e1f23] border border-white/10 text-white text-sm"
                           value={selectedCards[item.id] ?? cards[0]?.cardName ?? ""}
                           onChange={(val) => setSelectedCards((prev) => ({ ...prev, [item.id]: val }))}
-                          items={itemCardOptions}
+                          items={cardOptions}
                         />
                       </div>
 

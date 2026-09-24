@@ -1,8 +1,11 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+logger = logging.getLogger(__name__)
 
 from app.db.session import get_db
 from app.api.dependencies import get_curr_user
@@ -13,6 +16,18 @@ from app.api.cards.card_routes import title_case
 from .unmatched_schemas import AssignCardRequest
 
 unmatched_router = APIRouter(tags=["unmatched"])
+
+
+def dispatch_manage_transactions(transaction_ids: list[str]):
+    try:
+        from app.celery_task import call_manage_transaction
+        for txn_id in transaction_ids:
+            try:
+                call_manage_transaction.delay(txn_id)
+            except Exception as e:
+                logger.warning(f"Failed to dispatch reward calculation for transaction {txn_id}: {e}")
+    except Exception as e:
+        logger.warning(f"Failed to load Celery task: {e}")
 
 
 @unmatched_router.get("")
@@ -55,6 +70,7 @@ async def list_unmatched(
 async def assign_card(
     unmatched_id: uuid.UUID,
     body: AssignCardRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),
 ):
@@ -92,6 +108,7 @@ async def assign_card(
         txn = existing_txn
     else:
         txn = Transaction(
+            transaction_id=uuid.uuid4(),
             card_id=body.card_id,
             merchant=unmatched.merchant,
             amount=unmatched.amount,
@@ -104,13 +121,12 @@ async def assign_card(
 
     await db.delete(unmatched)
     await db.commit()
-    await db.refresh(txn)
 
-    from app.celery_task import call_manage_transaction
-    call_manage_transaction.delay(str(txn.transaction_id))
+    txn_id_str = str(txn.transaction_id)
+    background_tasks.add_task(dispatch_manage_transactions, [txn_id_str])
 
     return {
-        "transaction_id": str(txn.transaction_id),
+        "transaction_id": txn_id_str,
         "merchant": title_case(txn.merchant),
         "amount": float(txn.amount),
         "category": txn.category,
@@ -124,6 +140,7 @@ async def assign_card(
 @unmatched_router.post("/assign-all")
 async def assign_all_unmatched(
     body: AssignCardRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_curr_user),
 ):
@@ -144,9 +161,8 @@ async def assign_all_unmatched(
     )
     items = result.scalars().all()
 
-    from app.celery_task import call_manage_transaction
-
     assigned_ids = []
+    assigned_txns = []
     for unmatched in items:
         category = await categorize_service.categorize_transaction(db, unmatched.merchant)
 
@@ -162,6 +178,7 @@ async def assign_all_unmatched(
             txn = existing_txn
         else:
             txn = Transaction(
+                transaction_id=uuid.uuid4(),
                 card_id=body.card_id,
                 merchant=unmatched.merchant,
                 amount=unmatched.amount,
@@ -173,16 +190,31 @@ async def assign_all_unmatched(
             db.add(txn)
 
         await db.delete(unmatched)
-        await db.flush()
-        await db.refresh(txn)
         assigned_ids.append(str(txn.transaction_id))
+        assigned_txns.append(txn)
 
     await db.commit()
 
-    for txn_id in assigned_ids:
-        call_manage_transaction.delay(txn_id)
+    if assigned_ids:
+        background_tasks.add_task(dispatch_manage_transactions, assigned_ids)
 
-    return {"assigned": len(assigned_ids), "card_name": card.card_name}
+    return {
+        "assigned": len(assigned_ids),
+        "card_name": card.card_name,
+        "transactions": [
+            {
+                "id": str(t.transaction_id),
+                "merchant": title_case(t.merchant),
+                "amount": float(t.amount),
+                "category": t.category,
+                "date": t.transaction_date.strftime("%d %b %Y"),
+                "card_id": str(body.card_id),
+                "card_name": card.card_name,
+                "reward_earned": round(float(t.amount) * 0.04, 2),
+            }
+            for t in assigned_txns
+        ],
+    }
 
 
 @unmatched_router.delete("/all")

@@ -159,7 +159,7 @@ function ResetPasswordForm() {
 
         <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-xs flex flex-col gap-4 text-center items-center">
           <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-2xs">
-            <AlertCircle className="w-6 h-6" />
+            <HugeIcon icon={AlertCircleIcon} size={24} />
           </div>
 
           <div className="space-y-1">
@@ -197,7 +197,7 @@ function ResetPasswordForm() {
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300/80 bg-white/90 px-3.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-white hover:border-neutral-400 active:scale-95"
         >
           <span>Sign In</span>
-          <ArrowRight className="h-3 w-3" />
+          <HugeIcon icon={ArrowRight01Icon} size={12} />
         </Link>
       </div>
 

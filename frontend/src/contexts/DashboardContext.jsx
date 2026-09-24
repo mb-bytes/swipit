@@ -336,6 +336,28 @@ export function DashboardProvider({ children }) {
     setTransactions((prev) => [tx, ...prev.filter((t) => t.id !== tx.id)]);
   };
 
+  const assignAllUnmatched = (newTxns = []) => {
+    setUnmatchedItems([]);
+    if (newTxns && newTxns.length > 0) {
+      const formatted = newTxns.map((t) => ({
+        id: t.id,
+        cardId: t.card_id,
+        merchant: t.merchant,
+        date: t.date,
+        rawDate: t.date,
+        amount: parseFloat(t.amount) || 0,
+        cardName: t.card_name || "Credit Card",
+        rewardEarned: parseFloat(t.reward_earned) || 0,
+        pointsEarned: 0,
+        rewardUnit: null,
+        pointValueInr: null,
+        category: t.category,
+      }));
+      setTransactions((prev) => [...formatted, ...prev]);
+    }
+    fetchAll();
+  };
+
   const dismissUnmatched = (unmatchedId) =>
     setUnmatchedItems((prev) => prev.filter((u) => u.id !== unmatchedId));
 
@@ -356,6 +378,7 @@ export function DashboardProvider({ children }) {
         addCard,
         deleteCard,
         assignUnmatched,
+        assignAllUnmatched,
         dismissUnmatched,
         dismissAllUnmatched,
         googleStatus,

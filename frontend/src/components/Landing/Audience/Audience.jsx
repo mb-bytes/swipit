@@ -90,7 +90,7 @@ export function Audience() {
           </ScrollReveal>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 relative z-10 py-6 max-w-7xl mx-auto w-full">
           {features.map((feature, index) => (
             <Feature key={feature.title} {...feature} index={index} />
           ))}
@@ -104,9 +104,17 @@ const Feature = ({ title, description, icon, index }) => {
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature border-[#ded5c4]/80",
-        (index === 0 || index === 4) && "lg:border-l border-[#ded5c4]/80",
-        index < 4 && "lg:border-b border-[#ded5c4]/80"
+        "flex flex-col py-7 sm:py-9 lg:py-10 relative group/feature border-[#ded5c4]/80",
+        // Mobile 1-col border divider
+        index < 7 && "border-b sm:border-b-0",
+        // Tablet 2-col borders
+        "sm:border-r",
+        index % 2 === 0 && "sm:border-l lg:border-l-0",
+        index < 6 && "sm:border-b lg:border-b-0",
+        // Desktop 4-col borders
+        "lg:border-r",
+        (index === 0 || index === 4) && "lg:border-l",
+        index < 4 && "lg:border-b"
       )}
     >
       {index < 4 && (
@@ -115,16 +123,16 @@ const Feature = ({ title, description, icon, index }) => {
       {index >= 4 && (
         <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
       )}
-      <div className="mb-4 relative z-10 px-8 sm:px-10 text-neutral-700">
+      <div className="mb-3.5 sm:mb-4 relative z-10 px-5 sm:px-8 lg:px-10 text-neutral-700">
         {icon}
       </div>
-      <div className="text-lg font-bold mb-2 relative z-10 px-8 sm:px-10">
+      <div className="text-base sm:text-lg font-bold mb-2 relative z-10 px-5 sm:px-8 lg:px-10">
         <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-neutral-400 group-hover/feature:bg-[#d9480f] transition-all duration-200 origin-center" />
         <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-neutral-900">
           {title}
         </span>
       </div>
-      <p className="text-xs sm:text-sm text-neutral-600 max-w-xs relative z-10 px-8 sm:px-10 leading-relaxed">
+      <p className="text-xs sm:text-sm text-neutral-600 w-full max-w-none lg:max-w-xs relative z-10 px-5 sm:px-8 lg:px-10 leading-relaxed">
         {description}
       </p>
     </div>
